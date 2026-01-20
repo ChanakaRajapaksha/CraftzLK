@@ -1,0 +1,10 @@
+node_modules/
+/.env
+/.env.*.local
+/prisma/dev.db
+/.idea/
+dist/
+npm-debug.log*
+coverage/
+prisma/migrations/
+.claude/

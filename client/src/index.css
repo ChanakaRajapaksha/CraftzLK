@@ -1,0 +1,21 @@
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&display=swap");
+@import "./theme.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: var(--crm-geist-sans);
+  --font-mono: var(--crm-geist-mono);
+  --font-bricolage: "Bricolage Grotesque", sans-serif;
+}
+
+body {
+  font-family: var(--font-bricolage);
+}
+
+* {
+  font-family: var(--font-bricolage) !important;
+}
+

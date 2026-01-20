@@ -1,0 +1,88 @@
+.animated-background-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: transparent;
+}
+
+.animated-background-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.animated-background-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 4rem 3rem;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+}
+
+.promo-content {
+  text-align: left;
+  color: white;
+  width: 100%;
+}
+
+.promo-title-large {
+  font-size: 1.25rem;
+  font-weight: 400;
+  margin: 0 0 0.75rem 0;
+  opacity: 0.9;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.promo-title-main {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  line-height: 1.1;
+  text-shadow: 0 4px 20px rgba(100, 150, 255, 0.3);
+  color: #ffffff;
+}
+
+.promo-subtitle {
+  font-size: 1rem;
+  font-weight: 300;
+  margin: 0;
+  opacity: 0.85;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+@media (max-width: 1200px) {
+  .promo-title-main {
+    font-size: 2.5rem;
+  }
+  
+  .animated-background-overlay {
+    padding: 3rem 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .promo-title-large {
+    font-size: 1rem;
+  }
+
+  .promo-title-main {
+    font-size: 2rem;
+  }
+
+  .promo-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .animated-background-overlay {
+    padding: 2rem 1.5rem;
+  }
+}

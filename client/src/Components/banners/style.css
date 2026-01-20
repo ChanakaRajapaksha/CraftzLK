@@ -1,0 +1,5 @@
+.bannerSection{padding: 25px 0px; padding-bottom: 0px; display: grid; gap: 15px;}
+.bannerSection .col_{width: 100%;}
+.bannerSection .box{overflow: hidden; border-radius: 15px; cursor: pointer; display: block;}
+.bannerSection .box img{height: auto !important; transition:all 0.3s;}
+.bannerSection .box:hover img{transform: scale(1.1); }

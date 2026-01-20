@@ -1,0 +1,374 @@
+/* Dark Blue Glass Alert Component Styles */
+
+.handcraft-alert {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  min-width: 320px;
+  max-width: 450px;
+  z-index: 10000;
+  opacity: 0;
+  transform: translateX(400px) scale(0.8);
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  pointer-events: none;
+}
+
+.handcraft-alert.show {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  pointer-events: all;
+}
+
+.handcraft-alert.hide {
+  opacity: 0;
+  transform: translateX(400px) scale(0.8);
+  pointer-events: none;
+}
+
+.alert-content {
+  background: rgba(15, 20, 45, 0.95);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.4),
+    0 0 60px rgba(100, 150, 255, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid;
+}
+
+.handcraft-alert-success .alert-content {
+  border-color: rgba(100, 200, 150, 0.5);
+  background: linear-gradient(135deg, rgba(15, 25, 45, 0.95) 0%, rgba(20, 40, 50, 0.95) 100%);
+}
+
+.handcraft-alert-error .alert-content {
+  border-color: rgba(255, 100, 100, 0.5);
+  background: linear-gradient(135deg, rgba(25, 15, 25, 0.95) 0%, rgba(40, 20, 30, 0.95) 100%);
+}
+
+.alert-content::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  padding: 1px;
+  background: linear-gradient(135deg, 
+    rgba(100, 150, 255, 0.5) 0%,
+    rgba(150, 100, 255, 0.3) 50%,
+    rgba(100, 200, 255, 0.5) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.handcraft-alert-success .alert-content::before {
+  background: linear-gradient(135deg, 
+    rgba(100, 200, 150, 0.6) 0%,
+    rgba(100, 255, 200, 0.3) 50%,
+    rgba(100, 200, 150, 0.6) 100%
+  );
+}
+
+.handcraft-alert-error .alert-content::before {
+  background: linear-gradient(135deg, 
+    rgba(255, 100, 100, 0.6) 0%,
+    rgba(255, 150, 100, 0.3) 50%,
+    rgba(255, 100, 100, 0.6) 100%
+  );
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Icon Wrapper */
+.alert-icon-wrapper {
+  position: relative;
+  flex-shrink: 0;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.alert-icon {
+  font-size: 1.8rem;
+  position: relative;
+  z-index: 2;
+  animation: iconBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  filter: drop-shadow(0 2px 8px rgba(100, 150, 255, 0.3));
+}
+
+.handcraft-alert-success .alert-icon {
+  color: #64d896;
+}
+
+.handcraft-alert-error .alert-icon {
+  color: #ff6b6b;
+}
+
+.icon-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid;
+  animation: ringPulse 2s ease-out infinite;
+}
+
+.handcraft-alert-success .icon-ring {
+  border-color: rgba(100, 200, 150, 0.4);
+}
+
+.handcraft-alert-error .icon-ring {
+  border-color: rgba(255, 100, 100, 0.4);
+}
+
+@keyframes iconBounce {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes ringPulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* Message */
+.alert-message {
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-text {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  animation: messageSlide 0.5s ease-out 0.2s both;
+}
+
+@keyframes messageSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Close Button */
+.alert-close {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  font-size: 1.5rem;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.alert-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  transform: rotate(90deg);
+}
+
+.alert-close span {
+  display: block;
+  font-weight: 300;
+}
+
+/* Progress Bar */
+.alert-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  animation: progressBar 6s linear forwards;
+  border-radius: 0 0 12px 12px;
+}
+
+.handcraft-alert-success .alert-progress-bar {
+  background: linear-gradient(90deg, #64d896, rgba(100, 200, 150, 0.3));
+}
+
+.handcraft-alert-error .alert-progress-bar {
+  background: linear-gradient(90deg, #ff6b6b, rgba(255, 100, 100, 0.3));
+}
+
+@keyframes progressBar {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+/* Decorative Elements */
+.handcraft-alert::after {
+  content: '';
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(circle, rgba(100, 150, 255, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: decorativeFloat 3s ease-in-out infinite;
+}
+
+@keyframes decorativeFloat {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translate(-10px, -10px) scale(1.1);
+    opacity: 0.5;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .handcraft-alert {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    min-width: auto;
+    max-width: none;
+  }
+
+  .handcraft-alert.show {
+    transform: translateX(0) scale(1);
+  }
+
+  .handcraft-alert.hide {
+    transform: translateY(-100px) scale(0.8);
+  }
+
+  .alert-content {
+    padding: 1rem 1.25rem;
+  }
+
+  .alert-icon-wrapper {
+    width: 40px;
+    height: 40px;
+  }
+
+  .alert-icon {
+    font-size: 1.5rem;
+  }
+
+  .icon-ring {
+    width: 40px;
+    height: 40px;
+  }
+
+  .alert-text {
+    font-size: 0.9rem;
+  }
+}
+
+/* Hover Effect */
+.handcraft-alert:hover {
+  transform: translateX(-5px) scale(1.02);
+}
+
+.handcraft-alert.show:hover {
+  transform: translateX(-5px) scale(1.02);
+}
+
+/* Success Specific Styles */
+.handcraft-alert-success .alert-content {
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.4),
+    0 0 40px rgba(100, 200, 150, 0.15);
+}
+
+/* Error Specific Styles */
+.handcraft-alert-error .alert-content {
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.4),
+    0 0 40px rgba(255, 100, 100, 0.15);
+}
+
+/* Entrance Animation */
+.handcraft-alert.show {
+  animation: slideInRight 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes slideInRight {
+  0% {
+    opacity: 0;
+    transform: translateX(400px) scale(0.8) rotate(-5deg);
+  }
+  60% {
+    transform: translateX(-10px) scale(1.05) rotate(2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotate(0deg);
+  }
+}
+
+/* Exit Animation */
+.handcraft-alert.hide {
+  animation: slideOutRight 0.3s ease-in;
+}
+
+@keyframes slideOutRight {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(400px) scale(0.8);
+  }
+}

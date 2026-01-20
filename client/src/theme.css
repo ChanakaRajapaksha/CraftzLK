@@ -1,0 +1,1857 @@
+/* Global Dark Blue Theme with 3D Glass Effects */
+
+:root {
+  /* Background Gradients */
+  --bg-gradient-dark: linear-gradient(180deg, 
+    #010101 0%, 
+    #020711 16.67%, 
+    #071338 33.33%, 
+    #0D235D 50%, 
+    #113081 66.67%, 
+    #13348D 100%
+  );
+  
+  /* Glass Effect Colors */
+  --glass-bg: rgba(15, 20, 40, 0.4);
+  --glass-bg-hover: rgba(20, 25, 50, 0.5);
+  --glass-bg-active: rgba(25, 30, 55, 0.6);
+  --glass-border: rgba(100, 150, 255, 0.3);
+  --glass-border-hover: rgba(100, 150, 255, 0.5);
+  --glass-border-active: rgba(100, 150, 255, 0.7);
+  
+  /* Gradient Border Colors */
+  --gradient-border: linear-gradient(135deg, 
+    rgba(100, 150, 255, 0.5) 0%,
+    rgba(150, 100, 255, 0.3) 50%,
+    rgba(100, 200, 255, 0.5) 100%
+  );
+  --gradient-border-hover: linear-gradient(135deg, 
+    rgba(100, 150, 255, 0.7) 0%,
+    rgba(150, 100, 255, 0.5) 50%,
+    rgba(100, 200, 255, 0.7) 100%
+  );
+  
+  /* Text Colors */
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.8);
+  --text-muted: rgba(255, 255, 255, 0.6);
+  --text-hint: rgba(255, 255, 255, 0.4);
+  
+  /* Accent Colors */
+  --accent-blue: #6496ff;
+  --accent-blue-hover: #7aa5ff;
+  --accent-cyan: #64d8ff;
+  --accent-purple: #a064ff;
+  
+  /* Dark Blue Shades (replacing purple) */
+  --primary-dark: #0D235D;
+  --primary-medium: #113081;
+  --primary-light: #13348D;
+  --primary-lighter: #1a4aad;
+  
+  /* Shadows */
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 0 30px rgba(100, 150, 255, 0.2);
+}
+
+/* Apply gradient background to body and main wrapper */
+body {
+  background: var(--bg-gradient-dark) !important;
+  background-attachment: fixed !important;
+  min-height: 100vh;
+}
+
+/* Main page wrapper */
+.page-wrapper,
+section.homeProducts,
+section.productDetails,
+section.cartPage,
+section.checkoutPage,
+section.myAccountPage,
+section.myListPage,
+section.comparePage,
+section.ordersPage,
+section.listingPage,
+section.searchPage {
+  background: transparent !important;
+  min-height: 100vh;
+}
+
+/* 3D Glass Card Effect */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 16px;
+  border: 1px solid var(--glass-border);
+  box-shadow: 
+    var(--shadow-glass),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 1px;
+  background: var(--gradient-border);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.glass-card:hover {
+  background: var(--glass-bg-hover);
+  box-shadow: 
+    var(--shadow-glass),
+    var(--shadow-glow);
+  transform: translateY(-2px);
+}
+
+.glass-card:hover::before {
+  background: var(--gradient-border-hover);
+}
+
+/* Header Styling */
+header {
+  background: rgba(5, 10, 25, 0.95) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(100, 150, 255, 0.2) !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3) !important;
+}
+
+header .headerWrapper,
+header .container-fluid {
+  background: transparent !important;
+}
+
+/* Navigation */
+.nav-menu,
+nav {
+  background: transparent !important;
+}
+
+.nav-menu a,
+nav a,
+header a {
+  color: var(--text-secondary) !important;
+  transition: color 0.3s ease;
+}
+
+.nav-menu a:hover,
+nav a:hover,
+header a:hover {
+  color: var(--accent-blue) !important;
+}
+
+/* Search Box */
+.headerSearch,
+.searchBox {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(10px);
+}
+
+.headerSearch input,
+.searchBox input {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+  border: none !important;
+}
+
+.headerSearch input::placeholder,
+.searchBox input::placeholder {
+  color: var(--text-hint) !important;
+}
+
+/* Buttons - Glass Style */
+.btn-blue,
+.btn-primary,
+button.MuiButton-containedPrimary {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+  border-radius: 10px !important;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-blue::before,
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  padding: 1px;
+  background: var(--gradient-border);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.btn-blue:hover,
+.btn-primary:hover,
+button.MuiButton-containedPrimary:hover {
+  background: var(--glass-bg-hover) !important;
+  box-shadow: var(--shadow-glow) !important;
+  transform: translateY(-2px);
+}
+
+/* Product Cards */
+.productItem,
+.productThumb,
+.item {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(15px) saturate(180%);
+  -webkit-backdrop-filter: blur(15px) saturate(180%);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 16px !important;
+  overflow: hidden;
+  transition: all 0.3s ease !important;
+  position: relative;
+}
+
+.productItem::before,
+.productThumb::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 1px;
+  background: var(--gradient-border);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.productItem:hover,
+.productThumb:hover {
+  background: var(--glass-bg-hover) !important;
+  box-shadow: 
+    0 20px 50px rgba(0, 0, 0, 0.4),
+    0 0 40px rgba(100, 150, 255, 0.15) !important;
+  transform: translateY(-5px);
+}
+
+.productItem:hover::before,
+.productThumb:hover::before {
+  background: var(--gradient-border-hover);
+}
+
+.productItem .info,
+.productThumb .info {
+  background: transparent !important;
+  padding: 1rem;
+}
+
+.productItem h4,
+.productItem .title,
+.productThumb h4,
+.productThumb .title {
+  color: var(--text-primary) !important;
+}
+
+.productItem .price,
+.productThumb .price,
+.oldPrice,
+.netPrice {
+  color: var(--accent-blue) !important;
+}
+
+.productItem .oldPrice,
+.productThumb .oldPrice {
+  color: var(--text-muted) !important;
+}
+
+/* Category Cards */
+.catSliderSection,
+.homeCat {
+  background: transparent !important;
+}
+
+.catSliderSection .item,
+.homeCat .item {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+}
+
+/* Banner/Slider */
+.homeBannerSection,
+.homeSlider {
+  background: transparent !important;
+}
+
+.homeSlider .swiper-slide {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* Footer */
+footer {
+  background: rgba(5, 10, 25, 0.98) !important;
+  border-top: 1px solid rgba(100, 150, 255, 0.2) !important;
+  backdrop-filter: blur(20px);
+}
+
+footer h5,
+footer h6,
+footer .title {
+  color: var(--text-primary) !important;
+}
+
+footer a,
+footer p,
+footer li {
+  color: var(--text-muted) !important;
+}
+
+footer a:hover {
+  color: var(--accent-blue) !important;
+}
+
+/* Sidebar / Filters */
+.sidebarWrapper,
+.sidebar,
+.filterWrapper {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 16px !important;
+}
+
+.sidebarWrapper h5,
+.sidebar h5,
+.filterWrapper h5 {
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid rgba(100, 150, 255, 0.2);
+  padding-bottom: 0.75rem;
+}
+
+/* Forms */
+.MuiOutlinedInput-root,
+.MuiTextField-root .MuiInputBase-root,
+input.form-control,
+textarea.form-control,
+select.form-control {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 10px !important;
+  color: var(--text-primary) !important;
+  backdrop-filter: blur(10px);
+}
+
+.MuiOutlinedInput-root:hover,
+input.form-control:hover {
+  border-color: var(--glass-border-hover) !important;
+}
+
+.MuiOutlinedInput-root.Mui-focused,
+input.form-control:focus {
+  border-color: var(--accent-blue) !important;
+  box-shadow: 0 0 0 3px rgba(100, 150, 255, 0.15) !important;
+}
+
+.MuiOutlinedInput-notchedOutline {
+  border: none !important;
+}
+
+.MuiInputLabel-root,
+label {
+  color: var(--text-muted) !important;
+}
+
+/* Tables */
+table,
+.table {
+  background: var(--glass-bg) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+  border: 1px solid var(--glass-border) !important;
+}
+
+table th,
+.table th {
+  background: rgba(15, 25, 50, 0.8) !important;
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+
+table td,
+.table td {
+  color: var(--text-secondary) !important;
+  border-bottom: 1px solid rgba(100, 150, 255, 0.1) !important;
+}
+
+table tr:hover td,
+.table tr:hover td {
+  background: var(--glass-bg-hover) !important;
+}
+
+/* Cart Page */
+.cartPage .cartWrapper,
+.cartSection {
+  background: transparent !important;
+}
+
+.cartPage .cartItem,
+.cartItem {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  backdrop-filter: blur(15px);
+}
+
+.cartPage .cartItem:hover,
+.cartItem:hover {
+  background: var(--glass-bg-hover) !important;
+}
+
+/* Checkout Page */
+.checkoutPage .card,
+.checkoutSection .card {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 16px !important;
+  backdrop-filter: blur(20px);
+}
+
+/* My Account Page */
+.myAccountPage .card,
+.myAccountSection .card,
+.accountInfo {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 16px !important;
+  backdrop-filter: blur(20px);
+}
+
+/* Orders Page */
+.ordersPage .orderItem,
+.orderCard {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(15px);
+}
+
+/* Modal */
+.MuiDialog-paper,
+.MuiModal-root .MuiPaper-root,
+.modal-content {
+  background: rgba(10, 15, 35, 0.98) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 16px !important;
+  backdrop-filter: blur(30px) saturate(200%);
+  box-shadow: 
+    0 25px 80px rgba(0, 0, 0, 0.5),
+    0 0 60px rgba(100, 150, 255, 0.1) !important;
+}
+
+.MuiDialog-paper h2,
+.MuiDialog-paper h3,
+.modal-title {
+  color: var(--text-primary) !important;
+}
+
+/* Tabs */
+.MuiTabs-root {
+  background: var(--glass-bg) !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+.MuiTab-root {
+  color: var(--text-muted) !important;
+}
+
+.MuiTab-root.Mui-selected {
+  color: var(--accent-blue) !important;
+}
+
+.MuiTabs-indicator {
+  background: var(--accent-blue) !important;
+}
+
+/* Breadcrumbs */
+.breadcrumbs,
+.breadcrumb {
+  color: var(--text-muted) !important;
+}
+
+.breadcrumbs a,
+.breadcrumb a {
+  color: var(--accent-blue) !important;
+}
+
+/* Pagination */
+.MuiPagination-root .MuiPaginationItem-root {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-secondary) !important;
+}
+
+.MuiPagination-root .MuiPaginationItem-root:hover {
+  background: var(--glass-bg-hover) !important;
+}
+
+.MuiPagination-root .MuiPaginationItem-root.Mui-selected {
+  background: var(--accent-blue) !important;
+  border-color: var(--accent-blue) !important;
+  color: white !important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(10, 15, 35, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--glass-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-blue);
+}
+
+/* Quantity Box */
+.quantityDrop,
+.quantityBox {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 8px !important;
+}
+
+.quantityDrop button,
+.quantityBox button {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+  border: none !important;
+}
+
+.quantityDrop input,
+.quantityBox input {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+  border: none !important;
+}
+
+/* Badge/Chip */
+.MuiChip-root,
+.badge {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Rating Stars */
+.MuiRating-root {
+  color: var(--accent-blue) !important;
+}
+
+/* Price Tags */
+.price-tag,
+.priceSection {
+  color: var(--accent-blue) !important;
+}
+
+/* Discount Badge */
+.discount,
+.discountBadge {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan)) !important;
+  color: white !important;
+  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Loading Spinner */
+.MuiCircularProgress-root {
+  color: var(--accent-blue) !important;
+}
+
+/* Text Colors Override */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary) !important;
+}
+
+p, span, li {
+  color: var(--text-secondary);
+}
+
+/* Link Colors */
+a {
+  color: var(--accent-blue);
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: var(--accent-blue-hover);
+}
+
+/* Box/Card Generic */
+.box,
+.card {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 16px !important;
+  backdrop-filter: blur(15px);
+}
+
+/* Section Titles */
+.sectionTitle,
+.hd {
+  color: var(--text-primary) !important;
+}
+
+/* White backgrounds override */
+.bg-white,
+[class*="bg-white"] {
+  background: var(--glass-bg) !important;
+}
+
+/* Remove white/light backgrounds */
+.bg-light,
+[class*="bg-light"] {
+  background: transparent !important;
+}
+
+/* Container backgrounds */
+.container,
+.container-fluid {
+  background: transparent !important;
+}
+
+/* Row backgrounds */
+.row {
+  background: transparent !important;
+}
+
+/* ========================================
+   HEADER SPECIFIC OVERRIDES
+   ======================================== */
+
+.headerWrapper,
+.headerWrapperFixed {
+  background: rgba(5, 10, 25, 0.98) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(100, 150, 255, 0.2) !important;
+}
+
+.headerWrapper .top-strip {
+  background: linear-gradient(90deg, var(--primary-dark) 0%, var(--primary-medium) 100%) !important;
+}
+
+.bg-blue {
+  background: linear-gradient(90deg, var(--primary-dark) 0%, var(--primary-medium) 100%) !important;
+}
+
+.headerSearch {
+  background: rgba(15, 20, 45, 0.6) !important;
+  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  border-radius: 10px !important;
+  backdrop-filter: blur(10px);
+}
+
+.headerSearch input {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.headerSearch input::-webkit-input-placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.headerSearch button svg,
+header .part3 .circle svg {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+header .part3 .circle {
+  background: rgba(15, 20, 45, 0.6) !important;
+  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  backdrop-filter: blur(10px);
+}
+
+header .part3 .circle:hover {
+  background: rgba(25, 35, 65, 0.8) !important;
+  border-color: rgba(100, 150, 255, 0.5) !important;
+}
+
+.countryDrop {
+  background: rgba(15, 20, 45, 0.6) !important;
+  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  backdrop-filter: blur(10px);
+  color: white !important;
+}
+
+.countryDrop .label {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.countryDrop .name {
+  color: var(--accent-blue) !important;
+}
+
+.countryDrop:hover {
+  box-shadow: 0 0 20px rgba(100, 150, 255, 0.15) !important;
+}
+
+.headerSearchWrapper .searchResults {
+  background: rgba(10, 15, 35, 0.98) !important;
+  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  border-radius: 12px;
+  margin-top: 5px;
+  backdrop-filter: blur(20px);
+}
+
+.headerSearchWrapper .searchResults .result {
+  border-bottom: 1px solid rgba(100, 150, 255, 0.1) !important;
+}
+
+.headerSearchWrapper .searchResults .result:hover {
+  background: rgba(25, 35, 65, 0.6) !important;
+}
+
+.headerSearchWrapper .searchResults .result .info h4 {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.headerSearchWrapper .searchResults .result .info h4:hover {
+  color: var(--accent-blue) !important;
+}
+
+.headerSearchWrapper .searchResults .result .info span {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+#accDrop {
+  background: rgba(10, 15, 35, 0.98) !important;
+  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(20px);
+}
+
+#accDrop .info {
+  border-bottom: 1px solid rgba(100, 150, 255, 0.2) !important;
+}
+
+#accDrop .info h5 {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+#accDrop .info p {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+#accDrop ul a {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+#accDrop ul li:hover {
+  background: rgba(25, 35, 65, 0.6) !important;
+}
+
+#accDrop .MuiPaper-root {
+  background: rgba(10, 15, 35, 0.98) !important;
+  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+}
+
+.userImg {
+  border: 2px solid var(--accent-blue) !important;
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-medium) 100%) !important;
+}
+
+/* Navigation Menu */
+nav ul li a,
+.navPart ul li a,
+nav .nav-link {
+  color: rgba(255, 255, 255, 0.8) !important;
+  transition: color 0.3s ease;
+}
+
+nav ul li a:hover,
+.navPart ul li a:hover,
+nav .nav-link:hover {
+  color: var(--accent-blue) !important;
+}
+
+/* Dropdown Menus */
+.dropdown-menu,
+.MuiMenu-paper,
+.MuiPopover-paper {
+  background: rgba(10, 15, 35, 0.98) !important;
+  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
+.dropdown-menu a,
+.MuiMenuItem-root {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.dropdown-menu a:hover,
+.MuiMenuItem-root:hover {
+  background: rgba(25, 35, 65, 0.6) !important;
+  color: var(--accent-blue) !important;
+}
+
+/* ========================================
+   NAVIGATION BAR OVERRIDES
+   ======================================== */
+
+.nav,
+.navbar,
+.navPart {
+  background: rgba(5, 10, 25, 0.95) !important;
+  border-bottom: 1px solid rgba(100, 150, 255, 0.15) !important;
+}
+
+/* Category Navigation */
+.catNav,
+.category-nav {
+  background: rgba(10, 15, 35, 0.9) !important;
+}
+
+.catNav a,
+.category-nav a {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.catNav a:hover,
+.category-nav a:hover {
+  color: var(--accent-blue) !important;
+}
+
+/* ========================================
+   BUTTON OVERRIDES
+   ======================================== */
+
+.btn-blue {
+  background: linear-gradient(135deg, var(--primary-medium) 0%, var(--primary-light) 100%) !important;
+  border: 1px solid rgba(100, 150, 255, 0.4) !important;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(17, 48, 129, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-blue:hover {
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-lighter) 100%) !important;
+  box-shadow: 0 6px 25px rgba(17, 48, 129, 0.4), 0 0 30px rgba(100, 150, 255, 0.2) !important;
+  transform: translateY(-2px);
+}
+
+button svg {
+  color: var(--accent-blue) !important;
+}
+
+/* ========================================
+   PRODUCT CARD OVERRIDES
+   ======================================== */
+
+.productItem,
+.productThumb,
+.productCard {
+  background: rgba(15, 20, 45, 0.7) !important;
+  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  border-radius: 16px !important;
+  backdrop-filter: blur(15px);
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative;
+}
+
+.productItem::before,
+.productThumb::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 1px;
+  background: linear-gradient(135deg, 
+    rgba(100, 150, 255, 0.4) 0%,
+    rgba(150, 100, 255, 0.2) 50%,
+    rgba(100, 200, 255, 0.4) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.productItem:hover,
+.productThumb:hover {
+  background: rgba(20, 30, 55, 0.85) !important;
+  box-shadow: 
+    0 25px 60px rgba(0, 0, 0, 0.35),
+    0 0 50px rgba(100, 150, 255, 0.12) !important;
+  transform: translateY(-8px) scale(1.02);
+}
+
+.productItem .info,
+.productThumb .info {
+  background: transparent !important;
+}
+
+.productItem .info h4,
+.productThumb .info h4,
+.productItem .title,
+.productThumb .title {
+  color: rgba(255, 255, 255, 0.95) !important;
+  font-weight: 600;
+}
+
+.productItem .price,
+.productThumb .price,
+.netPrice {
+  color: var(--accent-blue) !important;
+  font-weight: 700;
+}
+
+.productItem .oldPrice,
+.productThumb .oldPrice {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.productItem .brand,
+.productThumb .brand {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Product Actions */
+.productItem .actions button,
+.productThumb .actions button {
+  background: rgba(15, 25, 50, 0.8) !important;
+  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(10px);
+}
+
+.productItem .actions button:hover,
+.productThumb .actions button:hover {
+  background: var(--accent-blue) !important;
+  border-color: var(--accent-blue) !important;
+  color: white !important;
+}
+
+/* ========================================
+   CATEGORY SLIDER OVERRIDES
+   ======================================== */
+
+.catSliderSection,
+.homeCat {
+  background: transparent !important;
+}
+
+.catSliderSection .item,
+.catItem {
+  background: rgba(15, 20, 45, 0.6) !important;
+  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  border-radius: 14px !important;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease !important;
+}
+
+.catSliderSection .item:hover,
+.catItem:hover {
+  background: rgba(20, 30, 55, 0.8) !important;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(100, 150, 255, 0.1) !important;
+  transform: translateY(-5px);
+}
+
+.catSliderSection .item h6,
+.catItem h6 {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* ========================================
+   HOME BANNER OVERRIDES
+   ======================================== */
+
+.homeBannerSection,
+.homeSlider {
+  background: transparent !important;
+}
+
+.homeSlider .swiper-slide,
+.bannerSlide {
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(100, 150, 255, 0.2);
+}
+
+/* ========================================
+   FOOTER OVERRIDES
+   ======================================== */
+
+footer,
+.footerWrapper {
+  background: linear-gradient(180deg, rgba(5, 10, 25, 0.98) 0%, rgba(2, 5, 15, 1) 100%) !important;
+  border-top: 1px solid rgba(100, 150, 255, 0.2) !important;
+}
+
+footer h5,
+footer h6,
+footer .title {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+footer a,
+footer p,
+footer li {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+footer a:hover {
+  color: var(--accent-blue) !important;
+}
+
+.footerWrapper .newsletter input {
+  background: rgba(15, 20, 45, 0.6) !important;
+  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  color: white !important;
+}
+
+/* ========================================
+   SIDEBAR OVERRIDES
+   ======================================== */
+
+.sidebarWrapper,
+.sidebar,
+.filterWrapper {
+  background: rgba(10, 15, 35, 0.8) !important;
+  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  border-radius: 16px !important;
+  backdrop-filter: blur(20px);
+  padding: 1.5rem !important;
+}
+
+.sidebarWrapper h5,
+.sidebar h5,
+.filterWrapper h5 {
+  color: rgba(255, 255, 255, 0.95) !important;
+  border-bottom: 1px solid rgba(100, 150, 255, 0.2);
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.sidebarWrapper .catList li,
+.sidebar .catList li {
+  border-bottom: 1px solid rgba(100, 150, 255, 0.1);
+}
+
+.sidebarWrapper .catList li a,
+.sidebar .catList li a {
+  color: rgba(255, 255, 255, 0.7) !important;
+  padding: 0.75rem 0;
+  display: block;
+}
+
+.sidebarWrapper .catList li a:hover,
+.sidebar .catList li a:hover {
+  color: var(--accent-blue) !important;
+}
+
+/* Filter Checkboxes */
+.MuiCheckbox-root {
+  color: rgba(100, 150, 255, 0.5) !important;
+}
+
+.MuiCheckbox-root.Mui-checked {
+  color: var(--accent-blue) !important;
+}
+
+/* Price Slider */
+.MuiSlider-root {
+  color: var(--accent-blue) !important;
+}
+
+.MuiSlider-track {
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)) !important;
+}
+
+/* ========================================
+   CART PAGE OVERRIDES
+   ======================================== */
+
+.cartPage,
+.cartSection {
+  background: transparent !important;
+}
+
+.cartPage .table,
+.cartTable {
+  background: rgba(10, 15, 35, 0.8) !important;
+  border-radius: 16px !important;
+  overflow: hidden;
+  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+}
+
+.cartPage .table th,
+.cartTable th {
+  background: rgba(15, 25, 50, 0.9) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  border-bottom: 1px solid rgba(100, 150, 255, 0.2) !important;
+}
+
+.cartPage .table td,
+.cartTable td {
+  color: rgba(255, 255, 255, 0.8) !important;
+  border-bottom: 1px solid rgba(100, 150, 255, 0.1) !important;
+  background: transparent !important;
+}
+
+.cartPage .table tr:hover td,
+.cartTable tr:hover td {
+  background: rgba(20, 30, 55, 0.5) !important;
+}
+
+.cartItem {
+  background: rgba(10, 15, 35, 0.8) !important;
+  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  border-radius: 14px !important;
+  padding: 1rem !important;
+  margin-bottom: 1rem;
+  backdrop-filter: blur(15px);
+}
+
+.cartItem:hover {
+  background: rgba(15, 25, 50, 0.85) !important;
+}
+
+.cartItem .info h4 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.cartItem .price {
+  color: var(--accent-blue) !important;
+}
+
+/* Quantity Box */
+.quantityDrop,
+.quantityBox {
+  background: rgba(15, 20, 45, 0.6) !important;
+  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  border-radius: 10px !important;
+}
+
+.quantityDrop button,
+.quantityBox button {
+  color: rgba(255, 255, 255, 0.8) !important;
+  background: transparent !important;
+}
+
+.quantityDrop input,
+.quantityBox input {
+  color: rgba(255, 255, 255, 0.9) !important;
+  background: transparent !important;
+}
+
+/* Cart Summary */
+.cartSummary,
+.orderSummary {
+  background: rgba(10, 15, 35, 0.8) !important;
+  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  border-radius: 16px !important;
+  padding: 1.5rem !important;
+  backdrop-filter: blur(15px);
+}
+
+.cartSummary h4,
+.orderSummary h4 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.cartSummary .subtotal,
+.orderSummary .subtotal {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.cartSummary .total,
+.orderSummary .total {
+  color: var(--accent-blue) !important;
+  font-weight: 700;
+}
+
+/* ========================================
+   CHECKOUT PAGE OVERRIDES
+   ======================================== */
+
+.checkoutPage,
+.checkoutSection {
+  background: transparent !important;
+}
+
+.checkoutPage .card,
+.checkoutCard {
+  background: rgba(10, 15, 35, 0.8) !important;
+  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  border-radius: 16px !important;
+  backdrop-filter: blur(20px);
+  padding: 1.5rem !important;
+}
+
+.checkoutPage .card h4,
+.checkoutCard h4 {
+  color: rgba(255, 255, 255, 0.95) !important;
+  border-bottom: 1px solid rgba(100, 150, 255, 0.2);
+  padding-bottom: 1rem;
+}
+
+/* ========================================
+   MY ACCOUNT PAGE OVERRIDES
+   ======================================== */
+
+.myAccountPage,
+.myAccountSection {
+  background: transparent !important;
+}
+
+.myAccountPage .card,
+.accountCard {
+  background: rgba(10, 15, 35, 0.8) !important;
+  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  border-radius: 16px !important;
+  backdrop-filter: blur(20px);
+  padding: 1.5rem !important;
+}
+
+.myAccountPage .userInfo,
+.accountInfo {
+  background: rgba(15, 25, 50, 0.7) !important;
+  border-radius: 14px;
+  padding: 1.5rem;
+  border: 1px solid rgba(100, 150, 255, 0.2);
+}
+
+.myAccountPage .userInfo h4,
+.accountInfo h4 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.myAccountPage .userInfo p,
+.accountInfo p {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Account Menu/Tabs */
+.accountMenu,
+.accountTabs {
+  background: rgba(10, 15, 35, 0.6) !important;
+  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  border-radius: 14px !important;
+}
+
+.accountMenu a,
+.accountTabs .tab {
+  color: rgba(255, 255, 255, 0.7) !important;
+  border-bottom: 1px solid rgba(100, 150, 255, 0.1);
+}
+
+.accountMenu a:hover,
+.accountMenu a.active,
+.accountTabs .tab:hover,
+.accountTabs .tab.active {
+  background: rgba(25, 35, 65, 0.6) !important;
+  color: var(--accent-blue) !important;
+}
+
+/* ========================================
+   ORDERS PAGE OVERRIDES
+   ======================================== */
+
+.ordersPage,
+.ordersSection {
+  background: transparent !important;
+}
+
+.ordersPage .orderItem,
+.orderCard {
+  background: rgba(10, 15, 35, 0.8) !important;
+  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  border-radius: 14px !important;
+  padding: 1.25rem !important;
+  margin-bottom: 1rem;
+  backdrop-filter: blur(15px);
+}
+
+.ordersPage .orderItem:hover,
+.orderCard:hover {
+  background: rgba(15, 25, 50, 0.85) !important;
+}
+
+.ordersPage .orderItem h5,
+.orderCard h5 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.ordersPage .orderItem .orderDate,
+.orderCard .orderDate {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.ordersPage .orderItem .status,
+.orderCard .status {
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.ordersPage .orderItem .status.delivered {
+  background: rgba(100, 200, 150, 0.2) !important;
+  color: #64d896 !important;
+  border: 1px solid rgba(100, 200, 150, 0.4);
+}
+
+.ordersPage .orderItem .status.pending {
+  background: rgba(255, 200, 100, 0.2) !important;
+  color: #ffc864 !important;
+  border: 1px solid rgba(255, 200, 100, 0.4);
+}
+
+.ordersPage .orderItem .status.cancelled {
+  background: rgba(255, 100, 100, 0.2) !important;
+  color: #ff6b6b !important;
+  border: 1px solid rgba(255, 100, 100, 0.4);
+}
+
+/* ========================================
+   PRODUCT DETAILS PAGE OVERRIDES
+   ======================================== */
+
+.productDetails,
+.detailsPage {
+  background: transparent !important;
+}
+
+.productDetails .productZoom,
+.productGallery {
+  background: rgba(10, 15, 35, 0.7) !important;
+  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  border-radius: 16px !important;
+  padding: 1rem;
+}
+
+.productDetails .productInfo,
+.productDetailsInfo {
+  background: rgba(10, 15, 35, 0.7) !important;
+  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  border-radius: 16px !important;
+  padding: 1.5rem !important;
+  backdrop-filter: blur(15px);
+}
+
+.productDetails .productInfo h1,
+.productDetailsInfo h1 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.productDetails .productInfo .price,
+.productDetailsInfo .price {
+  color: var(--accent-blue) !important;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.productDetails .productInfo .oldPrice,
+.productDetailsInfo .oldPrice {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.productDetails .productInfo .description,
+.productDetailsInfo .description {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Tabs */
+.productDetailsTabs,
+.detailsTabs {
+  background: rgba(10, 15, 35, 0.7) !important;
+  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  border-radius: 16px !important;
+  margin-top: 2rem;
+  padding: 1.5rem;
+}
+
+.productDetailsTabs .tab-content,
+.detailsTabs .tab-content {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Reviews */
+.reviewItem {
+  background: rgba(15, 25, 50, 0.5) !important;
+  border: 1px solid rgba(100, 150, 255, 0.15) !important;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.reviewItem .userName {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.reviewItem .reviewText {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.reviewItem .date {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* ========================================
+   FORMS OVERRIDES
+   ======================================== */
+
+.MuiOutlinedInput-root,
+.MuiTextField-root .MuiInputBase-root,
+input.form-control,
+textarea.form-control,
+select.form-control {
+  background: rgba(15, 20, 45, 0.6) !important;
+  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  border-radius: 10px !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(10px);
+}
+
+.MuiOutlinedInput-root:hover,
+input.form-control:hover,
+textarea.form-control:hover {
+  border-color: rgba(100, 150, 255, 0.5) !important;
+}
+
+.MuiOutlinedInput-root.Mui-focused,
+input.form-control:focus,
+textarea.form-control:focus {
+  border-color: var(--accent-blue) !important;
+  box-shadow: 0 0 0 3px rgba(100, 150, 255, 0.15), 0 0 20px rgba(100, 150, 255, 0.1) !important;
+}
+
+.MuiOutlinedInput-notchedOutline {
+  border: none !important;
+}
+
+.MuiInputLabel-root,
+label {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.MuiInputLabel-root.Mui-focused {
+  color: var(--accent-blue) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Select Dropdowns */
+.MuiSelect-select,
+select.form-control {
+  background: rgba(15, 20, 45, 0.6) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* ========================================
+   MODALS/DIALOGS OVERRIDES
+   ======================================== */
+
+.MuiDialog-paper,
+.MuiModal-root .MuiPaper-root,
+.modal-content {
+  background: rgba(10, 15, 35, 0.98) !important;
+  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  border-radius: 20px !important;
+  backdrop-filter: blur(30px) saturate(200%);
+  box-shadow: 
+    0 25px 80px rgba(0, 0, 0, 0.5),
+    0 0 80px rgba(100, 150, 255, 0.1) !important;
+}
+
+.MuiDialog-paper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  padding: 1px;
+  background: linear-gradient(135deg, 
+    rgba(100, 150, 255, 0.4) 0%,
+    rgba(150, 100, 255, 0.2) 50%,
+    rgba(100, 200, 255, 0.4) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.MuiDialogTitle-root {
+  color: rgba(255, 255, 255, 0.95) !important;
+  border-bottom: 1px solid rgba(100, 150, 255, 0.2);
+}
+
+.MuiDialogContent-root {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.MuiDialogActions-root {
+  border-top: 1px solid rgba(100, 150, 255, 0.2);
+}
+
+/* ========================================
+   BREADCRUMBS OVERRIDES
+   ======================================== */
+
+.breadcrumbs,
+.breadcrumb {
+  background: transparent !important;
+}
+
+.breadcrumbs li,
+.breadcrumb-item {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.breadcrumbs a,
+.breadcrumb-item a {
+  color: var(--accent-blue) !important;
+}
+
+.breadcrumbs .separator,
+.breadcrumb-item::before {
+  color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* ========================================
+   PAGINATION OVERRIDES
+   ======================================== */
+
+.MuiPagination-root .MuiPaginationItem-root {
+  background: rgba(15, 20, 45, 0.6) !important;
+  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(10px);
+}
+
+.MuiPagination-root .MuiPaginationItem-root:hover {
+  background: rgba(25, 35, 65, 0.8) !important;
+  border-color: rgba(100, 150, 255, 0.5) !important;
+}
+
+.MuiPagination-root .MuiPaginationItem-root.Mui-selected {
+  background: linear-gradient(135deg, var(--primary-medium), var(--primary-light)) !important;
+  border-color: var(--accent-blue) !important;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(100, 150, 255, 0.25) !important;
+}
+
+/* ========================================
+   BADGE/CHIP OVERRIDES
+   ======================================== */
+
+.badge {
+  background: rgba(15, 25, 50, 0.8) !important;
+  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.badge.bg-success,
+.badge-success {
+  background: rgba(100, 200, 150, 0.2) !important;
+  color: #64d896 !important;
+  border-color: rgba(100, 200, 150, 0.4) !important;
+}
+
+.badge.bg-danger,
+.badge-danger {
+  background: rgba(255, 100, 100, 0.2) !important;
+  color: #ff6b6b !important;
+  border-color: rgba(255, 100, 100, 0.4) !important;
+}
+
+.badge.bg-warning,
+.badge-warning {
+  background: rgba(255, 200, 100, 0.2) !important;
+  color: #ffc864 !important;
+  border-color: rgba(255, 200, 100, 0.4) !important;
+}
+
+.badge.bg-info,
+.badge-info {
+  background: rgba(100, 200, 255, 0.2) !important;
+  color: #64d8ff !important;
+  border-color: rgba(100, 200, 255, 0.4) !important;
+}
+
+.MuiChip-root {
+  background: rgba(15, 25, 50, 0.8) !important;
+  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* ========================================
+   RATING OVERRIDES
+   ======================================== */
+
+.MuiRating-root {
+  color: var(--accent-blue) !important;
+}
+
+.MuiRating-iconEmpty {
+  color: rgba(100, 150, 255, 0.3) !important;
+}
+
+/* ========================================
+   DISCOUNT/SALE TAG OVERRIDES
+   ======================================== */
+
+.discount,
+.discountBadge,
+.saleTag {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan)) !important;
+  color: white !important;
+  border-radius: 8px;
+  padding: 0.35rem 0.6rem;
+  font-weight: 600;
+  font-size: 0.75rem;
+  box-shadow: 0 4px 15px rgba(100, 150, 255, 0.3);
+}
+
+/* ========================================
+   SCROLLBAR OVERRIDES
+   ======================================== */
+
+::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(10, 15, 35, 0.5) !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 150, 255, 0.4) !important;
+  border-radius: 4px !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-blue) !important;
+}
+
+/* ========================================
+   LOADING STATES
+   ======================================== */
+
+.MuiCircularProgress-root {
+  color: var(--accent-blue) !important;
+}
+
+.MuiLinearProgress-root {
+  background: rgba(100, 150, 255, 0.2) !important;
+}
+
+.MuiLinearProgress-bar {
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)) !important;
+}
+
+.skeleton,
+.MuiSkeleton-root {
+  background: rgba(100, 150, 255, 0.1) !important;
+}
+
+/* ========================================
+   WISHLIST/COMPARE PAGE OVERRIDES
+   ======================================== */
+
+.myListPage,
+.wishlistPage,
+.comparePage {
+  background: transparent !important;
+}
+
+.myListPage .item,
+.wishlistItem,
+.compareItem {
+  background: rgba(10, 15, 35, 0.8) !important;
+  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  border-radius: 14px !important;
+  backdrop-filter: blur(15px);
+}
+
+/* ========================================
+   GENERIC TEXT COLOR FIXES
+   ======================================== */
+
+h1, h2, h3, h4, h5, h6,
+.hd, .sectionTitle, .title {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+p {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.text-light {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.text-muted {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Link styles */
+a {
+  color: var(--accent-blue);
+}
+
+a:hover {
+  color: var(--accent-blue-hover);
+}
+
+/* Client Brand Name */
+.Client_Brandname {
+  color: var(--accent-blue) !important;
+  font-weight: bold;
+}
+
+/* ========================================
+   WHITE BACKGROUND OVERRIDES
+   ======================================== */
+
+.bg-white,
+[class*="bg-white"] {
+  background: rgba(10, 15, 35, 0.8) !important;
+}
+
+.bg-light,
+[class*="bg-light"] {
+  background: rgba(15, 20, 45, 0.6) !important;
+}
+
+/* ========================================
+   HOME PAGE SPECIFIC
+   ======================================== */
+
+.homeProductsRow,
+.featuredProducts,
+.newArrivals,
+.bestSellers,
+.topRated {
+  background: transparent !important;
+}
+
+.homeProductsRow .hd,
+.featuredProducts .hd,
+section h3.hd {
+  color: rgba(255, 255, 255, 0.95) !important;
+  position: relative;
+}
+
+/* Section headers with underline */
+section h3.hd::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+  border-radius: 2px;
+}
+
+/* ========================================
+   SWIPER/SLIDER OVERRIDES
+   ======================================== */
+
+.swiper-button-next,
+.swiper-button-prev {
+  background: rgba(15, 25, 50, 0.8) !important;
+  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  border-radius: 50% !important;
+  width: 45px !important;
+  height: 45px !important;
+  backdrop-filter: blur(10px);
+}
+
+.swiper-button-next::after,
+.swiper-button-prev::after {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 18px !important;
+}
+
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+  background: rgba(25, 40, 70, 0.9) !important;
+  border-color: var(--accent-blue) !important;
+}
+
+.swiper-pagination-bullet {
+  background: rgba(100, 150, 255, 0.4) !important;
+}
+
+.swiper-pagination-bullet-active {
+  background: var(--accent-blue) !important;
+}
+
+/* ========================================
+   ANIMATION UTILITIES
+   ======================================== */
+
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(100, 150, 255, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(100, 150, 255, 0.2);
+  }
+}
+
+.glow-animation {
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(100, 150, 255, 0) 0%,
+    rgba(100, 150, 255, 0.1) 50%,
+    rgba(100, 150, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}

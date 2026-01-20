@@ -1,0 +1,445 @@
+/* Modern Sign-In Page Styles - Gradient Theme with Two Panels */
+
+.signin-page-container {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* Left Side - Animated Background */
+.signin-left-panel {
+  flex: 0 0 50%;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, 
+    #010101 0%, 
+    #020711 16.67%, 
+    #071338 33.33%, 
+    #0D235D 50%, 
+    #113081 66.67%, 
+    #13348D 100%
+  );
+}
+
+@media (max-width: 1024px) {
+  .signin-left-panel {
+    display: none;
+  }
+}
+
+/* Right Side - Sign-In Form */
+.signin-right-panel {
+  flex: 0 0 50%;
+  background: linear-gradient(180deg, 
+    #010101 0%, 
+    #020711 16.67%, 
+    #071338 33.33%, 
+    #0D235D 50%, 
+    #113081 66.67%, 
+    #13348D 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  position: relative;
+}
+
+@media (max-width: 1024px) {
+  .signin-right-panel {
+    flex: 1;
+    width: 100%;
+  }
+}
+
+/* Sign-In Card */
+.signin-card {
+  background: transparent;
+  border-radius: 0;
+  padding: 2.5rem 3rem;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: none;
+  position: relative;
+  z-index: 10;
+  border: none;
+}
+
+@media (max-width: 768px) {
+  .signin-card {
+    padding: 2rem 1.5rem;
+    max-width: 100%;
+  }
+}
+
+/* Header Text */
+.signin-header {
+  text-align: left;
+  margin-bottom: 2rem;
+}
+
+.signin-header-small {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 0.75rem 0;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+}
+
+.signin-header-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.2;
+}
+
+.signin-header-subtitle {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Form Styles */
+.signin-form {
+  width: 100%;
+}
+
+.form-group-modern {
+  margin-bottom: 1.25rem;
+}
+
+.form-label-modern {
+  display: block;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+/* Input Fields with Gradient Border */
+.signin-input {
+  width: 100%;
+}
+
+.signin-input .MuiOutlinedInput-root {
+  background: rgba(15, 20, 40, 0.4) !important;
+  border-radius: 8px !important;
+  border: none !important;
+  transition: all 0.3s ease !important;
+  position: relative;
+  height: 52px;
+  width: 100%;
+}
+
+.signin-input .MuiOutlinedInput-root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  padding: 2px;
+  background: linear-gradient(135deg, 
+    rgba(100, 150, 255, 0.5) 0%,
+    rgba(150, 100, 255, 0.3) 50%,
+    rgba(100, 200, 255, 0.5) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.signin-input .MuiOutlinedInput-root:hover {
+  background: rgba(20, 25, 50, 0.5) !important;
+}
+
+.signin-input .MuiOutlinedInput-root:hover::before {
+  background: linear-gradient(135deg, 
+    rgba(100, 150, 255, 0.7) 0%,
+    rgba(150, 100, 255, 0.5) 50%,
+    rgba(100, 200, 255, 0.7) 100%
+  );
+}
+
+.signin-input .MuiOutlinedInput-root.Mui-focused {
+  background: rgba(20, 25, 50, 0.6) !important;
+  box-shadow: 
+    0 0 30px rgba(255, 255, 255, 0.2),
+    0 0 60px rgba(255, 255, 255, 0.15),
+    0 0 90px rgba(255, 255, 255, 0.1),
+    0 4px 20px rgba(100, 150, 255, 0.3) !important;
+  filter: blur(0);
+}
+
+.signin-input .MuiOutlinedInput-root.Mui-focused::before {
+  background: linear-gradient(135deg, 
+    rgba(100, 150, 255, 0.9) 0%,
+    rgba(150, 100, 255, 0.7) 50%,
+    rgba(100, 200, 255, 0.9) 100%
+  );
+  padding: 2.5px;
+  box-shadow: 
+    0 0 20px rgba(255, 255, 255, 0.4),
+    0 0 40px rgba(255, 255, 255, 0.2);
+}
+
+.signin-input .MuiOutlinedInput-root.Mui-focused::after {
+  content: '';
+  position: absolute;
+  inset: -15px;
+  border-radius: 12px;
+  background: radial-gradient(circle, 
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0.08) 30%,
+    transparent 70%
+  );
+  filter: blur(20px);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.signin-input .MuiOutlinedInput-input {
+  padding: 14px 16px !important;
+  font-size: 0.9375rem !important;
+  color: #ffffff !important;
+  height: auto !important;
+}
+
+.signin-input .MuiOutlinedInput-input::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+  opacity: 1;
+}
+
+.signin-input .MuiOutlinedInput-notchedOutline {
+  border: none !important;
+}
+
+.signin-input .MuiInputAdornment-root {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Forgot Password Link */
+.forgot-password-wrapper {
+  text-align: left;
+  margin-bottom: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.forgot-password-link {
+  color: #6496ff;
+  text-decoration: underline;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.3s ease;
+  cursor: pointer;
+}
+
+.forgot-password-link:hover {
+  color: #7aa5ff;
+}
+
+/* Sign In Button - Same Height as Input */
+.signin-button {
+  width: 100%;
+  height: 52px !important;
+  padding: 0 24px !important;
+  background: rgba(10, 10, 10, 0.8) !important;
+  color: #ffffff !important;
+  font-size: 0.9375rem !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  border-radius: 8px !important;
+  border: none !important;
+  transition: all 0.3s ease !important;
+  margin-bottom: 1.5rem !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+  position: relative;
+}
+
+.signin-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  padding: 2px;
+  background: linear-gradient(135deg, 
+    rgba(100, 150, 255, 0.3) 0%,
+    rgba(150, 100, 255, 0.2) 50%,
+    rgba(100, 200, 255, 0.3) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.signin-button:hover {
+  background: rgba(20, 20, 20, 0.9) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5) !important;
+}
+
+.signin-button:hover::before {
+  background: linear-gradient(135deg, 
+    rgba(100, 150, 255, 0.5) 0%,
+    rgba(150, 100, 255, 0.3) 50%,
+    rgba(100, 200, 255, 0.5) 100%
+  );
+}
+
+.signin-button:active {
+  transform: translateY(0);
+}
+
+.signin-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Divider */
+.signin-divider {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+  gap: 1rem;
+}
+
+.signin-divider-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.signin-divider-text {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+/* Google Sign-In Button - Same Height as Input */
+.google-signin-button {
+  width: 100%;
+  height: 52px !important;
+  padding: 0 24px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #ffffff !important;
+  font-size: 0.9375rem !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  border-radius: 8px !important;
+  border: none !important;
+  transition: all 0.3s ease !important;
+  margin-bottom: 1.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.75rem !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2) !important;
+  position: relative;
+}
+
+.google-signin-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  padding: 2px;
+  background: linear-gradient(135deg, 
+    rgba(100, 150, 255, 0.3) 0%,
+    rgba(150, 100, 255, 0.2) 50%,
+    rgba(100, 200, 255, 0.3) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.google-signin-button:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+}
+
+.google-signin-button:hover::before {
+  background: linear-gradient(135deg, 
+    rgba(100, 150, 255, 0.5) 0%,
+    rgba(150, 100, 255, 0.3) 50%,
+    rgba(100, 200, 255, 0.5) 100%
+  );
+}
+
+.google-signin-button:active {
+  transform: translateY(0);
+}
+
+.google-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Sign Up Link */
+.signup-link-wrapper {
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.signup-text {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.signup-link {
+  color: #6496ff;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.signup-link:hover {
+  color: #7aa5ff;
+  text-decoration: underline;
+}
+
+/* Input Icons */
+.input-icon-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.input-icon {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  color: #ffffff !important;
+}
+
+/* Responsive Design */
+@media (max-width: 576px) {
+  .signin-card {
+    padding: 1.5rem 1rem;
+  }
+
+  .signin-header-title {
+    font-size: 1.875rem;
+  }
+
+  .signin-button,
+  .google-signin-button,
+  .signin-input .MuiOutlinedInput-root {
+    height: 48px !important;
+    font-size: 0.875rem !important;
+  }
+
+  .signin-input .MuiOutlinedInput-input {
+    padding: 12px 14px !important;
+  }
+}
