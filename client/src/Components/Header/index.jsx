@@ -267,7 +267,7 @@ const Header = () => {
 
                     <div className="ml-auto cartTab d-flex align-items-center">
                       {context.windowWidth > 1000 && (
-                        <span className="price">
+                        <span className="price text-white">
                           {(context.cartData?.length !== 0
                             ? context.cartData
                                 ?.map(

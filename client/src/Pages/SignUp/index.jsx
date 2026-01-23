@@ -21,7 +21,8 @@ import "../SignIn/signin.css";
 const SignUp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [formfields, setFormfields] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     phone: "",
     password: "",
@@ -55,11 +56,11 @@ const SignUp = () => {
   const register = (e) => {
     e.preventDefault();
     try {
-      if (formfields.name === "") {
+      if (formfields.firstName.trim() === "" || formfields.lastName.trim() === "") {
         context.setAlertBox({
           open: true,
           error: true,
-          msg: "name can not be blank!",
+          msg: "First name and last name can not be blank!",
         });
         return false;
       }
@@ -93,7 +94,13 @@ const SignUp = () => {
 
       setIsLoading(true);
 
-      postData("/api/auth/register", formfields)
+      const payload = {
+        ...formfields,
+        firstName: formfields.firstName.trim(),
+        lastName: formfields.lastName.trim(),
+      };
+
+      postData("/api/auth/register", payload)
         .then((res) => {
           if (res.success === true) {
             localStorage.setItem("userEmail", formfields.email);
@@ -256,26 +263,49 @@ const SignUp = () => {
 
           {/* Form */}
           <form className="signin-form" onSubmit={register}>
-            <div className="form-group-modern">
-              <label className="form-label-modern">Full Name</label>
-              <TextField
-                id="signup-name"
-                type="text"
-                required
-                variant="outlined"
-                className="signin-input"
-                name="name"
-                onChange={onchangeInput}
-                placeholder="Enter your full name"
-                value={formfields.name}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonIcon className="input-icon" />
-                    </InputAdornment>
-                  ),
-                }}
-              />
+            <div className="form-row">
+              <div className="form-group-modern">
+                <label className="form-label-modern">First Name</label>
+                <TextField
+                  id="signup-first-name"
+                  type="text"
+                  required
+                  variant="outlined"
+                  className="signin-input"
+                  name="firstName"
+                  onChange={onchangeInput}
+                  placeholder="Enter your first name"
+                  value={formfields.firstName}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PersonIcon className="input-icon" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </div>
+              <div className="form-group-modern">
+                <label className="form-label-modern">Last Name</label>
+                <TextField
+                  id="signup-last-name"
+                  type="text"
+                  required
+                  variant="outlined"
+                  className="signin-input"
+                  name="lastName"
+                  onChange={onchangeInput}
+                  placeholder="Enter your last name"
+                  value={formfields.lastName}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PersonIcon className="input-icon" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </div>
             </div>
 
             <div className="form-group-modern">

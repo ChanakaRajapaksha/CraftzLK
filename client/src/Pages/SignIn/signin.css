@@ -59,7 +59,7 @@
   border-radius: 0;
   padding: 2.5rem 3rem;
   width: 100%;
-  max-width: 480px;
+  max-width: 540px;
   box-shadow: none;
   position: relative;
   z-index: 10;
@@ -420,6 +420,22 @@
 /* Loading Spinner */
 .loading-spinner {
   color: #ffffff !important;
+}
+
+/* Form row for side-by-side inputs */
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-row .form-group-modern {
+  flex: 1;
+}
+
+@media (max-width: 576px) {
+  .form-row {
+    flex-direction: column;
+  }
 }
 
 /* Responsive Design */
