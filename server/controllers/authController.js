@@ -148,46 +148,13 @@ class AuthController {
   // Get all users (admin only)
   async getAllUsers(req, res, next) {
     try {
-      const User = require('../models/user');
       const { page = 1, limit = 10, search = '', role = '' } = req.query;
-
-      const query = {};
-      if (search) {
-        query.$or = [
-          { firstName: { $regex: search, $options: 'i' } },
-          { lastName: { $regex: search, $options: 'i' } },
-          { email: { $regex: search, $options: 'i' } }
-        ];
-      }
-      if (role) {
-        query.role = role;
-      }
-
-      const users = await User.find(query)
-        .select('-password -refreshTokens')
-        .sort({ createdAt: -1 })
-        .limit(limit * 1)
-        .skip((page - 1) * limit);
-
-      const total = await User.countDocuments(query);
-
-      res.status(200).json({
-        success: true,
-        data: {
-          users,
-          pagination: {
-            currentPage: parseInt(page),
-            totalPages: Math.ceil(total / limit),
-            totalUsers: total,
-            hasNext: page < Math.ceil(total / limit),
-            hasPrev: page > 1
-          }
-        }
-      });
+      const result = await authService.getUsers({ page, limit, search, role });
+      res.status(200).json(result);
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Failed to fetch users'
+        message: error.message || 'Failed to fetch users'
       });
     }
   }

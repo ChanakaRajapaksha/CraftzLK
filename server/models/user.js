@@ -27,8 +27,8 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: function() {
-            // Password is required only if user is not using OAuth
-            return !this.googleId && this.authProvider !== 'google';
+            // Password is required only if user is not using OAuth and not using temporary password
+            return !this.googleId && this.authProvider !== 'google' && !this.temporaryPassword;
         },
         validate: {
             validator: function(value) {
@@ -36,8 +36,12 @@ const userSchema = new mongoose.Schema({
                 if (this.googleId || this.authProvider === 'google') {
                     return true;
                 }
+                // If temporary password exists, regular password is optional during registration
+                if (this.temporaryPassword) {
+                    return true;
+                }
                 // For non-OAuth users, password must be at least 8 characters
-                return value && value.length >= 8;
+                return !value || value.length >= 8;
             },
             message: 'Password must be at least 8 characters for non-OAuth users'
         },
@@ -57,7 +61,24 @@ const userSchema = new mongoose.Schema({
     phone: {
         type: String,
         trim: true,
-        match: [/^[\+]?[1-9][\d]{0,15}$/, 'Please enter a valid phone number']
+        validate: {
+            validator: function(value) {
+                // Phone is optional
+                if (!value || value.trim() === '') return true;
+                
+                // Convert to string and remove all spaces
+                const cleaned = String(value).replace(/\s+/g, '');
+                
+                // Allow phone numbers with +94 prefix, 0 prefix, or without prefix
+                // Format: +94XXXXXXXXX (12 digits total) or 0XXXXXXXXX (10 digits) or XXXXXXXXX (9 digits starting with 1-9)
+                // Examples: +94771234567, 0771234567, 771234567
+                const phoneRegex = /^(\+94[1-9]\d{8}|0[1-9]\d{8}|[1-9]\d{8})$/;
+                
+                const isValid = phoneRegex.test(cleaned);
+                return isValid;
+            },
+            message: 'Please enter a valid phone number (e.g., +94XXXXXXXXX or 0XXXXXXXXX)'
+        }
     },
     role: {
         type: String,
@@ -101,6 +122,12 @@ const userSchema = new mongoose.Schema({
     // Password reset fields
     resetPasswordToken: String,
     resetPasswordExpires: Date,
+    // Temporary password fields (for initial registration)
+    temporaryPassword: {
+        type: String,
+        select: false // Don't include temporary password in queries by default
+    },
+    temporaryPasswordExpires: Date,
     // Account security
     loginAttempts: {
         type: Number,
@@ -210,6 +237,8 @@ userSchema.methods.toJSON = function() {
     delete userObject.refreshTokens;
     delete userObject.resetPasswordToken;
     delete userObject.resetPasswordExpires;
+    delete userObject.temporaryPassword;
+    delete userObject.temporaryPasswordExpires;
     delete userObject.otp;
     delete userObject.otpExpires;
     return userObject;

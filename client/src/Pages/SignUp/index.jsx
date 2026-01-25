@@ -5,7 +5,6 @@ import Button from "@mui/material/Button";
 import { Link } from "react-router-dom";
 import InputAdornment from "@mui/material/InputAdornment";
 import EmailIcon from "@mui/icons-material/Email";
-import LockIcon from "@mui/icons-material/Lock";
 import PersonIcon from "@mui/icons-material/Person";
 import PhoneIcon from "@mui/icons-material/Phone";
 
@@ -13,7 +12,7 @@ import GoogleImg from "../../assets/images/googleImg.png";
 import { postData } from "../../utils/api";
 import { useNavigate } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
-import AnimatedBackground from "../../Components/AnimatedBackground";
+import { toast } from "sonner";
 import "../SignIn/signin.css";
 
 // Google OAuth - No Firebase needed
@@ -25,8 +24,6 @@ const SignUp = () => {
     lastName: "",
     email: "",
     phone: "",
-    password: "",
-    isAdmin: false,
   });
 
   const context = useContext(MyContext);
@@ -57,94 +54,66 @@ const SignUp = () => {
     e.preventDefault();
     try {
       if (formfields.firstName.trim() === "" || formfields.lastName.trim() === "") {
-        context.setAlertBox({
-          open: true,
-          error: true,
-          msg: "First name and last name can not be blank!",
-        });
+        toast.error("First name and last name cannot be blank!");
         return false;
       }
 
       if (formfields.email === "") {
-        context.setAlertBox({
-          open: true,
-          error: true,
-          msg: "email can not be blank!",
-        });
+        toast.error("Email cannot be blank!");
         return false;
       }
 
       if (formfields.phone === "") {
-        context.setAlertBox({
-          open: true,
-          error: true,
-          msg: "phone can not be blank!",
-        });
-        return false;
-      }
-
-      if (formfields.password === "") {
-        context.setAlertBox({
-          open: true,
-          error: true,
-          msg: "password can not be blank!",
-        });
+        toast.error("Phone number cannot be blank!");
         return false;
       }
 
       setIsLoading(true);
 
       const payload = {
-        ...formfields,
         firstName: formfields.firstName.trim(),
         lastName: formfields.lastName.trim(),
+        email: formfields.email.trim(),
+        phone: formfields.phone.trim(),
       };
 
       postData("/api/auth/register", payload)
         .then((res) => {
           if (res.success === true) {
-            localStorage.setItem("userEmail", formfields.email);
-
-            context.setAlertBox({
-              open: true,
-              error: false,
-              msg: res.message || "Registration successful! Redirecting to verification...",
+            toast.success(res.message || "Registration successful! A temporary password has been sent to your email.");
+            
+            // Clear form
+            setFormfields({
+              firstName: "",
+              lastName: "",
+              email: "",
+              phone: "",
             });
 
+            // Redirect to sign in page after 2 seconds
             setTimeout(() => {
-              history("/verifyOTP");
+              history("/signIn");
             }, 2000);
           } else {
             setIsLoading(false);
-            context.setAlertBox({
-              open: true,
-              error: true,
-              msg: res.message || "Registration failed",
-            });
+            toast.error(res.message || "Registration failed");
           }
         })
         .catch((error) => {
           setIsLoading(false);
           console.error("Error posting data:", error);
-          context.setAlertBox({
-            open: true,
-            error: true,
-            msg: "Registration failed. Please try again.",
-          });
+          toast.error("Registration failed. Please try again.");
         });
     } catch (error) {
       console.log(error);
       setIsLoading(false);
+      toast.error("An unexpected error occurred. Please try again.");
     }
   };
 
   const signInWithGoogle = () => {
     if (!window.google) {
-      context.setAlertBox({
-        open: true,
-        error: true,
-        msg: "Google Sign-In is loading. Please wait a moment and try again.",
-      });
+      toast.error("Google Sign-In is loading. Please wait a moment and try again.");
       return;
     }
 
@@ -155,11 +124,7 @@ const SignUp = () => {
         callback: async (response) => {
           if (response.error) {
             console.error('Google OAuth error:', response.error);
-            context.setAlertBox({
-              open: true,
-              error: true,
-              msg: "Google Sign-In failed. Please try again.",
-            });
+            toast.error("Google Sign-In failed. Please try again.");
             return;
           }
 
@@ -209,46 +174,34 @@ const SignUp = () => {
                 context.setUser(user);
                 context.setisHeaderFooterShow(true);
 
-                context.setAlertBox({
-                  open: true,
-                  error: false,
-                  msg: "Google Sign-In successful!",
-                });
+                toast.success("Google Sign-In successful!");
 
                 history("/");
               }, 50);
             } else {
-              context.setAlertBox({
-                open: true,
-                error: true,
-                msg: backendResponse.message || "Google Sign-In failed. Please try again.",
-              });
+              toast.error(backendResponse.message || "Google Sign-In failed. Please try again.");
             }
           } catch (error) {
             console.error('Google Sign-In error:', error);
-            context.setAlertBox({
-              open: true,
-              error: true,
-              msg: "An error occurred during Google Sign-In. Please try again.",
-            });
+            toast.error("An error occurred during Google Sign-In. Please try again.");
           }
         }
       }).requestAccessToken();
     } catch (error) {
       console.error('Google OAuth initialization error:', error);
-      context.setAlertBox({
-        open: true,
-        error: true,
-        msg: "Google Sign-In is not available. Please try again later.",
-      });
+      toast.error("Google Sign-In is not available. Please try again later.");
     }
   };
 
   return (
     <div className="signin-page-container">
-      {/* Left Panel - Animated Background */}
+      {/* Left Panel - Banner Image */}
       <div className="signin-left-panel">
-        <AnimatedBackground />
+        <img
+          className="signin-banner-image"
+          src={`${import.meta.env.BASE_URL}images/SignIn-banner.jpg`}
+          alt="Sign in banner"
+        />
       </div>
 
       {/* Right Panel - Sign-Up Form */}
@@ -350,28 +303,9 @@ const SignUp = () => {
                   ),
                 }}
               />
-            </div>
-
-            <div className="form-group-modern">
-              <label className="form-label-modern">Password</label>
-              <TextField
-                id="signup-password"
-                type="password"
-                required
-                variant="outlined"
-                className="signin-input"
-                name="password"
-                onChange={onchangeInput}
-                placeholder="Enter your password"
-                value={formfields.password}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <LockIcon className="input-icon" />
-                    </InputAdornment>
-                  ),
-                }}
-              />
+              <p className="form-helper-text">
+                A temporary password will be sent to your email after registration. It will expire in 24 hours.
+              </p>
             </div>
 
             <Button

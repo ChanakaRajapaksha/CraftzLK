@@ -10,7 +10,6 @@ import LockIcon from "@mui/icons-material/Lock";
 import GoogleImg from "../../assets/images/googleImg.png";
 import CircularProgress from "@mui/material/CircularProgress";
 import { editData, postData } from "../../utils/api";
-import AnimatedBackground from "../../Components/AnimatedBackground";
 import "./signin.css";
 
 // Google OAuth - No Firebase needed
@@ -271,9 +270,13 @@ const SignIn = () => {
 
   return (
     <div className="signin-page-container">
-      {/* Left Panel - Animated Background */}
+      {/* Left Panel - Banner Image */}
       <div className="signin-left-panel">
-        <AnimatedBackground />
+        <img
+          className="signin-banner-image"
+          src={`${import.meta.env.BASE_URL}images/SignIn-banner.jpg`}
+          alt="Sign in banner"
+        />
       </div>
 
       {/* Right Panel - Sign-In Form */}

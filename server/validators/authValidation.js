@@ -47,32 +47,20 @@ const validateRegister = [
     .withMessage('Please provide a valid email address')
     .normalizeEmail(),
 
-  body('password')
-    .notEmpty()
-    .withMessage('Password is required')
-    .isLength({ min: 8 })
-    .withMessage('Password must be at least 8 characters long')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
-    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'),
-
-  body('confirmPassword')
-    .custom((value, { req }) => {
-      if (value !== req.body.password) {
-        throw new Error('Passwords do not match');
-      }
-      return true;
-    }),
-
   body('phone')
     .optional()
     .trim()
-    .isMobilePhone('any')
+    .custom((value) => {
+      if (!value) return true; // Phone is optional
+      // Allow phone numbers with or without +94 prefix
+      // Format: +94XXXXXXXXX or 0XXXXXXXXX or just numbers
+      const phoneRegex = /^(\+94|0)?[1-9]\d{8}$/;
+      if (!phoneRegex.test(value.replace(/\s+/g, ''))) {
+        throw new Error('Please provide a valid phone number (e.g., +94XXXXXXXXX or 0XXXXXXXXX)');
+      }
+      return true;
+    })
     .withMessage('Please provide a valid phone number'),
-
-  body('role')
-    .optional()
-    .isIn(['user', 'admin', 'moderator'])
-    .withMessage('Invalid role specified'),
 
   handleValidationErrors
 ];

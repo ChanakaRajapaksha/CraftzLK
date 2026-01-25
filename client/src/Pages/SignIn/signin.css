@@ -2,16 +2,20 @@
 
 .signin-page-container {
   display: flex;
-  width: 100%;
-  min-height: 100vh;
+  width: 100vw;
+  height: 100vh;
   overflow: hidden;
 }
 
 /* Left Side - Animated Background */
 .signin-left-panel {
-  flex: 0 0 50%;
+  flex: 0 0 50vw;
+  width: 50vw;
   position: relative;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: linear-gradient(180deg, 
     #010101 0%, 
     #020711 16.67%, 
@@ -22,6 +26,15 @@
   );
 }
 
+.signin-banner-image {
+  object-fit: cover;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  max-height: 100%;
+}
+
 @media (max-width: 1024px) {
   .signin-left-panel {
     display: none;
@@ -30,7 +43,8 @@
 
 /* Right Side - Sign-In Form */
 .signin-right-panel {
-  flex: 0 0 50%;
+  flex: 0 0 50vw;
+  width: 50vw;
   background: linear-gradient(180deg, 
     #010101 0%, 
     #020711 16.67%, 
@@ -49,7 +63,7 @@
 @media (max-width: 1024px) {
   .signin-right-panel {
     flex: 1;
-    width: 100%;
+    width: 100vw;
   }
 }
 
@@ -100,6 +114,15 @@
   color: rgba(255, 255, 255, 0.6);
   margin: 0;
   font-weight: 400;
+}
+
+/* Helper Text for Form Fields */
+.form-helper-text {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0.5rem 0 0 0;
+  font-weight: 400;
+  line-height: 1.4;
 }
 
 /* Form Styles */

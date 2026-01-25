@@ -2,13 +2,13 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const User = require('../models/user');
 const { generateAccessToken, generateRefreshToken } = require('../config/jwt');
-const { sendEmail } = require('./emailService');
+const emailService = require('./emailService');
 
 class AuthService {
   // Register a new user
   async register(userData) {
     try {
-      const { firstName, lastName, email, password, phone, role = 'user' } = userData;
+      const { firstName, lastName, email, phone } = userData;
 
       // Check if user already exists
       const existingUser = await User.findOne({ email });
@@ -16,14 +16,44 @@ class AuthService {
         throw new Error('User with this email already exists');
       }
 
-      // Create user (password will be hashed by pre-save middleware)
+      // Generate temporary password (12 characters: mix of uppercase, lowercase, numbers)
+      const generateTemporaryPassword = () => {
+        const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+        const numbers = '0123456789';
+        const allChars = uppercase + lowercase + numbers;
+        
+        let password = '';
+        // Ensure at least one of each type
+        password += uppercase[Math.floor(Math.random() * uppercase.length)];
+        password += lowercase[Math.floor(Math.random() * lowercase.length)];
+        password += numbers[Math.floor(Math.random() * numbers.length)];
+        
+        // Fill the rest randomly
+        for (let i = password.length; i < 12; i++) {
+          password += allChars[Math.floor(Math.random() * allChars.length)];
+        }
+        
+        // Shuffle the password
+        return password.split('').sort(() => Math.random() - 0.5).join('');
+      };
+
+      const temporaryPassword = generateTemporaryPassword();
+      const temporaryPasswordExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 1 day
+
+      // Hash the temporary password
+      const saltRounds = 12;
+      const hashedTemporaryPassword = await bcrypt.hash(temporaryPassword, saltRounds);
+
+      // Create user with temporary password (role is always 'user')
       const user = new User({
         firstName,
         lastName,
         email,
-        password,
         phone,
-        role,
+        role: 'user', // Always set to 'user'
+        temporaryPassword: hashedTemporaryPassword,
+        temporaryPasswordExpires: temporaryPasswordExpires,
         isActive: true,
         emailVerified: false,
         lastLogin: null
@@ -31,37 +61,34 @@ class AuthService {
 
       await user.save();
 
-      // Generate tokens
-      const tokenPayload = {
-        userId: user._id,
-        email: user.email,
-        role: user.role
-      };
+      // Send email with temporary password
+      try {
+        await emailService.sendEmail({
+          to: user.email,
+          subject: 'Welcome! Your Temporary Password',
+          template: 'temporary-password',
+          data: {
+            name: `${user.firstName} ${user.lastName}`,
+            temporaryPassword: temporaryPassword
+          }
+        });
+      } catch (emailError) {
+        console.error('[authService.register email error]', emailError);
+        // Don't fail registration if email fails, but log it
+      }
 
-      const accessToken = generateAccessToken(tokenPayload);
-      const refreshToken = generateRefreshToken({ userId: user._id });
-
-      // Store refresh token
-      user.refreshTokens.push({
-        token: refreshToken,
-        createdAt: new Date(),
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
-      });
-
-      await user.save();
-
-      // Remove password from response
+      // Remove sensitive data from response
       const userResponse = user.toObject();
       delete userResponse.password;
+      delete userResponse.temporaryPassword;
+      delete userResponse.temporaryPasswordExpires;
       delete userResponse.refreshTokens;
 
       return {
         success: true,
-        message: 'User registered successfully',
+        message: 'User registered successfully. A temporary password has been sent to your email. Please check your inbox and use it to log in. The temporary password will expire in 1 day.',
         data: {
-          user: userResponse,
-          accessToken,
-          refreshToken
+          user: userResponse
         }
       };
     } catch (error) {
@@ -74,8 +101,8 @@ class AuthService {
   // Login user
   async login(email, password) {
     try {
-      // Find user by email (include password for verification)
-      const user = await User.findOne({ email }).select('+password');
+      // Find user by email (include password and temporary password for verification)
+      const user = await User.findOne({ email }).select('+password +temporaryPassword');
       if (!user) {
         throw new Error('Invalid email or password');
       }
@@ -86,7 +113,7 @@ class AuthService {
       }
 
       // Check if user is OAuth-only (no password set)
-      if (!user.password && user.authProvider === 'google') {
+      if (!user.password && !user.temporaryPassword && user.authProvider === 'google') {
         throw new Error('This account was created with Google Sign-In. Please use Google Sign-In to log in.');
       }
 
@@ -95,8 +122,35 @@ class AuthService {
         throw new Error('Password is required');
       }
 
-      // Verify password
-      const isPasswordValid = await user.comparePassword(password);
+      let isPasswordValid = false;
+      let isTemporaryPassword = false;
+
+      // Check temporary password first (if exists and not expired)
+      if (user.temporaryPassword && user.temporaryPasswordExpires && user.temporaryPasswordExpires > new Date()) {
+        const isTemporaryPasswordValid = await bcrypt.compare(password, user.temporaryPassword);
+        if (isTemporaryPasswordValid) {
+          isPasswordValid = true;
+          isTemporaryPassword = true;
+        }
+      }
+
+      // If temporary password didn't match or doesn't exist, check regular password
+      if (!isPasswordValid && user.password) {
+        isPasswordValid = await user.comparePassword(password);
+      }
+
+      // Check if temporary password is expired
+      if (user.temporaryPassword && user.temporaryPasswordExpires && user.temporaryPasswordExpires <= new Date()) {
+        // Clear expired temporary password
+        user.temporaryPassword = undefined;
+        user.temporaryPasswordExpires = undefined;
+        await user.save();
+        
+        if (!isPasswordValid) {
+          throw new Error('Your temporary password has expired. Please use the password reset feature to set a new password.');
+        }
+      }
+
       if (!isPasswordValid) {
         throw new Error('Invalid email or password');
       }
@@ -105,6 +159,9 @@ class AuthService {
       user.lastLogin = new Date();
       user.loginAttempts = 0;
       user.lockUntil = undefined;
+
+      // Note: Temporary password remains valid until expiration (1 day)
+      // User can login multiple times with temporary password until it expires
 
       // Generate tokens
       const tokenPayload = {
@@ -244,7 +301,7 @@ class AuthService {
 
       // Send reset email
       const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
-      await sendEmail({
+      await emailService.sendEmail({
         to: user.email,
         subject: 'Password Reset Request',
         template: 'password-reset',
@@ -378,6 +435,56 @@ class AuthService {
     }
   }
 
+  // Get all users (with pagination, search, and filtering)
+  async getUsers(options = {}) {
+    try {
+      const { page = 1, limit = 10, search = '', role = '' } = options;
+
+      // Build query
+      const query = {};
+      if (search) {
+        query.$or = [
+          { firstName: { $regex: search, $options: 'i' } },
+          { lastName: { $regex: search, $options: 'i' } },
+          { email: { $regex: search, $options: 'i' } }
+        ];
+      }
+      if (role) {
+        query.role = role;
+      }
+
+      // Calculate pagination
+      const skip = (page - 1) * limit;
+      const limitNum = parseInt(limit);
+
+      // Fetch users
+      const users = await User.find(query)
+        .select('-password -refreshTokens')
+        .sort({ createdAt: -1 })
+        .limit(limitNum)
+        .skip(skip);
+
+      // Get total count
+      const total = await User.countDocuments(query);
+
+      return {
+        success: true,
+        data: {
+          users,
+          pagination: {
+            currentPage: parseInt(page),
+            totalPages: Math.ceil(total / limitNum),
+            totalUsers: total,
+            hasNext: page < Math.ceil(total / limitNum),
+            hasPrev: page > 1
+          }
+        }
+      };
+    } catch (error) {
+      throw new Error(error.message || 'Failed to get users');
+    }
+  }
+
   // Google OAuth authentication
   async googleAuth(googleToken, userInfo) {
     try {
@@ -385,7 +492,7 @@ class AuthService {
       // In production, you should verify the token with Google's API
       // Google userinfo API returns 'id', not 'sub'
       const { email, name, picture, id: googleId, sub } = userInfo;
-      
+
       console.log('Received userInfo:', {
         email: !!email,
         name: !!name,
@@ -434,7 +541,7 @@ class AuthService {
           user.googleId = googleUserId;
           user.authProvider = 'google';
         }
-        
+
         // Update profile picture if provided
         if (picture && (!user.images || user.images.length === 0)) {
           user.images = [picture];

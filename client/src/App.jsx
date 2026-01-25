@@ -24,6 +24,7 @@ import ChangePassword from "./Pages/ChangePassword/index.jsx";
 import { fetchDataFromApi, postData } from "./utils/api";
 import HandcraftAlert from "./Components/HandcraftAlert";
 import Compare from "./Pages/Compare/index.jsx";
+import { Toaster } from "sonner";
 
 const MyContext = createContext();
 
@@ -273,6 +274,7 @@ function AppContent() {
 
   return (
     <MyContext.Provider value={values}>
+      <Toaster position="top-right" richColors closeButton />
       <HandcraftAlert
         open={alertBox.open}
         onClose={handleClose}
