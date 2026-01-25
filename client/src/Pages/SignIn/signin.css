@@ -46,14 +46,20 @@
 .signin-right-panel {
   flex: 0 0 50vw;
   width: 50vw;
-  background: linear-gradient(135deg, 
-    #2c1810 0%,
-    #3d2418 20%,
-    #4a2c1f 40%,
-    #5d3a2a 60%,
-    #6b4735 80%,
-    #7d5747 100%
-  );
+  /* Warm gradient with a stronger top-right emphasis (≈180° flow, highlight extends ~75%) */
+  background:
+    radial-gradient(circle at 85% 12%,
+      rgba(255, 223, 186, 0.20) 0%,
+      rgba(255, 200, 150, 0.10) 35%,
+      rgba(44, 24, 16, 0.00) 75%
+    ),
+    linear-gradient(180deg,
+      #7d5747 0%,
+      #6b4735 28%,
+      #4a2c1f 58%,
+      #3d2418 78%,
+      #2c1810 100%
+    );
   display: flex;
   align-items: center;
   justify-content: center;
@@ -61,14 +67,21 @@
   position: relative;
 }
 
-/* Subtle texture overlay for vintage feel */
+/* Pattern + subtle texture overlay for vintage feel */
 .signin-right-panel::before {
   content: '';
   position: absolute;
   inset: 0;
   background-image: 
-    radial-gradient(circle at 20% 30%, rgba(255, 223, 186, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 80% 70%, rgba(255, 200, 150, 0.03) 0%, transparent 50%);
+    url("/images/pattern.png"),
+    radial-gradient(circle at 20% 30%, rgba(255, 223, 186, 0.06) 0%, transparent 52%),
+    radial-gradient(circle at 80% 70%, rgba(255, 200, 150, 0.06) 0%, transparent 52%);
+  /* Pattern sits from top-right and covers ~3/4 of the panel */
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  background-position: top right, center, center;
+  background-size: 75% auto, 100% 100%, 100% 100%;
+  opacity: 0.22;
+  filter: sepia(0.35) contrast(1.05);
   pointer-events: none;
 }
 
