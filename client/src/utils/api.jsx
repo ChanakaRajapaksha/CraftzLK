@@ -16,35 +16,63 @@ apiClient.interceptors.request.use((config) => {
     return config;
 });
 
+// Public endpoints that don't need token refresh
+const publicEndpoints = [
+    '/api/auth/login',
+    '/api/auth/register',
+    '/api/auth/request-password-reset',
+    '/api/auth/reset-password',
+    '/api/auth/google',
+    '/api/auth/refresh-token'
+];
+
 // Response interceptor to handle token refresh
 apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
         
+        // Check if this is a public endpoint
+        const isPublicEndpoint = publicEndpoints.some(endpoint => 
+            originalRequest.url?.includes(endpoint)
+        );
+        
+        // Don't try to refresh token for public endpoints
+        if (isPublicEndpoint) {
+            return Promise.reject(error);
+        }
+        
+        // Only try to refresh once
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
             
             try {
                 const refreshToken = localStorage.getItem("refreshToken");
-                if (refreshToken) {
-                    const response = await apiClient.post("/api/auth/refresh-token", {
-                        refreshToken: refreshToken
-                    });
-                    
-                    if (response.data.success) {
-                        localStorage.setItem("token", response.data.data.accessToken);
-                        // Retry the original request with new token
-                        originalRequest.headers.Authorization = `Bearer ${response.data.data.accessToken}`;
-                        return apiClient(originalRequest);
-                    }
+                if (!refreshToken) {
+                    throw new Error("No refresh token available");
+                }
+                
+                const response = await apiClient.post("/api/auth/refresh-token", {
+                    refreshToken: refreshToken
+                });
+                
+                if (response.data.success) {
+                    localStorage.setItem("token", response.data.data.accessToken);
+                    // Retry the original request with new token
+                    originalRequest.headers.Authorization = `Bearer ${response.data.data.accessToken}`;
+                    return apiClient(originalRequest);
                 }
             } catch (refreshError) {
-                // Refresh failed, redirect to login
+                // Refresh failed, clear tokens and redirect to login
                 localStorage.removeItem("token");
                 localStorage.removeItem("refreshToken");
                 localStorage.removeItem("user");
-                window.location.href = "/signIn";
+                
+                // Don't redirect if already on auth pages
+                const currentPath = window.location.pathname;
+                if (!['/signIn', '/signUp', '/forgot-password', '/reset-password'].includes(currentPath)) {
+                    window.location.href = "/signIn";
+                }
             }
         }
         

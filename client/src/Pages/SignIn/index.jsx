@@ -6,10 +6,13 @@ import { Link, useNavigate } from "react-router-dom";
 import InputAdornment from "@mui/material/InputAdornment";
 import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
+import { useForm, Controller } from "react-hook-form";
+import CircularProgress from "@mui/material/CircularProgress";
+import { toast } from "sonner";
 
 import GoogleImg from "../../assets/images/googleImg.png";
-import CircularProgress from "@mui/material/CircularProgress";
-import { editData, postData } from "../../utils/api";
+import AuthController from "../../controllers/auth.controller";
+import { editData } from "../../utils/api";
 import "./signin.css";
 
 // Google OAuth - No Firebase needed
@@ -19,6 +22,19 @@ const SignIn = () => {
   const [isOpenVerifyEmailBox, setIsOpenVerifyEmailBox] = useState(false);
   const context = useContext(MyContext);
   const history = useNavigate();
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    getValues,
+  } = useForm({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+    mode: "onSubmit",
+  });
 
   useEffect(() => {
     context.setisHeaderFooterShow(false);
@@ -34,122 +50,56 @@ const SignIn = () => {
     }
   }, []);
 
-  const [formfields, setFormfields] = useState({
-    email: "",
-    password: "",
-  });
-
-  const onchangeInput = (e) => {
-    setFormfields(() => ({
-      ...formfields,
-      [e.target.name]: e.target.value,
-    }));
-  };
-
-  const login = (e) => {
-    e.preventDefault();
-
-    if (formfields.email === "") {
-      context.setAlertBox({
-        open: true,
-        error: true,
-        msg: "email can not be blank!",
-      });
-      return false;
-    }
-
-    if (isOpenVerifyEmailBox === false) {
-      if (formfields.password === "") {
-        context.setAlertBox({
-          open: true,
-          error: true,
-          msg: "password can not be blank!",
-        });
-        return false;
-      }
-
-      setIsLoading(true);
-      postData("/api/auth/login", formfields).then((res) => {
-        try {
-          if (res.success === true) {
-            // Store access token
-            localStorage.setItem("token", res.data.accessToken);
-            
-            // Store refresh token for token renewal
-            localStorage.setItem("refreshToken", res.data.refreshToken);
-
-            // Build user object with proper fallbacks
-            const userData = res.data.user || {};
-            const user = {
-              name: userData.fullName || userData.firstName || "",
-              email: userData.email || "",
-              userId: userData.id || userData._id || "",
-              image: userData.images?.[0] || userData.image || userData.picture || null,
-            };
-
-            // Store user data
-            localStorage.setItem("user", JSON.stringify(user));
-
-            // Update context
-            context.setUser(user);
-            context.setIsLogin(true);
-            context.setisHeaderFooterShow(true);
-
-            context.setAlertBox({
-              open: true,
-              error: false,
-              msg: "Login successful!",
-            });
-
-            history("/");
+  const onSubmit = async (data) => {
+    try {
+      if (isOpenVerifyEmailBox) {
+        // Verify email flow
+        setIsLoading(true);
+        editData("/api/user/verify-email", {
+          email: data.email,
+        }).then((res) => {
+          if (res.status === true) {
+            toast.success("Verification email sent successfully!");
           } else {
-            context.setAlertBox({
-              open: true,
-              error: true,
-              msg: res.message || "Login failed. Please try again.",
-            });
+            toast.error(res.msg || "Failed to send verification email.");
           }
-        } catch (error) {
-          console.error("Login error:", error);
-          context.setAlertBox({
-            open: true,
-            error: true,
-            msg: "An error occurred. Please try again.",
-          });
-        } finally {
           setIsLoading(false);
-        }
-      });
-    } else {
-      setIsLoading(true);
-      editData("/api/user/verify-email", {
-        email: formfields.email,
-      }).then((res) => {
-        if (res.status === true) {
-          context.setAlertBox({
-            open: true,
-            error: false,
-            msg: "Verification email sent successfully!",
-          });
+        });
+      } else {
+        // Login flow using AuthController
+        setIsLoading(true);
+        
+        const result = await AuthController.login({
+          email: data.email,
+          password: data.password,
+        });
+
+        if (result.success) {
+          // Get user data from controller
+          const user = AuthController.getCurrentUser();
+
+          // Update context
+          context.setUser(user);
+          context.setIsLogin(true);
+          context.setisHeaderFooterShow(true);
+
+          toast.success(result.message || "Login successful!");
+          history("/");
         } else {
-          context.setAlertBox({
-            open: true,
-            error: true,
-            msg: res.msg || "Failed to send verification email.",
-          });
+          toast.error(result.message || "Login failed. Please try again.");
         }
         setIsLoading(false);
-      });
+      }
+    } catch (error) {
+      console.error("[SignIn.onSubmit] Error:", error);
+      setIsLoading(false);
+      toast.error("An unexpected error occurred. Please try again.");
     }
   };
 
   const signInWithGoogle = () => {
     if (!window.google) {
-      context.setAlertBox({
-        open: true,
-        error: true,
-        msg: "Google Sign-In is loading. Please wait a moment and try again.",
-      });
+      toast.error("Google Sign-In is loading. Please wait a moment and try again.");
       return;
     }
 
@@ -160,11 +110,7 @@ const SignIn = () => {
         callback: async (response) => {
           if (response.error) {
             console.error('Google OAuth error:', response.error);
-            context.setAlertBox({
-              open: true,
-              error: true,
-              msg: "Google Sign-In failed. Please try again.",
-            });
+            toast.error("Google Sign-In failed. Please try again.");
             return;
           }
 
@@ -181,92 +127,42 @@ const SignIn = () => {
             }
 
             const userInfo = await userInfoResponse.json();
-            console.log('Google user info:', userInfo);
 
-            // Send to backend
-            const backendResponse = await postData("/api/auth/google", {
-              token: response.access_token,
-              userInfo: userInfo
-            });
+            // Call AuthController googleAuth method
+            const result = await AuthController.googleAuth(response.access_token, userInfo);
 
-            if (backendResponse.success) {
-              // Store tokens
-              localStorage.setItem("token", backendResponse.data.accessToken);
-              localStorage.setItem("refreshToken", backendResponse.data.refreshToken);
+            if (result.success) {
+              // Get user data from controller
+              const user = AuthController.getCurrentUser();
 
-              // Build user object
-              const userData = backendResponse.data.user || {};
-              console.log('Backend user data:', userData);
-              console.log('User images array:', userData.images);
-              console.log('Google picture:', userInfo.picture);
-              
-              const user = {
-                name: userData.fullName || userData.firstName || userInfo.name || "",
-                email: userData.email || userInfo.email || "",
-                userId: userData.id || userData._id || "",
-                image: userInfo.picture || userData.images?.[0] || userData.image || userData.picture || null,
-              };
-
-              console.log('Final user object to store:', user);
-
-              // Store user data
-              localStorage.setItem("user", JSON.stringify(user));
-
-              // Update context - set user AFTER setting isLogin
-              console.log('Setting user in context:', user);
+              // Update context
               context.setIsLogin(true);
               
               // Small delay to ensure isLogin is processed first
               setTimeout(() => {
                 context.setUser(user);
                 context.setisHeaderFooterShow(true);
-                
-                context.setAlertBox({
-                  open: true,
-                  error: false,
-                  msg: "Google Sign-In successful!",
-                });
-
+                toast.success(result.message || "Google Sign-In successful!");
                 history("/");
               }, 50);
             } else {
-              context.setAlertBox({
-                open: true,
-                error: true,
-                msg: backendResponse.message || "Google Sign-In failed. Please try again.",
-              });
+              toast.error(result.message || "Google Sign-In failed. Please try again.");
             }
           } catch (error) {
-            console.error('Google Sign-In error:', error);
-            context.setAlertBox({
-              open: true,
-              error: true,
-              msg: "An error occurred during Google Sign-In. Please try again.",
-            });
+            console.error('[SignIn.signInWithGoogle] Error:', error);
+            toast.error("An error occurred during Google Sign-In. Please try again.");
           }
         }
       }).requestAccessToken();
     } catch (error) {
-      console.error('Google OAuth initialization error:', error);
-      context.setAlertBox({
-        open: true,
-        error: true,
-        msg: "Google Sign-In is not available. Please try again later.",
-      });
+      console.error('[SignIn.signInWithGoogle] Initialization error:', error);
+      toast.error("Google Sign-In is not available. Please try again later.");
     }
   };
 
   const forgotPassword = () => {
-    if (formfields.email === "") {
-      context.setAlertBox({
-        open: true,
-        error: true,
-        msg: "Please enter your email address first",
-      });
-      return;
-    }
-    setIsOpenVerifyEmailBox(true);
-  }
+    history("/forgot-password");
+  };
 
   return (
     <div className="signin-page-container">
@@ -294,51 +190,79 @@ const SignIn = () => {
           </div>
 
           {/* Form */}
-          <form className="signin-form" onSubmit={login}>
+          <form className="signin-form" onSubmit={handleSubmit(onSubmit)}>
             <div className="form-group-modern">
               <label className="form-label-modern">Email address</label>
-              <TextField
-                id="signin-email"
-                type="email"
-                required
-                variant="outlined"
-                className="signin-input"
+              <Controller
                 name="email"
-                onChange={onchangeInput}
-                placeholder="Enter your email"
-                value={formfields.email}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <EmailIcon className="input-icon" />
-                    </InputAdornment>
-                  ),
+                control={control}
+                rules={{
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: "Please enter a valid email address"
+                  }
                 }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    id="signin-email"
+                    type="email"
+                    variant="outlined"
+                    className="signin-input"
+                    placeholder="Enter your email"
+                    error={!!errors.email}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <EmailIcon className="input-icon" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                )}
               />
+              {errors.email && (
+                <span className="form-error-text">{errors.email.message}</span>
+              )}
             </div>
 
             {isOpenVerifyEmailBox === false ? (
               <>
                 <div className="form-group-modern">
                   <label className="form-label-modern">Password</label>
-                  <TextField
-                    id="signin-password"
-                    type="password"
-                    required
-                    variant="outlined"
-                    className="signin-input"
+                  <Controller
                     name="password"
-                    onChange={onchangeInput}
-                    placeholder="Enter your password"
-                    value={formfields.password}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LockIcon className="input-icon" />
-                        </InputAdornment>
-                      ),
+                    control={control}
+                    rules={{
+                      required: "Password is required",
+                      minLength: {
+                        value: 6,
+                        message: "Password must be at least 6 characters"
+                      }
                     }}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        id="signin-password"
+                        type="password"
+                        variant="outlined"
+                        className="signin-input"
+                        placeholder="Enter your password"
+                        error={!!errors.password}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <LockIcon className="input-icon" />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    )}
                   />
+                  {errors.password && (
+                    <span className="form-error-text">{errors.password.message}</span>
+                  )}
                 </div>
 
                 <div className="forgot-password-wrapper">

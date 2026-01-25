@@ -133,10 +133,27 @@ const startServer = async () => {
   try {
     await connectDB();
 
+    // Start background jobs for cleanup tasks
+    const backgroundJobs = require('./utils/backgroundJobs');
+    backgroundJobs.start();
+
     app.listen(process.env.PORT, () => {
       console.log(`Server is running on http://localhost:${process.env.PORT}`);
       console.log(`API Documentation available at http://localhost:${process.env.PORT}/api`);
       console.log(`Health check available at http://localhost:${process.env.PORT}/health`);
+    });
+
+    // Graceful shutdown
+    process.on('SIGTERM', () => {
+      console.log('SIGTERM signal received: closing server gracefully');
+      backgroundJobs.stop();
+      process.exit(0);
+    });
+
+    process.on('SIGINT', () => {
+      console.log('SIGINT signal received: closing server gracefully');
+      backgroundJobs.stop();
+      process.exit(0);
     });
   } catch (error) {
     console.error('Failed to start server:', error.message);

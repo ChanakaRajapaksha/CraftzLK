@@ -21,6 +21,8 @@ import MyAccount from "./Pages/MyAccount/index.jsx";
 import SearchPage from "./Pages/Search/index.jsx";
 import VerifyOTP from "./Pages/VerifyOTP/index.jsx";
 import ChangePassword from "./Pages/ChangePassword/index.jsx";
+import ForgotPassword from "./Pages/ForgotPassword/index.jsx";
+import ResetPassword from "./Pages/ResetPassword/index.jsx";
 import { fetchDataFromApi, postData } from "./utils/api";
 import HandcraftAlert from "./Components/HandcraftAlert";
 import Compare from "./Pages/Compare/index.jsx";
@@ -29,7 +31,7 @@ import { Toaster } from "sonner";
 const MyContext = createContext();
 
 // Routes that should NOT show header/footer
-const noHeaderFooterRoutes = ['/signIn', '/signUp', '/verifyOTP', '/changePassword'];
+const noHeaderFooterRoutes = ['/signIn', '/signUp', '/verifyOTP', '/changePassword', '/forgot-password', '/reset-password'];
 
 function AppContent() {
   const location = useLocation();
@@ -304,6 +306,8 @@ function AppContent() {
         <Route exact={true} path="/cart" element={<Cart />} />
         <Route exact={true} path="/signIn" element={<SignIn />} />
         <Route exact={true} path="/signUp" element={<SignUp />} />
+        <Route exact={true} path="/forgot-password" element={<ForgotPassword />} />
+        <Route exact={true} path="/reset-password" element={<ResetPassword />} />
         <Route exact={true} path="/my-list" element={<MyList />} />
         <Route exact={true} path="/compare" element={<Compare />} />
         <Route exact={true} path="/checkout" element={<Checkout />} />

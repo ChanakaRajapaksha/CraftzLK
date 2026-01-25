@@ -326,18 +326,18 @@ class AuthService {
       const user = await User.findOne({
         resetPasswordToken: token,
         resetPasswordExpires: { $gt: new Date() }
-      });
+      }).select('+password +temporaryPassword');
 
       if (!user) {
         throw new Error('Invalid or expired reset token');
       }
 
-      // Hash new password
-      const saltRounds = 12;
-      const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
-
-      // Update password and clear reset token
-      user.password = hashedPassword;
+      // Set new password (will be hashed by pre-save middleware)
+      user.password = newPassword;
+      
+      // Clear all temporary/reset fields
+      user.temporaryPassword = undefined;         // Clear temporary password
+      user.temporaryPasswordExpires = undefined;   // Clear temporary password expiration
       user.resetPasswordToken = undefined;
       user.resetPasswordExpires = undefined;
       user.refreshTokens = []; // Invalidate all refresh tokens
@@ -356,23 +356,33 @@ class AuthService {
   // Change password
   async changePassword(userId, currentPassword, newPassword) {
     try {
-      const user = await User.findById(userId);
+      const user = await User.findById(userId).select('+password +temporaryPassword');
       if (!user) {
         throw new Error('User not found');
       }
 
-      // Verify current password
-      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+      // Verify current password (check both regular and temporary password)
+      let isCurrentPasswordValid = false;
+      
+      if (user.password) {
+        isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+      }
+      
+      // If regular password didn't match, check temporary password
+      if (!isCurrentPasswordValid && user.temporaryPassword && user.temporaryPasswordExpires > new Date()) {
+        isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.temporaryPassword);
+      }
+
       if (!isCurrentPasswordValid) {
         throw new Error('Current password is incorrect');
       }
 
-      // Hash new password
-      const saltRounds = 12;
-      const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
-
-      // Update password
-      user.password = hashedPassword;
+      // Set new password (will be hashed by pre-save middleware)
+      user.password = newPassword;
+      
+      // Clear temporary password when user sets their own password
+      user.temporaryPassword = undefined;
+      user.temporaryPasswordExpires = undefined;
       user.refreshTokens = []; // Invalidate all refresh tokens
 
       await user.save();
@@ -621,6 +631,62 @@ class AuthService {
     } catch (error) {
       console.error('[authService.googleAuth error]', error);
       throw new Error(error.message || 'Google authentication failed');
+    }
+  }
+
+  // Utility: Clean up expired temporary passwords (background job)
+  async cleanupExpiredTemporaryPasswords() {
+    try {
+      const result = await User.updateMany(
+        { 
+          temporaryPasswordExpires: { $lt: new Date() },
+          temporaryPassword: { $exists: true, $ne: null }
+        },
+        { 
+          $unset: { 
+            temporaryPassword: 1, 
+            temporaryPasswordExpires: 1 
+          } 
+        }
+      );
+
+      console.log(`[authService.cleanupExpiredTemporaryPasswords] Cleaned up ${result.modifiedCount} expired temporary passwords`);
+      
+      return {
+        success: true,
+        message: `Cleaned up ${result.modifiedCount} expired temporary passwords`
+      };
+    } catch (error) {
+      console.error('[authService.cleanupExpiredTemporaryPasswords error]', error);
+      throw new Error('Failed to cleanup expired temporary passwords');
+    }
+  }
+
+  // Utility: Clean up expired reset tokens (background job)
+  async cleanupExpiredResetTokens() {
+    try {
+      const result = await User.updateMany(
+        { 
+          resetPasswordExpires: { $lt: new Date() },
+          resetPasswordToken: { $exists: true, $ne: null }
+        },
+        { 
+          $unset: { 
+            resetPasswordToken: 1, 
+            resetPasswordExpires: 1 
+          } 
+        }
+      );
+
+      console.log(`[authService.cleanupExpiredResetTokens] Cleaned up ${result.modifiedCount} expired reset tokens`);
+      
+      return {
+        success: true,
+        message: `Cleaned up ${result.modifiedCount} expired reset tokens`
+      };
+    } catch (error) {
+      console.error('[authService.cleanupExpiredResetTokens error]', error);
+      throw new Error('Failed to cleanup expired reset tokens');
     }
   }
 }

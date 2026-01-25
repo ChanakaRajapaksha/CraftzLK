@@ -7,27 +7,36 @@ import InputAdornment from "@mui/material/InputAdornment";
 import EmailIcon from "@mui/icons-material/Email";
 import PersonIcon from "@mui/icons-material/Person";
 import PhoneIcon from "@mui/icons-material/Phone";
-
-import GoogleImg from "../../assets/images/googleImg.png";
-import { postData } from "../../utils/api";
+import { useForm, Controller } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
 import { toast } from "sonner";
+
+import GoogleImg from "../../assets/images/googleImg.png";
+import AuthController from "../../controllers/auth.controller";
 import "../SignIn/signin.css";
 
 // Google OAuth - No Firebase needed
 
 const SignUp = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [formfields, setFormfields] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-  });
-
   const context = useContext(MyContext);
   const history = useNavigate();
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm({
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+    },
+    mode: "onSubmit",
+  });
 
   useEffect(() => {
     context.setisHeaderFooterShow(false);
@@ -43,69 +52,30 @@ const SignUp = () => {
     }
   }, []);
 
-  const onchangeInput = (e) => {
-    setFormfields(() => ({
-      ...formfields,
-      [e.target.name]: e.target.value,
-    }));
-  };
-
-  const register = (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     try {
-      if (formfields.firstName.trim() === "" || formfields.lastName.trim() === "") {
-        toast.error("First name and last name cannot be blank!");
-        return false;
-      }
-
-      if (formfields.email === "") {
-        toast.error("Email cannot be blank!");
-        return false;
-      }
-
-      if (formfields.phone === "") {
-        toast.error("Phone number cannot be blank!");
-        return false;
-      }
-
       setIsLoading(true);
 
-      const payload = {
-        firstName: formfields.firstName.trim(),
-        lastName: formfields.lastName.trim(),
-        email: formfields.email.trim(),
-        phone: formfields.phone.trim(),
-      };
+      // Call AuthController register method
+      const result = await AuthController.register(data);
 
-      postData("/api/auth/register", payload)
-        .then((res) => {
-          if (res.success === true) {
-            toast.success(res.message || "Registration successful! A temporary password has been sent to your email.");
-            
-            // Clear form
-            setFormfields({
-              firstName: "",
-              lastName: "",
-              email: "",
-              phone: "",
-            });
+      if (result.success) {
+        toast.success(result.message || "Registration successful! A temporary password has been sent to your email.");
+        
+        // Clear form
+        reset();
 
-            // Redirect to sign in page after 2 seconds
-            setTimeout(() => {
-              history("/signIn");
-            }, 2000);
-          } else {
-            setIsLoading(false);
-            toast.error(res.message || "Registration failed");
-          }
-        })
-        .catch((error) => {
+        // Redirect to sign in page after 2 seconds
+        setTimeout(() => {
           setIsLoading(false);
-          console.error("Error posting data:", error);
-          toast.error("Registration failed. Please try again.");
-        });
+          history("/signIn");
+        }, 2000);
+      } else {
+        setIsLoading(false);
+        toast.error(result.message || "Registration failed");
+      }
     } catch (error) {
-      console.log(error);
+      console.error("[SignUp.onSubmit] Error:", error);
       setIsLoading(false);
       toast.error("An unexpected error occurred. Please try again.");
     }
@@ -141,54 +111,33 @@ const SignUp = () => {
             }
 
             const userInfo = await userInfoResponse.json();
-            console.log('Google user info:', userInfo);
 
-            // Send to backend
-            const backendResponse = await postData("/api/auth/google", {
-              token: response.access_token,
-              userInfo: userInfo
-            });
+            // Call AuthController googleAuth method
+            const result = await AuthController.googleAuth(response.access_token, userInfo);
 
-            if (backendResponse.success) {
-              // Store tokens
-              localStorage.setItem("token", backendResponse.data.accessToken);
-              localStorage.setItem("refreshToken", backendResponse.data.refreshToken);
-
-              // Build user object
-              const userData = backendResponse.data.user || {};
-              const user = {
-                name: userData.fullName || userData.firstName || userInfo.name || "",
-                email: userData.email || userInfo.email || "",
-                userId: userData.id || userData._id || "",
-                image: userInfo.picture || userData.images?.[0] || userData.image || userData.picture || null,
-              };
-
-              // Store user data
-              localStorage.setItem("user", JSON.stringify(user));
-
-              // Update context - set isLogin first
+            if (result.success) {
+              // Update context
+              const user = AuthController.getCurrentUser();
               context.setIsLogin(true);
               
               // Small delay to ensure isLogin is processed first
               setTimeout(() => {
                 context.setUser(user);
                 context.setisHeaderFooterShow(true);
-
-                toast.success("Google Sign-In successful!");
-
+                toast.success(result.message || "Google Sign-In successful!");
                 history("/");
               }, 50);
             } else {
-              toast.error(backendResponse.message || "Google Sign-In failed. Please try again.");
+              toast.error(result.message || "Google Sign-In failed. Please try again.");
             }
           } catch (error) {
-            console.error('Google Sign-In error:', error);
+            console.error('[SignUp.signInWithGoogle] Error:', error);
             toast.error("An error occurred during Google Sign-In. Please try again.");
           }
         }
       }).requestAccessToken();
     } catch (error) {
-      console.error('Google OAuth initialization error:', error);
+      console.error('[SignUp.signInWithGoogle] Initialization error:', error);
       toast.error("Google Sign-In is not available. Please try again later.");
     }
   };
@@ -215,94 +164,158 @@ const SignUp = () => {
           </div>
 
           {/* Form */}
-          <form className="signin-form" onSubmit={register}>
+          <form className="signin-form" onSubmit={handleSubmit(onSubmit)}>
             <div className="form-row">
               <div className="form-group-modern">
                 <label className="form-label-modern">First Name</label>
-                <TextField
-                  id="signup-first-name"
-                  type="text"
-                  required
-                  variant="outlined"
-                  className="signin-input"
+                <Controller
                   name="firstName"
-                  onChange={onchangeInput}
-                  placeholder="Enter your first name"
-                  value={formfields.firstName}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <PersonIcon className="input-icon" />
-                      </InputAdornment>
-                    ),
+                  control={control}
+                  rules={{
+                    required: "First name is required",
+                    minLength: {
+                      value: 2,
+                      message: "First name must be at least 2 characters"
+                    },
+                    pattern: {
+                      value: /^[A-Za-z\s]+$/,
+                      message: "First name can only contain letters"
+                    }
                   }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      id="signup-first-name"
+                      type="text"
+                      variant="outlined"
+                      className="signin-input"
+                      placeholder="Enter your first name"
+                      error={!!errors.firstName}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <PersonIcon className="input-icon" />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  )}
                 />
+                {errors.firstName && (
+                  <span className="form-error-text">{errors.firstName.message}</span>
+                )}
               </div>
               <div className="form-group-modern">
                 <label className="form-label-modern">Last Name</label>
-                <TextField
-                  id="signup-last-name"
-                  type="text"
-                  required
-                  variant="outlined"
-                  className="signin-input"
+                <Controller
                   name="lastName"
-                  onChange={onchangeInput}
-                  placeholder="Enter your last name"
-                  value={formfields.lastName}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <PersonIcon className="input-icon" />
-                      </InputAdornment>
-                    ),
+                  control={control}
+                  rules={{
+                    required: "Last name is required",
+                    minLength: {
+                      value: 2,
+                      message: "Last name must be at least 2 characters"
+                    },
+                    pattern: {
+                      value: /^[A-Za-z\s]+$/,
+                      message: "Last name can only contain letters"
+                    }
                   }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      id="signup-last-name"
+                      type="text"
+                      variant="outlined"
+                      className="signin-input"
+                      placeholder="Enter your last name"
+                      error={!!errors.lastName}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <PersonIcon className="input-icon" />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  )}
                 />
+                {errors.lastName && (
+                  <span className="form-error-text">{errors.lastName.message}</span>
+                )}
               </div>
             </div>
 
             <div className="form-group-modern">
               <label className="form-label-modern">Email address</label>
-              <TextField
-                id="signup-email"
-                type="email"
-                required
-                variant="outlined"
-                className="signin-input"
+              <Controller
                 name="email"
-                onChange={onchangeInput}
-                placeholder="Enter your email"
-                value={formfields.email}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <EmailIcon className="input-icon" />
-                    </InputAdornment>
-                  ),
+                control={control}
+                rules={{
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: "Please enter a valid email address"
+                  }
                 }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    id="signup-email"
+                    type="email"
+                    variant="outlined"
+                    className="signin-input"
+                    placeholder="Enter your email"
+                    error={!!errors.email}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <EmailIcon className="input-icon" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                )}
               />
+              {errors.email && (
+                <span className="form-error-text">{errors.email.message}</span>
+              )}
             </div>
 
             <div className="form-group-modern">
               <label className="form-label-modern">Phone Number</label>
-              <TextField
-                id="signup-phone"
-                type="tel"
-                required
-                variant="outlined"
-                className="signin-input"
+              <Controller
                 name="phone"
-                onChange={onchangeInput}
-                placeholder="Enter your phone number"
-                value={formfields.phone}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PhoneIcon className="input-icon" />
-                    </InputAdornment>
-                  ),
+                control={control}
+                rules={{
+                  required: "Phone number is required",
+                  pattern: {
+                    value: /^(\+94)?[0-9]{9,10}$/,
+                    message: "Please enter a valid phone number (e.g., 0712345678 or +94712345678)"
+                  }
                 }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    id="signup-phone"
+                    type="tel"
+                    variant="outlined"
+                    className="signin-input"
+                    placeholder="Enter your phone number"
+                    error={!!errors.phone}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <PhoneIcon className="input-icon" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                )}
               />
+              {errors.phone && (
+                <span className="form-error-text">{errors.phone.message}</span>
+              )}
               <p className="form-helper-text">
                 A temporary password will be sent to your email after registration. It will expire in 24 hours.
               </p>
