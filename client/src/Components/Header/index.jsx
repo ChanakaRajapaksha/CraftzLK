@@ -1,11 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Logo from "../../assets/images/logo.png";
 import Button from "@mui/material/Button";
 import CountryDropdown from "../CountryDropdown/index.jsx";
 import { FiUser } from "react-icons/fi";
 import { IoBagOutline } from "react-icons/io5";
-import SearchBox from "./SearchBox/index.jsx";
 import Navigation from "./Navigation/index.jsx";
 import { useContext } from "react";
 import { MyContext } from "../../App";
@@ -127,18 +125,19 @@ const Header = () => {
             <div className="container">
               <div className="row">
                 <div className="logoWrapper d-flex align-items-center col-sm-2">
+                  {/* Search icon takes the original logo position */}
+                  <Button className="circle mr-2 searchTrigger" onClick={openSearch}>
+                    <IoIosSearch />
+                  </Button>
+
                   {context.windowWidth < 992 && (
                     <Button className="circle toggleNav" onClick={openNav}>
                       <IoMdMenu />
                     </Button>
                   )}
 
-                  <Link to={"/"} className="logo">
-                    <h3 className="Client_Brandname">CraftzLK</h3>
-                  </Link>
-
                   {context.windowWidth < 992 && (
-                    <div className="position-relative cartTab">
+                    <div className="position-relative cartTab ml-2">
                       <Link to="/cart" className="ml-auto">
                         <Button className="circle">
                           <IoBagOutline />
@@ -159,14 +158,11 @@ const Header = () => {
                   {/* {context.countryList.length !== 0 &&
                     context.windowWidth > 992 && <CountryDropdown />} */}
 
-                  <div
-                    className={`headerSearchWrapper ${
-                      isOpenSearch === true && "open"
-                    }`}
-                  >
-                    <div className=" d-flex align-items-center">
-                      <SearchBox closeSearch={closeSearch} />
-                    </div>
+                  {/* Centered logo image with blurred square background */}
+                  <div className="nav-center-logo mx-auto">
+                    <Link to={"/"} className="logo logo-blur-bg">
+                      <img src="/images/craftzlk.png" alt="CraftzLK logo" />
+                    </Link>
                   </div>
 
                   <div className="part3 d-flex align-items-center ml-auto">

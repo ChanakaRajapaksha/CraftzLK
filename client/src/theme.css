@@ -1,64 +1,69 @@
-/* Global Dark Blue Theme with 3D Glass Effects */
+/* Global Vintage Warm Theme with 3D Glass Effects */
 
 :root {
-  /* Background Gradients */
+  /* Background Gradients - Light Vintage Warm */
   --bg-gradient-dark: linear-gradient(180deg, 
-    #010101 0%, 
-    #020711 16.67%, 
-    #071338 33.33%, 
-    #0D235D 50%, 
-    #113081 66.67%, 
-    #13348D 100%
+    #faf8f3 0%, 
+    #f7f4ed 16.67%, 
+    #f5f1e8 33.33%, 
+    #f3eee4 50%, 
+    #f0ebe0 66.67%, 
+    #ede8dc 100%
   );
   
-  /* Glass Effect Colors */
-  --glass-bg: rgba(15, 20, 40, 0.4);
-  --glass-bg-hover: rgba(20, 25, 50, 0.5);
-  --glass-bg-active: rgba(25, 30, 55, 0.6);
-  --glass-border: rgba(100, 150, 255, 0.3);
-  --glass-border-hover: rgba(100, 150, 255, 0.5);
-  --glass-border-active: rgba(100, 150, 255, 0.7);
+  /* Glass Effect Colors - Warm Tones */
+  --glass-bg: rgba(250, 245, 235, 0.6);
+  --glass-bg-hover: rgba(245, 240, 230, 0.7);
+  --glass-bg-active: rgba(240, 235, 225, 0.8);
+  --glass-border: rgba(201, 169, 97, 0.3);
+  --glass-border-hover: rgba(201, 169, 97, 0.5);
+  --glass-border-active: rgba(201, 169, 97, 0.7);
   
-  /* Gradient Border Colors */
+  /* Gradient Border Colors - Warm Gold */
   --gradient-border: linear-gradient(135deg, 
-    rgba(100, 150, 255, 0.5) 0%,
-    rgba(150, 100, 255, 0.3) 50%,
-    rgba(100, 200, 255, 0.5) 100%
+    rgba(201, 169, 97, 0.5) 0%,
+    rgba(212, 165, 116, 0.3) 50%,
+    rgba(184, 134, 11, 0.5) 100%
   );
   --gradient-border-hover: linear-gradient(135deg, 
-    rgba(100, 150, 255, 0.7) 0%,
-    rgba(150, 100, 255, 0.5) 50%,
-    rgba(100, 200, 255, 0.7) 100%
+    rgba(201, 169, 97, 0.7) 0%,
+    rgba(212, 165, 116, 0.5) 50%,
+    rgba(184, 134, 11, 0.7) 100%
   );
   
-  /* Text Colors */
-  --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.8);
-  --text-muted: rgba(255, 255, 255, 0.6);
-  --text-hint: rgba(255, 255, 255, 0.4);
+  /* Text Colors - Dark Warm Browns */
+  --text-primary: #3d2817;
+  --text-secondary: rgba(61, 40, 23, 0.8);
+  --text-muted: rgba(61, 40, 23, 0.6);
+  --text-hint: rgba(61, 40, 23, 0.4);
   
-  /* Accent Colors */
-  --accent-blue: #6496ff;
-  --accent-blue-hover: #7aa5ff;
-  --accent-cyan: #64d8ff;
-  --accent-purple: #a064ff;
+  /* Accent Colors - Warm Golds and Tans */
+  --accent-blue: #c9a961;
+  --accent-blue-hover: #b8860b;
+  --accent-cyan: #d4a574;
+  --accent-purple: #8b6f47;
   
-  /* Dark Blue Shades (replacing purple) */
-  --primary-dark: #0D235D;
-  --primary-medium: #113081;
-  --primary-light: #13348D;
-  --primary-lighter: #1a4aad;
+  /* Warm Gold Shades */
+  --primary-dark: #b8860b;
+  --primary-medium: #c9a961;
+  --primary-light: #d4a574;
+  --primary-lighter: #daa520;
   
-  /* Shadows */
-  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
-  --shadow-glow: 0 0 30px rgba(100, 150, 255, 0.2);
+  /* Shadows - Warm Tones */
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --shadow-glow: 0 0 30px rgba(201, 169, 97, 0.2);
 }
 
 /* Apply gradient background to body and main wrapper */
 body {
-  background: var(--bg-gradient-dark) !important;
+  background: linear-gradient(to bottom, #faf8f3, #f5f1e8) !important;
   background-attachment: fixed !important;
   min-height: 100vh;
+}
+
+/* Ensure dropdowns/menus open over the current page (no solid overlay) */
+.MuiBackdrop-root {
+  background-color: transparent !important;
 }
 
 /* Main page wrapper */
@@ -120,11 +125,11 @@ section.searchPage {
 
 /* Header Styling */
 header {
-  background: rgba(5, 10, 25, 0.95) !important;
+  background: rgba(32, 26, 15, 0.98) !important;
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid rgba(100, 150, 255, 0.2) !important;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3) !important;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.25) !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.12) !important;
 }
 
 header .headerWrapper,
@@ -241,8 +246,8 @@ button.MuiButton-containedPrimary:hover {
 .productThumb:hover {
   background: var(--glass-bg-hover) !important;
   box-shadow: 
-    0 20px 50px rgba(0, 0, 0, 0.4),
-    0 0 40px rgba(100, 150, 255, 0.15) !important;
+    0 20px 50px rgba(0, 0, 0, 0.2),
+    0 0 40px rgba(201, 169, 97, 0.15) !important;
   transform: translateY(-5px);
 }
 
@@ -302,8 +307,8 @@ button.MuiButton-containedPrimary:hover {
 
 /* Footer */
 footer {
-  background: rgba(5, 10, 25, 0.98) !important;
-  border-top: 1px solid rgba(100, 150, 255, 0.2) !important;
+  background: rgba(245, 241, 232, 0.98) !important;
+  border-top: 1px solid rgba(201, 169, 97, 0.2) !important;
   backdrop-filter: blur(20px);
 }
 
@@ -316,7 +321,7 @@ footer .title {
 footer a,
 footer p,
 footer li {
-  color: var(--text-muted) !important;
+  color: var(--text-secondary) !important;
 }
 
 footer a:hover {
@@ -337,7 +342,7 @@ footer a:hover {
 .sidebar h5,
 .filterWrapper h5 {
   color: var(--text-primary) !important;
-  border-bottom: 1px solid rgba(100, 150, 255, 0.2);
+  border-bottom: 1px solid rgba(201, 169, 97, 0.2);
   padding-bottom: 0.75rem;
 }
 
@@ -362,7 +367,7 @@ input.form-control:hover {
 .MuiOutlinedInput-root.Mui-focused,
 input.form-control:focus {
   border-color: var(--accent-blue) !important;
-  box-shadow: 0 0 0 3px rgba(100, 150, 255, 0.15) !important;
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.15) !important;
 }
 
 .MuiOutlinedInput-notchedOutline {
@@ -393,7 +398,7 @@ table th,
 table td,
 .table td {
   color: var(--text-secondary) !important;
-  border-bottom: 1px solid rgba(100, 150, 255, 0.1) !important;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.1) !important;
 }
 
 table tr:hover td,
@@ -454,13 +459,13 @@ table tr:hover td,
 .MuiDialog-paper,
 .MuiModal-root .MuiPaper-root,
 .modal-content {
-  background: rgba(10, 15, 35, 0.98) !important;
+  background: rgba(250, 245, 235, 0.98) !important;
   border: 1px solid var(--glass-border) !important;
   border-radius: 16px !important;
   backdrop-filter: blur(30px) saturate(200%);
   box-shadow: 
     0 25px 80px rgba(0, 0, 0, 0.5),
-    0 0 60px rgba(100, 150, 255, 0.1) !important;
+    0 0 60px rgba(201, 169, 97, 0.1) !important;
 }
 
 .MuiDialog-paper h2,
@@ -523,7 +528,7 @@ table tr:hover td,
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(10, 15, 35, 0.5);
+  background: rgba(250, 245, 235, 0.5);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -653,10 +658,38 @@ a:hover {
 
 .headerWrapper,
 .headerWrapperFixed {
-  background: rgba(5, 10, 25, 0.98) !important;
+  background: rgba(230, 219, 200, 0.98) !important;
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid rgba(100, 150, 255, 0.2) !important;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.3) !important;
+}
+
+/* Kandy pattern – soft blurred loop along bottom of navbar */
+.header {
+  position: relative;
+  overflow: visible;
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -10px;
+  height: 110px;
+  background-image: url("/images/kandy-pattern.png");
+  background-repeat: repeat-x;
+  background-position: center bottom;
+  background-size: auto 100px;
+  filter: blur(1px);
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.header > * {
+  position: relative;
+  z-index: 1;
 }
 
 .headerWrapper .top-strip {
@@ -668,39 +701,39 @@ a:hover {
 }
 
 .headerSearch {
-  background: rgba(15, 20, 45, 0.6) !important;
-  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(201, 169, 97, 0.3) !important;
   border-radius: 10px !important;
   backdrop-filter: blur(10px);
 }
 
 .headerSearch input {
-  color: rgba(255, 255, 255, 0.9) !important;
+  color: rgba(61, 40, 23, 0.9) !important;
 }
 
 .headerSearch input::-webkit-input-placeholder {
-  color: rgba(255, 255, 255, 0.4) !important;
+  color: rgba(61, 40, 23, 0.4) !important;
 }
 
 .headerSearch button svg,
 header .part3 .circle svg {
-  color: rgba(255, 255, 255, 0.8) !important;
+  color: rgba(61, 40, 23, 0.8) !important;
 }
 
 header .part3 .circle {
-  background: rgba(15, 20, 45, 0.6) !important;
-  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(201, 169, 97, 0.3) !important;
   backdrop-filter: blur(10px);
 }
 
 header .part3 .circle:hover {
-  background: rgba(25, 35, 65, 0.8) !important;
-  border-color: rgba(100, 150, 255, 0.5) !important;
+  background: rgba(245, 240, 230, 0.9) !important;
+  border-color: rgba(201, 169, 97, 0.5) !important;
 }
 
 .countryDrop {
-  background: rgba(15, 20, 45, 0.6) !important;
-  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(201, 169, 97, 0.3) !important;
   backdrop-filter: blur(10px);
   color: white !important;
 }
@@ -714,27 +747,27 @@ header .part3 .circle:hover {
 }
 
 .countryDrop:hover {
-  box-shadow: 0 0 20px rgba(100, 150, 255, 0.15) !important;
+  box-shadow: 0 0 20px rgba(201, 169, 97, 0.15) !important;
 }
 
 .headerSearchWrapper .searchResults {
-  background: rgba(10, 15, 35, 0.98) !important;
-  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  background: rgba(250, 245, 235, 0.98) !important;
+  border: 1px solid rgba(201, 169, 97, 0.3) !important;
   border-radius: 12px;
   margin-top: 5px;
   backdrop-filter: blur(20px);
 }
 
 .headerSearchWrapper .searchResults .result {
-  border-bottom: 1px solid rgba(100, 150, 255, 0.1) !important;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.1) !important;
 }
 
 .headerSearchWrapper .searchResults .result:hover {
-  background: rgba(25, 35, 65, 0.6) !important;
+  background: rgba(245, 240, 230, 0.8) !important;
 }
 
 .headerSearchWrapper .searchResults .result .info h4 {
-  color: rgba(255, 255, 255, 0.9) !important;
+  color: rgba(61, 40, 23, 0.9) !important;
 }
 
 .headerSearchWrapper .searchResults .result .info h4:hover {
@@ -742,39 +775,40 @@ header .part3 .circle:hover {
 }
 
 .headerSearchWrapper .searchResults .result .info span {
-  color: rgba(255, 255, 255, 0.7) !important;
+  color: rgba(61, 40, 23, 0.7) !important;
 }
 
 #accDrop {
-  background: rgba(10, 15, 35, 0.98) !important;
-  border: 1px solid rgba(100, 150, 255, 0.3) !important;
-  border-radius: 12px !important;
-  backdrop-filter: blur(20px);
+  /* Let the underlying page show through; style only the paper below */
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  backdrop-filter: none !important;
 }
 
 #accDrop .info {
-  border-bottom: 1px solid rgba(100, 150, 255, 0.2) !important;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.2) !important;
 }
 
 #accDrop .info h5 {
-  color: rgba(255, 255, 255, 0.9) !important;
+  color: rgba(61, 40, 23, 0.9) !important;
 }
 
 #accDrop .info p {
-  color: rgba(255, 255, 255, 0.6) !important;
+  color: rgba(61, 40, 23, 0.6) !important;
 }
 
 #accDrop ul a {
-  color: rgba(255, 255, 255, 0.8) !important;
+  color: rgba(61, 40, 23, 0.8) !important;
 }
 
 #accDrop ul li:hover {
-  background: rgba(25, 35, 65, 0.6) !important;
+  background: rgba(245, 240, 230, 0.8) !important;
 }
 
 #accDrop .MuiPaper-root {
-  background: rgba(10, 15, 35, 0.98) !important;
-  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  background: rgba(250, 245, 235, 0.98) !important;
+  border: 1px solid rgba(201, 169, 97, 0.3) !important;
 }
 
 .userImg {
@@ -800,8 +834,8 @@ nav .nav-link:hover {
 .dropdown-menu,
 .MuiMenu-paper,
 .MuiPopover-paper {
-  background: rgba(10, 15, 35, 0.98) !important;
-  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  background: rgba(250, 245, 235, 0.98) !important;
+  border: 1px solid rgba(201, 169, 97, 0.3) !important;
   border-radius: 12px !important;
   backdrop-filter: blur(20px);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
@@ -825,14 +859,14 @@ nav .nav-link:hover {
 .nav,
 .navbar,
 .navPart {
-  background: rgba(5, 10, 25, 0.95) !important;
-  border-bottom: 1px solid rgba(100, 150, 255, 0.15) !important;
+  background: rgba(245, 241, 232, 0.95) !important;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.15) !important;
 }
 
 /* Category Navigation */
 .catNav,
 .category-nav {
-  background: rgba(10, 15, 35, 0.9) !important;
+  background: rgba(250, 245, 235, 0.9) !important;
 }
 
 .catNav a,
@@ -851,15 +885,15 @@ nav .nav-link:hover {
 
 .btn-blue {
   background: linear-gradient(135deg, var(--primary-medium) 0%, var(--primary-light) 100%) !important;
-  border: 1px solid rgba(100, 150, 255, 0.4) !important;
+  border: 1px solid rgba(201, 169, 97, 0.4) !important;
   color: white !important;
-  box-shadow: 0 4px 15px rgba(17, 48, 129, 0.3) !important;
+  box-shadow: 0 4px 15px rgba(184, 134, 11, 0.3) !important;
   transition: all 0.3s ease !important;
 }
 
 .btn-blue:hover {
   background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-lighter) 100%) !important;
-  box-shadow: 0 6px 25px rgba(17, 48, 129, 0.4), 0 0 30px rgba(100, 150, 255, 0.2) !important;
+  box-shadow: 0 6px 25px rgba(184, 134, 11, 0.3), 0 0 30px rgba(201, 169, 97, 0.2) !important;
   transform: translateY(-2px);
 }
 
@@ -874,8 +908,8 @@ button svg {
 .productItem,
 .productThumb,
 .productCard {
-  background: rgba(15, 20, 45, 0.7) !important;
-  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(201, 169, 97, 0.25) !important;
   border-radius: 16px !important;
   backdrop-filter: blur(15px);
   overflow: hidden;
@@ -891,9 +925,9 @@ button svg {
   border-radius: 16px;
   padding: 1px;
   background: linear-gradient(135deg, 
-    rgba(100, 150, 255, 0.4) 0%,
-    rgba(150, 100, 255, 0.2) 50%,
-    rgba(100, 200, 255, 0.4) 100%
+    rgba(201, 169, 97, 0.4) 0%,
+    rgba(212, 165, 116, 0.2) 50%,
+    rgba(184, 134, 11, 0.4) 100%
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
@@ -907,7 +941,7 @@ button svg {
   background: rgba(20, 30, 55, 0.85) !important;
   box-shadow: 
     0 25px 60px rgba(0, 0, 0, 0.35),
-    0 0 50px rgba(100, 150, 255, 0.12) !important;
+    0 0 50px rgba(201, 169, 97, 0.12) !important;
   transform: translateY(-8px) scale(1.02);
 }
 
@@ -945,7 +979,7 @@ button svg {
 .productItem .actions button,
 .productThumb .actions button {
   background: rgba(15, 25, 50, 0.8) !important;
-  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  border: 1px solid rgba(201, 169, 97, 0.3) !important;
   color: rgba(255, 255, 255, 0.8) !important;
   backdrop-filter: blur(10px);
 }
@@ -968,8 +1002,8 @@ button svg {
 
 .catSliderSection .item,
 .catItem {
-  background: rgba(15, 20, 45, 0.6) !important;
-  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(201, 169, 97, 0.25) !important;
   border-radius: 14px !important;
   backdrop-filter: blur(10px);
   transition: all 0.3s ease !important;
@@ -978,7 +1012,7 @@ button svg {
 .catSliderSection .item:hover,
 .catItem:hover {
   background: rgba(20, 30, 55, 0.8) !important;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(100, 150, 255, 0.1) !important;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2), 0 0 30px rgba(201, 169, 97, 0.1) !important;
   transform: translateY(-5px);
 }
 
@@ -1000,7 +1034,7 @@ button svg {
 .bannerSlide {
   border-radius: 20px;
   overflow: hidden;
-  border: 1px solid rgba(100, 150, 255, 0.2);
+  border: 1px solid rgba(201, 169, 97, 0.2);
 }
 
 /* ========================================
@@ -1009,20 +1043,20 @@ button svg {
 
 footer,
 .footerWrapper {
-  background: linear-gradient(180deg, rgba(5, 10, 25, 0.98) 0%, rgba(2, 5, 15, 1) 100%) !important;
-  border-top: 1px solid rgba(100, 150, 255, 0.2) !important;
+  background: linear-gradient(180deg, rgba(245, 241, 232, 0.98) 0%, rgba(240, 235, 225, 1) 100%) !important;
+  border-top: 1px solid rgba(201, 169, 97, 0.2) !important;
 }
 
 footer h5,
 footer h6,
 footer .title {
-  color: rgba(255, 255, 255, 0.95) !important;
+  color: rgba(61, 40, 23, 0.95) !important;
 }
 
 footer a,
 footer p,
 footer li {
-  color: rgba(255, 255, 255, 0.6) !important;
+  color: rgba(61, 40, 23, 0.7) !important;
 }
 
 footer a:hover {
@@ -1030,9 +1064,9 @@ footer a:hover {
 }
 
 .footerWrapper .newsletter input {
-  background: rgba(15, 20, 45, 0.6) !important;
-  border: 1px solid rgba(100, 150, 255, 0.3) !important;
-  color: white !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(201, 169, 97, 0.3) !important;
+  color: rgba(61, 40, 23, 0.9) !important;
 }
 
 /* ========================================
@@ -1042,8 +1076,8 @@ footer a:hover {
 .sidebarWrapper,
 .sidebar,
 .filterWrapper {
-  background: rgba(10, 15, 35, 0.8) !important;
-  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  background: rgba(250, 245, 235, 0.8) !important;
+  border: 1px solid rgba(201, 169, 97, 0.25) !important;
   border-radius: 16px !important;
   backdrop-filter: blur(20px);
   padding: 1.5rem !important;
@@ -1053,14 +1087,14 @@ footer a:hover {
 .sidebar h5,
 .filterWrapper h5 {
   color: rgba(255, 255, 255, 0.95) !important;
-  border-bottom: 1px solid rgba(100, 150, 255, 0.2);
+  border-bottom: 1px solid rgba(201, 169, 97, 0.2);
   padding-bottom: 1rem;
   margin-bottom: 1rem;
 }
 
 .sidebarWrapper .catList li,
 .sidebar .catList li {
-  border-bottom: 1px solid rgba(100, 150, 255, 0.1);
+  border-bottom: 1px solid rgba(201, 169, 97, 0.1);
 }
 
 .sidebarWrapper .catList li a,
@@ -1077,7 +1111,7 @@ footer a:hover {
 
 /* Filter Checkboxes */
 .MuiCheckbox-root {
-  color: rgba(100, 150, 255, 0.5) !important;
+  color: rgba(201, 169, 97, 0.5) !important;
 }
 
 .MuiCheckbox-root.Mui-checked {
@@ -1104,23 +1138,23 @@ footer a:hover {
 
 .cartPage .table,
 .cartTable {
-  background: rgba(10, 15, 35, 0.8) !important;
+  background: rgba(250, 245, 235, 0.8) !important;
   border-radius: 16px !important;
   overflow: hidden;
-  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  border: 1px solid rgba(201, 169, 97, 0.25) !important;
 }
 
 .cartPage .table th,
 .cartTable th {
   background: rgba(15, 25, 50, 0.9) !important;
   color: rgba(255, 255, 255, 0.9) !important;
-  border-bottom: 1px solid rgba(100, 150, 255, 0.2) !important;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.2) !important;
 }
 
 .cartPage .table td,
 .cartTable td {
   color: rgba(255, 255, 255, 0.8) !important;
-  border-bottom: 1px solid rgba(100, 150, 255, 0.1) !important;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.1) !important;
   background: transparent !important;
 }
 
@@ -1130,8 +1164,8 @@ footer a:hover {
 }
 
 .cartItem {
-  background: rgba(10, 15, 35, 0.8) !important;
-  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  background: rgba(250, 245, 235, 0.8) !important;
+  border: 1px solid rgba(201, 169, 97, 0.25) !important;
   border-radius: 14px !important;
   padding: 1rem !important;
   margin-bottom: 1rem;
@@ -1153,8 +1187,8 @@ footer a:hover {
 /* Quantity Box */
 .quantityDrop,
 .quantityBox {
-  background: rgba(15, 20, 45, 0.6) !important;
-  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(201, 169, 97, 0.3) !important;
   border-radius: 10px !important;
 }
 
@@ -1173,8 +1207,8 @@ footer a:hover {
 /* Cart Summary */
 .cartSummary,
 .orderSummary {
-  background: rgba(10, 15, 35, 0.8) !important;
-  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  background: rgba(250, 245, 235, 0.8) !important;
+  border: 1px solid rgba(201, 169, 97, 0.25) !important;
   border-radius: 16px !important;
   padding: 1.5rem !important;
   backdrop-filter: blur(15px);
@@ -1207,8 +1241,8 @@ footer a:hover {
 
 .checkoutPage .card,
 .checkoutCard {
-  background: rgba(10, 15, 35, 0.8) !important;
-  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  background: rgba(250, 245, 235, 0.8) !important;
+  border: 1px solid rgba(201, 169, 97, 0.25) !important;
   border-radius: 16px !important;
   backdrop-filter: blur(20px);
   padding: 1.5rem !important;
@@ -1217,7 +1251,7 @@ footer a:hover {
 .checkoutPage .card h4,
 .checkoutCard h4 {
   color: rgba(255, 255, 255, 0.95) !important;
-  border-bottom: 1px solid rgba(100, 150, 255, 0.2);
+  border-bottom: 1px solid rgba(201, 169, 97, 0.2);
   padding-bottom: 1rem;
 }
 
@@ -1232,8 +1266,8 @@ footer a:hover {
 
 .myAccountPage .card,
 .accountCard {
-  background: rgba(10, 15, 35, 0.8) !important;
-  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  background: rgba(250, 245, 235, 0.8) !important;
+  border: 1px solid rgba(201, 169, 97, 0.25) !important;
   border-radius: 16px !important;
   backdrop-filter: blur(20px);
   padding: 1.5rem !important;
@@ -1244,7 +1278,7 @@ footer a:hover {
   background: rgba(15, 25, 50, 0.7) !important;
   border-radius: 14px;
   padding: 1.5rem;
-  border: 1px solid rgba(100, 150, 255, 0.2);
+  border: 1px solid rgba(201, 169, 97, 0.2);
 }
 
 .myAccountPage .userInfo h4,
@@ -1260,15 +1294,15 @@ footer a:hover {
 /* Account Menu/Tabs */
 .accountMenu,
 .accountTabs {
-  background: rgba(10, 15, 35, 0.6) !important;
-  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  background: rgba(250, 245, 235, 0.6) !important;
+  border: 1px solid rgba(201, 169, 97, 0.25) !important;
   border-radius: 14px !important;
 }
 
 .accountMenu a,
 .accountTabs .tab {
   color: rgba(255, 255, 255, 0.7) !important;
-  border-bottom: 1px solid rgba(100, 150, 255, 0.1);
+  border-bottom: 1px solid rgba(201, 169, 97, 0.1);
 }
 
 .accountMenu a:hover,
@@ -1290,8 +1324,8 @@ footer a:hover {
 
 .ordersPage .orderItem,
 .orderCard {
-  background: rgba(10, 15, 35, 0.8) !important;
-  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  background: rgba(250, 245, 235, 0.8) !important;
+  border: 1px solid rgba(201, 169, 97, 0.25) !important;
   border-radius: 14px !important;
   padding: 1.25rem !important;
   margin-bottom: 1rem;
@@ -1350,16 +1384,16 @@ footer a:hover {
 
 .productDetails .productZoom,
 .productGallery {
-  background: rgba(10, 15, 35, 0.7) !important;
-  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  background: rgba(250, 245, 235, 0.7) !important;
+  border: 1px solid rgba(201, 169, 97, 0.25) !important;
   border-radius: 16px !important;
   padding: 1rem;
 }
 
 .productDetails .productInfo,
 .productDetailsInfo {
-  background: rgba(10, 15, 35, 0.7) !important;
-  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  background: rgba(250, 245, 235, 0.7) !important;
+  border: 1px solid rgba(201, 169, 97, 0.25) !important;
   border-radius: 16px !important;
   padding: 1.5rem !important;
   backdrop-filter: blur(15px);
@@ -1390,8 +1424,8 @@ footer a:hover {
 /* Tabs */
 .productDetailsTabs,
 .detailsTabs {
-  background: rgba(10, 15, 35, 0.7) !important;
-  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  background: rgba(250, 245, 235, 0.7) !important;
+  border: 1px solid rgba(201, 169, 97, 0.25) !important;
   border-radius: 16px !important;
   margin-top: 2rem;
   padding: 1.5rem;
@@ -1405,7 +1439,7 @@ footer a:hover {
 /* Reviews */
 .reviewItem {
   background: rgba(15, 25, 50, 0.5) !important;
-  border: 1px solid rgba(100, 150, 255, 0.15) !important;
+  border: 1px solid rgba(201, 169, 97, 0.15) !important;
   border-radius: 12px;
   padding: 1rem;
   margin-bottom: 1rem;
@@ -1432,8 +1466,8 @@ footer a:hover {
 input.form-control,
 textarea.form-control,
 select.form-control {
-  background: rgba(15, 20, 45, 0.6) !important;
-  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(201, 169, 97, 0.3) !important;
   border-radius: 10px !important;
   color: rgba(255, 255, 255, 0.9) !important;
   backdrop-filter: blur(10px);
@@ -1442,14 +1476,14 @@ select.form-control {
 .MuiOutlinedInput-root:hover,
 input.form-control:hover,
 textarea.form-control:hover {
-  border-color: rgba(100, 150, 255, 0.5) !important;
+  border-color: rgba(201, 169, 97, 0.5) !important;
 }
 
 .MuiOutlinedInput-root.Mui-focused,
 input.form-control:focus,
 textarea.form-control:focus {
   border-color: var(--accent-blue) !important;
-  box-shadow: 0 0 0 3px rgba(100, 150, 255, 0.15), 0 0 20px rgba(100, 150, 255, 0.1) !important;
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.15), 0 0 20px rgba(201, 169, 97, 0.1) !important;
 }
 
 .MuiOutlinedInput-notchedOutline {
@@ -1473,7 +1507,7 @@ textarea::placeholder {
 /* Select Dropdowns */
 .MuiSelect-select,
 select.form-control {
-  background: rgba(15, 20, 45, 0.6) !important;
+  background: rgba(255, 255, 255, 0.6) !important;
   color: rgba(255, 255, 255, 0.9) !important;
 }
 
@@ -1484,13 +1518,13 @@ select.form-control {
 .MuiDialog-paper,
 .MuiModal-root .MuiPaper-root,
 .modal-content {
-  background: rgba(10, 15, 35, 0.98) !important;
-  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  background: rgba(250, 245, 235, 0.98) !important;
+  border: 1px solid rgba(201, 169, 97, 0.3) !important;
   border-radius: 20px !important;
   backdrop-filter: blur(30px) saturate(200%);
   box-shadow: 
     0 25px 80px rgba(0, 0, 0, 0.5),
-    0 0 80px rgba(100, 150, 255, 0.1) !important;
+    0 0 80px rgba(201, 169, 97, 0.1) !important;
 }
 
 .MuiDialog-paper::before {
@@ -1500,9 +1534,9 @@ select.form-control {
   border-radius: 20px;
   padding: 1px;
   background: linear-gradient(135deg, 
-    rgba(100, 150, 255, 0.4) 0%,
-    rgba(150, 100, 255, 0.2) 50%,
-    rgba(100, 200, 255, 0.4) 100%
+    rgba(201, 169, 97, 0.4) 0%,
+    rgba(212, 165, 116, 0.2) 50%,
+    rgba(184, 134, 11, 0.4) 100%
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
@@ -1512,7 +1546,7 @@ select.form-control {
 
 .MuiDialogTitle-root {
   color: rgba(255, 255, 255, 0.95) !important;
-  border-bottom: 1px solid rgba(100, 150, 255, 0.2);
+  border-bottom: 1px solid rgba(201, 169, 97, 0.2);
 }
 
 .MuiDialogContent-root {
@@ -1520,7 +1554,7 @@ select.form-control {
 }
 
 .MuiDialogActions-root {
-  border-top: 1px solid rgba(100, 150, 255, 0.2);
+  border-top: 1px solid rgba(201, 169, 97, 0.2);
 }
 
 /* ========================================
@@ -1552,22 +1586,22 @@ select.form-control {
    ======================================== */
 
 .MuiPagination-root .MuiPaginationItem-root {
-  background: rgba(15, 20, 45, 0.6) !important;
-  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(201, 169, 97, 0.3) !important;
   color: rgba(255, 255, 255, 0.7) !important;
   backdrop-filter: blur(10px);
 }
 
 .MuiPagination-root .MuiPaginationItem-root:hover {
   background: rgba(25, 35, 65, 0.8) !important;
-  border-color: rgba(100, 150, 255, 0.5) !important;
+  border-color: rgba(201, 169, 97, 0.5) !important;
 }
 
 .MuiPagination-root .MuiPaginationItem-root.Mui-selected {
   background: linear-gradient(135deg, var(--primary-medium), var(--primary-light)) !important;
   border-color: var(--accent-blue) !important;
   color: white !important;
-  box-shadow: 0 4px 15px rgba(100, 150, 255, 0.25) !important;
+  box-shadow: 0 4px 15px rgba(201, 169, 97, 0.25) !important;
 }
 
 /* ========================================
@@ -1576,7 +1610,7 @@ select.form-control {
 
 .badge {
   background: rgba(15, 25, 50, 0.8) !important;
-  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  border: 1px solid rgba(201, 169, 97, 0.3) !important;
   color: rgba(255, 255, 255, 0.9) !important;
 }
 
@@ -1603,14 +1637,14 @@ select.form-control {
 
 .badge.bg-info,
 .badge-info {
-  background: rgba(100, 200, 255, 0.2) !important;
+  background: rgba(184, 134, 11, 0.2) !important;
   color: #64d8ff !important;
-  border-color: rgba(100, 200, 255, 0.4) !important;
+  border-color: rgba(184, 134, 11, 0.4) !important;
 }
 
 .MuiChip-root {
   background: rgba(15, 25, 50, 0.8) !important;
-  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  border: 1px solid rgba(201, 169, 97, 0.3) !important;
   color: rgba(255, 255, 255, 0.9) !important;
 }
 
@@ -1623,7 +1657,7 @@ select.form-control {
 }
 
 .MuiRating-iconEmpty {
-  color: rgba(100, 150, 255, 0.3) !important;
+  color: rgba(201, 169, 97, 0.3) !important;
 }
 
 /* ========================================
@@ -1639,7 +1673,7 @@ select.form-control {
   padding: 0.35rem 0.6rem;
   font-weight: 600;
   font-size: 0.75rem;
-  box-shadow: 0 4px 15px rgba(100, 150, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(201, 169, 97, 0.3);
 }
 
 /* ========================================
@@ -1652,11 +1686,11 @@ select.form-control {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(10, 15, 35, 0.5) !important;
+  background: rgba(250, 245, 235, 0.5) !important;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(100, 150, 255, 0.4) !important;
+  background: rgba(201, 169, 97, 0.4) !important;
   border-radius: 4px !important;
 }
 
@@ -1673,7 +1707,7 @@ select.form-control {
 }
 
 .MuiLinearProgress-root {
-  background: rgba(100, 150, 255, 0.2) !important;
+  background: rgba(201, 169, 97, 0.2) !important;
 }
 
 .MuiLinearProgress-bar {
@@ -1682,7 +1716,7 @@ select.form-control {
 
 .skeleton,
 .MuiSkeleton-root {
-  background: rgba(100, 150, 255, 0.1) !important;
+  background: rgba(201, 169, 97, 0.1) !important;
 }
 
 /* ========================================
@@ -1698,8 +1732,8 @@ select.form-control {
 .myListPage .item,
 .wishlistItem,
 .compareItem {
-  background: rgba(10, 15, 35, 0.8) !important;
-  border: 1px solid rgba(100, 150, 255, 0.25) !important;
+  background: rgba(250, 245, 235, 0.8) !important;
+  border: 1px solid rgba(201, 169, 97, 0.25) !important;
   border-radius: 14px !important;
   backdrop-filter: blur(15px);
 }
@@ -1746,12 +1780,12 @@ a:hover {
 
 .bg-white,
 [class*="bg-white"] {
-  background: rgba(10, 15, 35, 0.8) !important;
+  background: rgba(250, 245, 235, 0.8) !important;
 }
 
 .bg-light,
 [class*="bg-light"] {
-  background: rgba(15, 20, 45, 0.6) !important;
+  background: rgba(255, 255, 255, 0.6) !important;
 }
 
 /* ========================================
@@ -1792,7 +1826,7 @@ section h3.hd::after {
 .swiper-button-next,
 .swiper-button-prev {
   background: rgba(15, 25, 50, 0.8) !important;
-  border: 1px solid rgba(100, 150, 255, 0.3) !important;
+  border: 1px solid rgba(201, 169, 97, 0.3) !important;
   border-radius: 50% !important;
   width: 45px !important;
   height: 45px !important;
@@ -1812,7 +1846,7 @@ section h3.hd::after {
 }
 
 .swiper-pagination-bullet {
-  background: rgba(100, 150, 255, 0.4) !important;
+  background: rgba(201, 169, 97, 0.4) !important;
 }
 
 .swiper-pagination-bullet-active {
@@ -1825,10 +1859,10 @@ section h3.hd::after {
 
 @keyframes glowPulse {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(100, 150, 255, 0.1);
+    box-shadow: 0 0 20px rgba(201, 169, 97, 0.1);
   }
   50% {
-    box-shadow: 0 0 40px rgba(100, 150, 255, 0.2);
+    box-shadow: 0 0 40px rgba(201, 169, 97, 0.2);
   }
 }
 
@@ -1848,9 +1882,9 @@ section h3.hd::after {
 .shimmer {
   background: linear-gradient(
     90deg,
-    rgba(100, 150, 255, 0) 0%,
-    rgba(100, 150, 255, 0.1) 50%,
-    rgba(100, 150, 255, 0) 100%
+    rgba(201, 169, 97, 0) 0%,
+    rgba(201, 169, 97, 0.1) 50%,
+    rgba(201, 169, 97, 0) 100%
   );
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
