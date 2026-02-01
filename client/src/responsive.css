@@ -18,9 +18,8 @@
 .toggleNav svg{color: #000 !important; font-size: 30px !important;}
 
   .headerWrapper .header{padding: 10px 0px;}
-  .headerWrapper .header .logoWrapper{width: 100% !important; padding-right: 15px !important; }
-  .headerWrapper .header .part2{width: 70% !important; }
-  .headerWrapper .header .part2 .btn-blue{padding: 5px 10px !important; margin-right: 10px !important;}
+  .headerWrapper .header .header-nav-left{flex: 1 1 0 !important; min-width: 0 !important; padding-right: 15px !important; }
+  .headerWrapper .header .header-nav-right .btn-blue{padding: 5px 10px !important; margin-right: 10px !important;}
 
   .headerWrapperFixed.fixed{top: 0px !important;}
   

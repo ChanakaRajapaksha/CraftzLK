@@ -210,8 +210,40 @@ button {
   padding: 25px 0px;
 }
 
-.nav-center-logo {
-  margin: 0 auto;
+/* Header nav: three equal flex sections so logo is truly centered */
+.header-nav-row {
+  display: flex !important;
+  align-items: center;
+  width: 100%;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.header-nav-left {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.header-nav-center {
+  flex: 0 0 auto;
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+}
+
+.header-nav-right {
+  flex: 1 1 0;
+  min-width: 0;
+  justify-content: flex-end;
+}
+
+/* Profile + currency + cart grouped on the right, next to each other */
+.header-nav-right-group {
+  flex: 0 0 auto;
+  gap: 0;
+}
+.header-nav-right-group .cartTab {
+  margin-left: 0.5rem;
 }
 
 /* Navbar search icon styling */

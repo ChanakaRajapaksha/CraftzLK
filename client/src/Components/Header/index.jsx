@@ -123,9 +123,9 @@ const Header = () => {
 
           <header className="header">
             <div className="container">
-              <div className="row">
-                <div className="logoWrapper d-flex align-items-center col-sm-2">
-                  {/* Search icon takes the original logo position */}
+              <div className="row header-nav-row">
+                {/* Left section: search + mobile menu/cart - equal flex so logo stays centered */}
+                <div className="header-nav-left logoWrapper d-flex align-items-center">
                   <Button className="circle mr-2 searchTrigger" onClick={openSearch}>
                     <IoIosSearch />
                   </Button>
@@ -153,19 +153,15 @@ const Header = () => {
                   )}
                 </div>
 
-                <div className="col-sm-10 d-flex align-items-center part2">
-                  {/* Location dropdown commented out - not needed at this time */}
-                  {/* {context.countryList.length !== 0 &&
-                    context.windowWidth > 992 && <CountryDropdown />} */}
+                {/* Center section: logo only - true center because left/right have equal flex */}
+                <div className="header-nav-center d-flex align-items-center justify-content-center">
+                  <Link to={"/"} className="logo logo-blur-bg">
+                    <img src="/images/craftzlk.png" alt="CraftzLK logo" />
+                  </Link>
+                </div>
 
-                  {/* Centered logo image with blurred square background */}
-                  <div className="nav-center-logo mx-auto">
-                    <Link to={"/"} className="logo logo-blur-bg">
-                      <img src="/images/craftzlk.png" alt="CraftzLK logo" />
-                    </Link>
-                  </div>
-
-                  <div className="part3 d-flex align-items-center ml-auto">
+                {/* Right section: sign in, profile, cart - equal flex to left */}
+                <div className="header-nav-right part3 d-flex align-items-center justify-content-end">
                     {context.isLogin !== true && context.windowWidth > 992 && (
                       <Link to="/signIn">
                         <Button className="btn-blue btn-round mr-3">
@@ -174,6 +170,7 @@ const Header = () => {
                       </Link>
                     )}
 
+                    <div className="header-nav-right-group d-flex align-items-center ml-auto">
                     {context.isLogin === true && (
                       <div className="res-hide">
                         <Button 
@@ -300,8 +297,8 @@ const Header = () => {
                         </Button>
                       )}
                     </div>
+                    </div>
                   </div>
-                </div>
               </div>
             </div>
           </header>
