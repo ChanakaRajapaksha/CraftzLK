@@ -44,8 +44,8 @@ const SignUp = () => {
 
     // Load Google Identity Services script
     if (!window.google) {
-      const script = document.createElement('script');
-      script.src = 'https://accounts.google.com/gsi/client';
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
       script.async = true;
       script.defer = true;
       document.head.appendChild(script);
@@ -60,8 +60,11 @@ const SignUp = () => {
       const result = await AuthController.register(data);
 
       if (result.success) {
-        toast.success(result.message || "Registration successful! A temporary password has been sent to your email.");
-        
+        toast.success(
+          result.message ||
+            "Registration successful! A temporary password has been sent to your email.",
+        );
+
         // Clear form
         reset();
 
@@ -83,61 +86,75 @@ const SignUp = () => {
 
   const signInWithGoogle = () => {
     if (!window.google) {
-      toast.error("Google Sign-In is loading. Please wait a moment and try again.");
+      toast.error(
+        "Google Sign-In is loading. Please wait a moment and try again.",
+      );
       return;
     }
 
     try {
-      window.google.accounts.oauth2.initTokenClient({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-        scope: 'email profile',
-        callback: async (response) => {
-          if (response.error) {
-            console.error('Google OAuth error:', response.error);
-            toast.error("Google Sign-In failed. Please try again.");
-            return;
-          }
+      window.google.accounts.oauth2
+        .initTokenClient({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+          scope: "email profile",
+          callback: async (response) => {
+            if (response.error) {
+              console.error("Google OAuth error:", response.error);
+              toast.error("Google Sign-In failed. Please try again.");
+              return;
+            }
 
-          try {
-            // Get user info from Google
-            const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-              headers: {
-                'Authorization': `Bearer ${response.access_token}`
+            try {
+              // Get user info from Google
+              const userInfoResponse = await fetch(
+                "https://www.googleapis.com/oauth2/v2/userinfo",
+                {
+                  headers: {
+                    Authorization: `Bearer ${response.access_token}`,
+                  },
+                },
+              );
+
+              if (!userInfoResponse.ok) {
+                throw new Error("Failed to fetch user info");
               }
-            });
 
-            if (!userInfoResponse.ok) {
-              throw new Error('Failed to fetch user info');
+              const userInfo = await userInfoResponse.json();
+
+              // Call AuthController googleAuth method
+              const result = await AuthController.googleAuth(
+                response.access_token,
+                userInfo,
+              );
+
+              if (result.success) {
+                // Update context
+                const user = AuthController.getCurrentUser();
+                context.setIsLogin(true);
+
+                // Small delay to ensure isLogin is processed first
+                setTimeout(() => {
+                  context.setUser(user);
+                  context.setisHeaderFooterShow(true);
+                  toast.success(result.message || "Google Sign-In successful!");
+                  history("/");
+                }, 50);
+              } else {
+                toast.error(
+                  result.message || "Google Sign-In failed. Please try again.",
+                );
+              }
+            } catch (error) {
+              console.error("[SignUp.signInWithGoogle] Error:", error);
+              toast.error(
+                "An error occurred during Google Sign-In. Please try again.",
+              );
             }
-
-            const userInfo = await userInfoResponse.json();
-
-            // Call AuthController googleAuth method
-            const result = await AuthController.googleAuth(response.access_token, userInfo);
-
-            if (result.success) {
-              // Update context
-              const user = AuthController.getCurrentUser();
-              context.setIsLogin(true);
-              
-              // Small delay to ensure isLogin is processed first
-              setTimeout(() => {
-                context.setUser(user);
-                context.setisHeaderFooterShow(true);
-                toast.success(result.message || "Google Sign-In successful!");
-                history("/");
-              }, 50);
-            } else {
-              toast.error(result.message || "Google Sign-In failed. Please try again.");
-            }
-          } catch (error) {
-            console.error('[SignUp.signInWithGoogle] Error:', error);
-            toast.error("An error occurred during Google Sign-In. Please try again.");
-          }
-        }
-      }).requestAccessToken();
+          },
+        })
+        .requestAccessToken();
     } catch (error) {
-      console.error('[SignUp.signInWithGoogle] Initialization error:', error);
+      console.error("[SignUp.signInWithGoogle] Initialization error:", error);
       toast.error("Google Sign-In is not available. Please try again later.");
     }
   };
@@ -160,7 +177,9 @@ const SignUp = () => {
           <div className="signin-header">
             <p className="signin-header-small">Create your account</p>
             <h1 className="signin-header-title">Sign Up</h1>
-            <p className="signin-header-subtitle">Enter your details to get started</p>
+            <p className="signin-header-subtitle">
+              Enter your details to get started
+            </p>
           </div>
 
           {/* Form */}
@@ -175,12 +194,12 @@ const SignUp = () => {
                     required: "First name is required",
                     minLength: {
                       value: 2,
-                      message: "First name must be at least 2 characters"
+                      message: "First name must be at least 2 characters",
                     },
                     pattern: {
                       value: /^[A-Za-z\s]+$/,
-                      message: "First name can only contain letters"
-                    }
+                      message: "First name can only contain letters",
+                    },
                   }}
                   render={({ field }) => (
                     <TextField
@@ -202,7 +221,9 @@ const SignUp = () => {
                   )}
                 />
                 {errors.firstName && (
-                  <span className="form-error-text">{errors.firstName.message}</span>
+                  <span className="form-error-text">
+                    {errors.firstName.message}
+                  </span>
                 )}
               </div>
               <div className="form-group-modern">
@@ -214,12 +235,12 @@ const SignUp = () => {
                     required: "Last name is required",
                     minLength: {
                       value: 2,
-                      message: "Last name must be at least 2 characters"
+                      message: "Last name must be at least 2 characters",
                     },
                     pattern: {
                       value: /^[A-Za-z\s]+$/,
-                      message: "Last name can only contain letters"
-                    }
+                      message: "Last name can only contain letters",
+                    },
                   }}
                   render={({ field }) => (
                     <TextField
@@ -241,7 +262,9 @@ const SignUp = () => {
                   )}
                 />
                 {errors.lastName && (
-                  <span className="form-error-text">{errors.lastName.message}</span>
+                  <span className="form-error-text">
+                    {errors.lastName.message}
+                  </span>
                 )}
               </div>
             </div>
@@ -255,8 +278,8 @@ const SignUp = () => {
                   required: "Email is required",
                   pattern: {
                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: "Please enter a valid email address"
-                  }
+                    message: "Please enter a valid email address",
+                  },
                 }}
                 render={({ field }) => (
                   <TextField
@@ -291,8 +314,9 @@ const SignUp = () => {
                   required: "Phone number is required",
                   pattern: {
                     value: /^(\+94)?[0-9]{9,10}$/,
-                    message: "Please enter a valid phone number (e.g., 0712345678 or +94712345678)"
-                  }
+                    message:
+                      "Please enter a valid phone number (e.g., 0712345678 or +94712345678)",
+                  },
                 }}
                 render={({ field }) => (
                   <TextField
@@ -317,7 +341,8 @@ const SignUp = () => {
                 <span className="form-error-text">{errors.phone.message}</span>
               )}
               <p className="form-helper-text">
-                A temporary password will be sent to your email after registration. It will expire in 24 hours.
+                A temporary password will be sent to your email after
+                registration. It will expire in 24 hours.
               </p>
             </div>
 
@@ -346,9 +371,10 @@ const SignUp = () => {
               onClick={signInWithGoogle}
               fullWidth
               disabled={isLoading}
+              sx={{ color: "#fff5e6" }}
             >
               <img src={GoogleImg} alt="Google" className="google-icon" />
-              <span>Continue with Google</span>
+              <span style={{ color: "#fff5e6" }}>Continue with Google</span>
             </Button>
 
             <div className="signup-link-wrapper">

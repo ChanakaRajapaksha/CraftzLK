@@ -16,7 +16,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, 
+  background: linear-gradient(
+    135deg,
     #2c1810 0%,
     #4a2c1f 25%,
     #5d3a2a 50%,
@@ -48,12 +49,14 @@
   width: 50vw;
   /* Warm gradient with a stronger top-right emphasis (≈180° flow, highlight extends ~75%) */
   background:
-    radial-gradient(circle at 85% 12%,
-      rgba(255, 223, 186, 0.20) 0%,
-      rgba(255, 200, 150, 0.10) 35%,
-      rgba(44, 24, 16, 0.00) 75%
+    radial-gradient(
+      circle at 85% 12%,
+      rgba(255, 223, 186, 0.2) 0%,
+      rgba(255, 200, 150, 0.1) 35%,
+      rgba(44, 24, 16, 0) 75%
     ),
-    linear-gradient(180deg,
+    linear-gradient(
+      180deg,
       #7d5747 0%,
       #6b4735 28%,
       #4a2c1f 58%,
@@ -69,17 +72,31 @@
 
 /* Pattern + subtle texture overlay for vintage feel */
 .signin-right-panel::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background-image: 
+  background-image:
     url("/images/pattern.png"),
-    radial-gradient(circle at 20% 30%, rgba(255, 223, 186, 0.06) 0%, transparent 52%),
-    radial-gradient(circle at 80% 70%, rgba(255, 200, 150, 0.06) 0%, transparent 52%);
+    radial-gradient(
+      circle at 20% 30%,
+      rgba(255, 223, 186, 0.06) 0%,
+      transparent 52%
+    ),
+    radial-gradient(
+      circle at 80% 70%,
+      rgba(255, 200, 150, 0.06) 0%,
+      transparent 52%
+    );
   /* Pattern sits from top-right and covers ~3/4 of the panel */
   background-repeat: no-repeat, no-repeat, no-repeat;
-  background-position: top right, center, center;
-  background-size: 75% auto, 100% 100%, 100% 100%;
+  background-position:
+    top right,
+    center,
+    center;
+  background-size:
+    75% auto,
+    100% 100%,
+    100% 100%;
   opacity: 0.22;
   filter: sepia(0.35) contrast(1.05);
   pointer-events: none;
@@ -190,13 +207,14 @@
   font-weight: 500;
 }
 
-/* Input Fields with Warm Gradient Border */
+/* Input Fields with Warm Gradient Border - higher specificity to override theme.css */
 .signin-input {
   width: 100%;
 }
 
-.signin-input .MuiOutlinedInput-root {
-  background: rgba(60, 35, 20, 0.4) !important;
+.signin-page-container .signin-input .MuiOutlinedInput-root,
+.signin-page-container .signin-input.MuiTextField-root .MuiInputBase-root {
+  background: #6d5238 !important;
   border-radius: 8px !important;
   border: none !important;
   transition: all 0.3s ease !important;
@@ -206,30 +224,34 @@
   backdrop-filter: blur(8px);
 }
 
-.signin-input .MuiOutlinedInput-root::before {
-  content: '';
+.signin-page-container .signin-input .MuiOutlinedInput-root::before {
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: 8px;
   padding: 2px;
-  background: linear-gradient(135deg, 
+  background: linear-gradient(
+    135deg,
     rgba(212, 163, 115, 0.5) 0%,
     rgba(205, 133, 63, 0.4) 50%,
     rgba(184, 134, 11, 0.5) 100%
   );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
 }
 
 /* Error State for Input Fields */
-.signin-input .MuiOutlinedInput-root.Mui-error {
+.signin-page-container .signin-input .MuiOutlinedInput-root.Mui-error {
   background: rgba(80, 30, 30, 0.4) !important;
 }
 
-.signin-input .MuiOutlinedInput-root.Mui-error::before {
-  background: linear-gradient(135deg, 
+.signin-page-container .signin-input .MuiOutlinedInput-root.Mui-error::before {
+  background: linear-gradient(
+    135deg,
     rgba(255, 138, 128, 0.6) 0%,
     rgba(244, 67, 54, 0.5) 50%,
     rgba(255, 82, 82, 0.6) 100%
@@ -237,21 +259,24 @@
   padding: 2px;
 }
 
-.signin-input .MuiOutlinedInput-root:hover {
-  background: rgba(70, 40, 25, 0.5) !important;
+.signin-page-container .signin-input .MuiOutlinedInput-root:hover,
+.signin-page-container .signin-input.MuiTextField-root .MuiInputBase-root:hover {
+  background: #a87d58 !important;
 }
 
-.signin-input .MuiOutlinedInput-root:hover::before {
-  background: linear-gradient(135deg, 
+.signin-page-container .signin-input .MuiOutlinedInput-root:hover::before {
+  background: linear-gradient(
+    135deg,
     rgba(222, 173, 125, 0.7) 0%,
     rgba(218, 165, 32, 0.6) 50%,
     rgba(205, 133, 63, 0.7) 100%
   );
 }
 
-.signin-input .MuiOutlinedInput-root.Mui-focused {
-  background: rgba(70, 40, 25, 0.6) !important;
-  box-shadow: 
+.signin-page-container .signin-input .MuiOutlinedInput-root.Mui-focused,
+.signin-page-container .signin-input.MuiTextField-root .MuiInputBase-root.Mui-focused {
+  background: #b08860 !important;
+  box-shadow:
     0 0 25px rgba(222, 184, 135, 0.2),
     0 0 50px rgba(205, 133, 63, 0.15),
     0 0 80px rgba(184, 134, 11, 0.1),
@@ -259,24 +284,26 @@
   filter: blur(0);
 }
 
-.signin-input .MuiOutlinedInput-root.Mui-focused::before {
-  background: linear-gradient(135deg, 
+.signin-page-container .signin-input .MuiOutlinedInput-root.Mui-focused::before {
+  background: linear-gradient(
+    135deg,
     rgba(222, 184, 135, 0.9) 0%,
     rgba(218, 165, 32, 0.7) 50%,
     rgba(205, 133, 63, 0.9) 100%
   );
   padding: 2.5px;
-  box-shadow: 
+  box-shadow:
     0 0 20px rgba(222, 184, 135, 0.4),
     0 0 40px rgba(205, 133, 63, 0.2);
 }
 
-.signin-input .MuiOutlinedInput-root.Mui-focused::after {
-  content: '';
+.signin-page-container .signin-input .MuiOutlinedInput-root.Mui-focused::after {
+  content: "";
   position: absolute;
   inset: -15px;
   border-radius: 12px;
-  background: radial-gradient(circle, 
+  background: radial-gradient(
+    circle,
     rgba(222, 184, 135, 0.15) 0%,
     rgba(205, 133, 63, 0.08) 30%,
     transparent 70%
@@ -286,24 +313,24 @@
   pointer-events: none;
 }
 
-.signin-input .MuiOutlinedInput-input {
+.signin-page-container .signin-input .MuiOutlinedInput-input {
   padding: 14px 16px !important;
   font-size: 0.9375rem !important;
   color: #fff5e6 !important;
   height: auto !important;
 }
 
-.signin-input .MuiOutlinedInput-input::placeholder {
-  color: rgba(255, 235, 205, 0.4) !important;
+.signin-page-container .signin-input .MuiOutlinedInput-input::placeholder {
+  color: rgba(255, 245, 230, 0.85) !important;
   opacity: 1;
 }
 
-.signin-input .MuiOutlinedInput-notchedOutline {
+.signin-page-container .signin-input .MuiOutlinedInput-notchedOutline {
   border: none !important;
 }
 
-.signin-input .MuiInputAdornment-root {
-  color: rgba(222, 184, 135, 0.6) !important;
+.signin-page-container .signin-input .MuiInputAdornment-root {
+  color: rgba(255, 245, 230, 0.9) !important;
 }
 
 /* Forgot Password Link */
@@ -345,17 +372,20 @@
 }
 
 .signin-button::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: 8px;
   padding: 2px;
-  background: linear-gradient(135deg, 
+  background: linear-gradient(
+    135deg,
     rgba(212, 163, 115, 0.4) 0%,
     rgba(205, 133, 63, 0.3) 50%,
     rgba(184, 134, 11, 0.4) 100%
   );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
@@ -368,7 +398,8 @@
 }
 
 .signin-button:hover::before {
-  background: linear-gradient(135deg, 
+  background: linear-gradient(
+    135deg,
     rgba(222, 184, 135, 0.6) 0%,
     rgba(218, 165, 32, 0.5) 50%,
     rgba(205, 133, 63, 0.6) 100%
@@ -404,15 +435,16 @@
   font-weight: 400;
 }
 
-/* Google Sign-In Button - Warm Vintage Style */
-.google-signin-button {
+/* Google Sign-In Button - Warm Vintage Style - scoped to override theme/MUI */
+.signin-page-container .google-signin-button,
+.signin-page-container button.google-signin-button {
   width: 100%;
   height: 52px !important;
   padding: 0 24px !important;
   background: rgba(255, 245, 230, 0.08) !important;
   color: #fff5e6 !important;
   font-size: 0.9375rem !important;
-  font-weight: 500 !important;
+  font-weight: 600 !important;
   text-transform: none !important;
   border-radius: 8px !important;
   border: none !important;
@@ -426,42 +458,62 @@
   position: relative;
 }
 
-.google-signin-button::before {
-  content: '';
+.signin-page-container .google-signin-button span,
+.signin-page-container button.google-signin-button span {
+  color: #fff5e6 !important;
+}
+
+.signin-page-container .google-signin-button::before,
+.signin-page-container button.google-signin-button::before {
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: 8px;
   padding: 2px;
-  background: linear-gradient(135deg, 
+  background: linear-gradient(
+    135deg,
     rgba(212, 163, 115, 0.4) 0%,
     rgba(205, 133, 63, 0.3) 50%,
     rgba(184, 134, 11, 0.4) 100%
   );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
 }
 
-.google-signin-button:hover {
+.signin-page-container .google-signin-button:hover,
+.signin-page-container button.google-signin-button:hover {
   background: rgba(255, 245, 230, 0.12) !important;
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(30, 15, 5, 0.4) !important;
+  color: #fff5e6 !important;
 }
 
-.google-signin-button:hover::before {
-  background: linear-gradient(135deg, 
+.signin-page-container .google-signin-button:hover span,
+.signin-page-container button.google-signin-button:hover span {
+  color: #fff5e6 !important;
+}
+
+.signin-page-container .google-signin-button:hover::before,
+.signin-page-container button.google-signin-button:hover::before {
+  background: linear-gradient(
+    135deg,
     rgba(222, 184, 135, 0.6) 0%,
     rgba(218, 165, 32, 0.5) 50%,
     rgba(205, 133, 63, 0.6) 100%
   );
 }
 
-.google-signin-button:active {
+.signin-page-container .google-signin-button:active,
+.signin-page-container button.google-signin-button:active {
   transform: translateY(0);
 }
 
-.google-icon {
+.signin-page-container .google-icon,
+.google-signin-button .google-icon {
   width: 20px;
   height: 20px;
 }
@@ -508,17 +560,18 @@
   transform: translateX(-4px);
 }
 
-/* Input Icons */
-.input-icon-wrapper {
+/* Input Icons - scoped to auth pages so theme doesn't override */
+.signin-page-container .input-icon-wrapper {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   margin-bottom: 0.5rem;
 }
 
-.input-icon {
+.signin-page-container .input-icon,
+.signin-page-container .signin-input .input-icon {
   font-size: 1.1rem;
-  color: rgba(222, 184, 135, 0.6);
+  color: rgba(255, 245, 230, 0.9) !important;
 }
 
 /* Loading Spinner */
@@ -554,12 +607,12 @@
 
   .signin-button,
   .google-signin-button,
-  .signin-input .MuiOutlinedInput-root {
+  .signin-page-container .signin-input .MuiOutlinedInput-root {
     height: 48px !important;
     font-size: 0.875rem !important;
   }
 
-  .signin-input .MuiOutlinedInput-input {
+  .signin-page-container .signin-input .MuiOutlinedInput-input {
     padding: 12px 14px !important;
   }
 }
@@ -575,14 +628,15 @@
 
 /* All Toast Types - Base Styling */
 [data-sonner-toast] {
-  background: linear-gradient(135deg, 
+  background: linear-gradient(
+    135deg,
     rgba(60, 35, 20, 0.95) 0%,
     rgba(70, 40, 25, 0.95) 100%
   ) !important;
   border: none !important;
   border-radius: 10px !important;
   padding: 16px 20px !important;
-  box-shadow: 
+  box-shadow:
     0 4px 20px rgba(0, 0, 0, 0.4),
     0 8px 40px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 223, 186, 0.1) !important;
@@ -594,17 +648,20 @@
 
 /* Toast Border Gradient */
 [data-sonner-toast]::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: 10px;
   padding: 2px;
-  background: linear-gradient(135deg, 
+  background: linear-gradient(
+    135deg,
     rgba(212, 163, 115, 0.4) 0%,
     rgba(205, 133, 63, 0.3) 50%,
     rgba(184, 134, 11, 0.4) 100%
   );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
@@ -671,14 +728,16 @@
 
 /* Success Toast */
 [data-sonner-toast][data-type="success"] {
-  background: linear-gradient(135deg, 
+  background: linear-gradient(
+    135deg,
     rgba(45, 60, 35, 0.95) 0%,
     rgba(55, 70, 45, 0.95) 100%
   ) !important;
 }
 
 [data-sonner-toast][data-type="success"]::before {
-  background: linear-gradient(135deg, 
+  background: linear-gradient(
+    135deg,
     rgba(144, 238, 144, 0.5) 0%,
     rgba(107, 142, 35, 0.4) 50%,
     rgba(85, 107, 47, 0.5) 100%
@@ -701,14 +760,15 @@
 
 /* Success Glow Effect */
 [data-sonner-toast][data-type="success"]::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 0;
   width: 4px;
   height: 80%;
   transform: translateY(-50%);
-  background: linear-gradient(180deg, 
+  background: linear-gradient(
+    180deg,
     rgba(144, 238, 144, 0.8) 0%,
     rgba(107, 142, 35, 0.8) 50%,
     rgba(144, 238, 144, 0.8) 100%
@@ -719,14 +779,16 @@
 
 /* Error Toast */
 [data-sonner-toast][data-type="error"] {
-  background: linear-gradient(135deg, 
+  background: linear-gradient(
+    135deg,
     rgba(70, 30, 30, 0.95) 0%,
     rgba(80, 35, 35, 0.95) 100%
   ) !important;
 }
 
 [data-sonner-toast][data-type="error"]::before {
-  background: linear-gradient(135deg, 
+  background: linear-gradient(
+    135deg,
     rgba(255, 138, 128, 0.5) 0%,
     rgba(244, 67, 54, 0.4) 50%,
     rgba(255, 82, 82, 0.5) 100%
@@ -749,14 +811,15 @@
 
 /* Error Glow Effect */
 [data-sonner-toast][data-type="error"]::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 0;
   width: 4px;
   height: 80%;
   transform: translateY(-50%);
-  background: linear-gradient(180deg, 
+  background: linear-gradient(
+    180deg,
     rgba(255, 138, 128, 0.8) 0%,
     rgba(244, 67, 54, 0.8) 50%,
     rgba(255, 138, 128, 0.8) 100%
@@ -767,14 +830,16 @@
 
 /* Warning Toast */
 [data-sonner-toast][data-type="warning"] {
-  background: linear-gradient(135deg, 
+  background: linear-gradient(
+    135deg,
     rgba(70, 55, 25, 0.95) 0%,
     rgba(80, 60, 30, 0.95) 100%
   ) !important;
 }
 
 [data-sonner-toast][data-type="warning"]::before {
-  background: linear-gradient(135deg, 
+  background: linear-gradient(
+    135deg,
     rgba(255, 213, 79, 0.5) 0%,
     rgba(255, 193, 7, 0.4) 50%,
     rgba(255, 179, 0, 0.5) 100%
@@ -797,14 +862,15 @@
 
 /* Warning Glow Effect */
 [data-sonner-toast][data-type="warning"]::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 0;
   width: 4px;
   height: 80%;
   transform: translateY(-50%);
-  background: linear-gradient(180deg, 
+  background: linear-gradient(
+    180deg,
     rgba(255, 213, 79, 0.8) 0%,
     rgba(255, 193, 7, 0.8) 50%,
     rgba(255, 213, 79, 0.8) 100%
@@ -815,14 +881,16 @@
 
 /* Info Toast */
 [data-sonner-toast][data-type="info"] {
-  background: linear-gradient(135deg, 
+  background: linear-gradient(
+    135deg,
     rgba(30, 45, 60, 0.95) 0%,
     rgba(40, 55, 70, 0.95) 100%
   ) !important;
 }
 
 [data-sonner-toast][data-type="info"]::before {
-  background: linear-gradient(135deg, 
+  background: linear-gradient(
+    135deg,
     rgba(100, 181, 246, 0.5) 0%,
     rgba(66, 165, 245, 0.4) 50%,
     rgba(33, 150, 243, 0.5) 100%
@@ -845,14 +913,15 @@
 
 /* Info Glow Effect */
 [data-sonner-toast][data-type="info"]::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 0;
   width: 4px;
   height: 80%;
   transform: translateY(-50%);
-  background: linear-gradient(180deg, 
+  background: linear-gradient(
+    180deg,
     rgba(100, 181, 246, 0.8) 0%,
     rgba(66, 165, 245, 0.8) 50%,
     rgba(100, 181, 246, 0.8) 100%
@@ -863,7 +932,8 @@
 
 /* Loading Toast */
 [data-sonner-toast][data-type="loading"] {
-  background: linear-gradient(135deg, 
+  background: linear-gradient(
+    135deg,
     rgba(60, 35, 20, 0.95) 0%,
     rgba(70, 40, 25, 0.95) 100%
   ) !important;
@@ -891,7 +961,7 @@
 
 /* Hover Effect */
 [data-sonner-toast]:hover {
-  box-shadow: 
+  box-shadow:
     0 6px 25px rgba(0, 0, 0, 0.5),
     0 10px 50px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 223, 186, 0.15) !important;
@@ -938,4 +1008,3 @@
     font-size: 0.75rem !important;
   }
 }
-

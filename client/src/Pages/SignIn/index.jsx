@@ -299,9 +299,10 @@ const SignIn = () => {
                   onClick={signInWithGoogle}
                   fullWidth
                   disabled={isLoading}
+                  sx={{ color: "#fff5e6" }}
                 >
                   <img src={GoogleImg} alt="Google" className="google-icon" />
-                  <span>Continue with Google</span>
+                  <span style={{ color: "#fff5e6" }}>Continue with Google</span>
                 </Button>
 
                 <div className="signup-link-wrapper">
