@@ -51,6 +51,12 @@ button svg {
   color: #c9a961;
 }
 
+button.close_ svg,
+button.close_ path {
+  color: #fff !important;
+  fill: #fff !important;
+}
+
 .badge {
   display: inline-block;
   padding: 7px 10px;
@@ -195,19 +201,53 @@ button {
 }
 
 .headerWrapper .top-strip {
-  padding: 8px 0px;
+  padding: 10px 0px;
+  position: relative;
 }
 
 .headerWrapper .top-strip p {
   color: #fff;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 200;
+  text-transform: capitalize;
+  line-height: 1.5;
+  letter-spacing: 0.1em;
+}
+
+.headerWrapper .top-strip-close {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.headerWrapper .top-strip-close:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.headerWrapper .top-strip-close svg {
+  width: 20px;
+  height: 20px;
+  color: #fff;
+  fill: #fff;
 }
 
 .headerWrapper .header {
   width: 100%;
   height: auto;
-  padding: 25px 0px;
+  padding: 18px 0px;
 }
 
 /* Header nav: three equal flex sections so logo is truly centered */
@@ -334,6 +374,74 @@ button {
 
 .closeSearch {
   display: none;
+}
+
+/* Global search overlay - centered in viewport */
+.global-search-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10001;
+  backdrop-filter: blur(4px);
+}
+
+.global-search-center {
+  position: fixed;
+  inset: 0;
+  z-index: 10002;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  pointer-events: none;
+}
+
+.global-search-center > * {
+  pointer-events: auto;
+}
+
+.global-search-box {
+  width: 100%;
+  max-width: 560px;
+}
+
+.global-search-box .headerSearch {
+  height: 56px;
+  border-radius: 12px;
+  padding: 8px 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.global-search-box .headerSearch input {
+  font-size: 18px;
+  height: 40px;
+}
+
+.global-search-close {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+
+.global-search-close:hover {
+  background: #fff;
+}
+
+.global-search-close svg {
+  width: 24px;
+  height: 24px;
 }
 
 .headerSearchWrapper {
@@ -607,22 +715,51 @@ header .part3 .circle svg {
   color: #fff !important;
 }
 
-.close_ {
+.close_,
+.productModal .close_,
+.locationModal .close_,
+.MuiDialog-paper .close_ {
   position: absolute !important;
-  top: 10px;
-  right: 10px;
-  color: #000 !important;
-  min-width: 40px !important;
-  width: 40px !important;
-  height: 40px !important;
+  top: 10px !important;
+  right: 10px !important;
+  min-width: 44px !important;
+  width: 44px !important;
+  height: 44px !important;
+  padding: 0 !important;
   border-radius: 50% !important;
-  background: #f1f1f1 !important;
+  background: #c62828 !important;
+  color: #fff !important;
+  border: 2px solid rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2), 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: background 0.2s ease, box-shadow 0.2s ease !important;
+  z-index: 10 !important;
 }
 
-.close_ svg {
-  font-size: 22px;
-  color: #000 !important;
-  opacity: 0.7;
+.close_:hover,
+.productModal .close_:hover,
+.locationModal .close_:hover {
+  background: #b71c1c !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5), 0 2px 12px rgba(0, 0, 0, 0.25) !important;
+}
+
+.close_ svg,
+.close_ path,
+.productModal .close_ svg,
+.productModal .close_ path,
+.locationModal .close_ svg,
+.locationModal .close_ path,
+.MuiDialog-paper .close_ svg,
+.MuiDialog-paper .close_ path {
+  font-size: 24px !important;
+  color: #fff !important;
+  fill: #fff !important;
+  opacity: 1 !important;
+  display: block !important;
+  width: 24px !important;
+  height: 24px !important;
 }
 
 nav .navPart1 {

@@ -15,7 +15,7 @@ import { FaHeart } from "react-icons/fa";
 import { RiLogoutCircleRFill } from "react-icons/ri";
 import { FaUserAlt } from "react-icons/fa";
 import { IoMdMenu } from "react-icons/io";
-import { IoIosSearch } from "react-icons/io";
+import { IoIosSearch, IoMdClose } from "react-icons/io";
 import { FaAngleUp } from "react-icons/fa6";
 import UserAvatarImgComponent from "../userAvatarImg";
 import { IoHomeOutline } from "react-icons/io5";
@@ -24,12 +24,24 @@ import { FaRegUser } from "react-icons/fa6";
 import { CiFilter } from "react-icons/ci";
 import { IoBagCheckOutline } from "react-icons/io5";
 import { FaCodeCompare } from "react-icons/fa6";
+import { AnimatePresence, motion } from "framer-motion";
+import SearchBox from "./SearchBox/index.jsx";
 
+const TOP_STRIP_CLOSED_KEY = "craftzlk_top_strip_closed";
+const TOP_STRIP_HEIGHT_PX = 42;
 
 const Header = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [isOpenNav, setIsOpenNav] = useState(false);
   const [isOpenSearch, setIsOpenSearch] = useState(false);
+  const [isTopStripVisible, setIsTopStripVisible] = useState(() => {
+    try {
+      return !localStorage.getItem(TOP_STRIP_CLOSED_KEY);
+    } catch {
+      return true;
+    }
+  });
+  const [showTopStripAfterDelay, setShowTopStripAfterDelay] = useState(false);
   const open = Boolean(anchorEl);
 
   const headerRef = useRef();
@@ -74,6 +86,12 @@ const Header = () => {
     });
   }, []);
 
+  useEffect(() => {
+    if (!isTopStripVisible) return;
+    const t = setTimeout(() => setShowTopStripAfterDelay(true), 1500);
+    return () => clearTimeout(t);
+  }, [isTopStripVisible]);
+
   const openNav = () => {
     setIsOpenNav(!isOpenNav);
     context.setIsOpenNav(true);
@@ -94,6 +112,13 @@ const Header = () => {
     setIsOpenSearch(false);
   };
 
+  const closeTopStrip = () => {
+    setIsTopStripVisible(false);
+    try {
+      localStorage.setItem(TOP_STRIP_CLOSED_KEY, "true");
+    } catch (_) {}
+  };
+
   const gotoTopScroll = () => {
     window.scrollTo({
       top: 0,
@@ -107,26 +132,91 @@ const Header = () => {
 
   return (
     <>
+      <AnimatePresence>
+        {isOpenSearch && (
+          <>
+            <motion.div
+              className="global-search-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              onClick={closeSearch}
+            />
+            <motion.div
+              className="global-search-center"
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.92 }}
+              transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="global-search-box">
+                <SearchBox closeSearch={closeSearch} />
+              </div>
+              <button
+                type="button"
+                className="global-search-close"
+                onClick={closeSearch}
+                aria-label="Close search"
+              >
+                <IoMdClose aria-hidden="true" />
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       <Button className="gotoTop" ref={gotoTop} onClick={gotoTopScroll}>
         <FaAngleUp />
       </Button>
 
       <div className="headerWrapperFixed" ref={headerRef}>
         <div className="headerWrapper">
-          <div className="top-strip bg-blue">
-            <div className="container">
-              <p className="mb-0 mt-0 text-center">
-                Welcome to <b>MARKET-V</b>&nbsp;Where Shopping is SEAMLESS! We appreciate your patience as we ensure every order is handled with care.
-              </p>
-            </div>
-          </div>
+          <AnimatePresence>
+            {isTopStripVisible && showTopStripAfterDelay && (
+              <motion.div
+                key="top-strip"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: TOP_STRIP_HEIGHT_PX, opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{
+                  duration: 1.5,
+                  ease: [0.25, 0.46, 0.45, 0.94],
+                }}
+                style={{ overflow: "hidden" }}
+              >
+                <div
+                  className="top-strip bg-blue"
+                  style={{ minHeight: TOP_STRIP_HEIGHT_PX }}
+                >
+                  <div className="container">
+                    <p className="mb-0 mt-0 text-center">
+                      Free Shipping on all orders over Rs 12,000!
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="top-strip-close"
+                    onClick={closeTopStrip}
+                    aria-label="Close"
+                  >
+                    <IoMdClose aria-hidden="true" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <header className="header">
             <div className="container">
               <div className="row header-nav-row">
                 {/* Left section: search + mobile menu/cart - equal flex so logo stays centered */}
                 <div className="header-nav-left logoWrapper d-flex align-items-center">
-                  <Button className="circle mr-2 searchTrigger" onClick={openSearch}>
+                  <Button
+                    className="circle mr-2 searchTrigger"
+                    onClick={openSearch}
+                  >
                     <IoIosSearch />
                   </Button>
 
@@ -155,32 +245,47 @@ const Header = () => {
 
                 {/* Center section: logo only - true center because left/right have equal flex */}
                 <div className="header-nav-center d-flex align-items-center justify-content-center">
-                  <Link to={"/"} className="logo logo-blur-bg">
-                    <img src="/images/craftzlk.png" alt="CraftzLK logo" />
-                  </Link>
+                  <motion.div
+                    animate={{ scale: [1, 1.04, 1] }}
+                    transition={{
+                      duration: 2.5,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  >
+                    <Link to={"/"} className="logo logo-blur-bg">
+                      <img src="/images/craftzlk.png" alt="CraftzLK logo" />
+                    </Link>
+                  </motion.div>
                 </div>
 
-                {/* Right section: sign in, profile, cart - equal flex to left */}
+                {/* Right section: sign in or profile (same spot), then cart - equal flex to left */}
                 <div className="header-nav-right part3 d-flex align-items-center justify-content-end">
+                  <div className="header-nav-right-group d-flex align-items-center ml-auto">
                     {context.isLogin !== true && context.windowWidth > 992 && (
-                      <Link to="/signIn">
-                        <Button className="btn-blue btn-round mr-3">
-                          Sign In
-                        </Button>
+                      <Link to="/signIn" className="mr-3">
+                        <Button className="btn-blue btn-round">Sign In</Button>
                       </Link>
                     )}
-
-                    <div className="header-nav-right-group d-flex align-items-center ml-auto">
                     {context.isLogin === true && (
                       <div className="res-hide">
-                        <Button 
-                          className="circle mr-3 d-flex align-items-center justify-content-center" 
+                        <Button
+                          className="circle mr-3 d-flex align-items-center justify-content-center"
                           onClick={handleClick}
-                          style={{ padding: 0, minWidth: '40px', width: '40px', height: '40px' }}
+                          style={{
+                            padding: 0,
+                            minWidth: "40px",
+                            width: "40px",
+                            height: "40px",
+                          }}
                         >
                           <UserAvatarImgComponent
                             img={context?.user?.image}
-                            userName={context?.user?.name ? context?.user?.name?.toUpperCase() : ""}
+                            userName={
+                              context?.user?.name
+                                ? context?.user?.name?.toUpperCase()
+                                : ""
+                            }
                           />
                         </Button>
                         <Menu
@@ -202,7 +307,11 @@ const Header = () => {
                             <div className="img">
                               <UserAvatarImgComponent
                                 img={context?.user?.image}
-                                userName={context?.user?.name ? context?.user?.name?.toUpperCase() : ""}
+                                userName={
+                                  context?.user?.name
+                                    ? context?.user?.name?.toUpperCase()
+                                    : ""
+                                }
                               />
                             </div>
 
@@ -247,12 +356,12 @@ const Header = () => {
                             Logout
                           </MenuItem>
                           <Link to="/compare">
-                          <MenuItem>
-                            <ListItemIcon>
-                              <FaCodeCompare fontSize="small" />
-                            </ListItemIcon>
-                            Compare
-                          </MenuItem>
+                            <MenuItem>
+                              <ListItemIcon>
+                                <FaCodeCompare fontSize="small" />
+                              </ListItemIcon>
+                              Compare
+                            </MenuItem>
                           </Link>
                         </Menu>
                       </div>
@@ -264,7 +373,8 @@ const Header = () => {
                           {(context.cartData?.length !== 0
                             ? context.cartData
                                 ?.map(
-                                  (item) => parseInt(item.price) * item.quantity
+                                  (item) =>
+                                    parseInt(item.price) * item.quantity,
                                 )
                                 .reduce((total, value) => total + value, 0)
                             : 0
@@ -297,8 +407,8 @@ const Header = () => {
                         </Button>
                       )}
                     </div>
-                    </div>
                   </div>
+                </div>
               </div>
             </div>
           </header>
@@ -324,10 +434,13 @@ const Header = () => {
             </Link>
 
             {context.enableFilterTab === true && (
-              <Button className="circle" onClick={() => {
-                openFilter();
-                setIsOpenSearch(false)
-              }}>
+              <Button
+                className="circle"
+                onClick={() => {
+                  openFilter();
+                  setIsOpenSearch(false);
+                }}
+              >
                 <div className="d-flex align-items-center justify-content-center flex-column">
                   <CiFilter />
                   <span className="title">Filters</span>
@@ -335,14 +448,14 @@ const Header = () => {
               </Button>
             )}
 
-            <Button className="circle" onClick={openSearch }>
+            <Button className="circle" onClick={openSearch}>
               <div className="d-flex align-items-center justify-content-center flex-column">
                 <IoIosSearch />
                 <span className="title">Search</span>
               </div>
             </Button>
 
-            <Link to="/my-list"  onClick={() => setIsOpenSearch(false)}>
+            <Link to="/my-list" onClick={() => setIsOpenSearch(false)}>
               <Button className="circle">
                 <div className="d-flex align-items-center justify-content-center flex-column">
                   <IoMdHeartEmpty />
@@ -351,17 +464,16 @@ const Header = () => {
               </Button>
             </Link>
 
-            <Link to="/orders"  onClick={() => setIsOpenSearch(false)}>
-            <Button className="circle">
-              <div className="d-flex align-items-center justify-content-center flex-column">
-                <IoBagCheckOutline />
-                <span className="title">Orders</span>
-              </div>
-            </Button>
-          </Link>
-            
+            <Link to="/orders" onClick={() => setIsOpenSearch(false)}>
+              <Button className="circle">
+                <div className="d-flex align-items-center justify-content-center flex-column">
+                  <IoBagCheckOutline />
+                  <span className="title">Orders</span>
+                </div>
+              </Button>
+            </Link>
 
-            <Link to="/my-account"  onClick={() => setIsOpenSearch(false)}>
+            <Link to="/my-account" onClick={() => setIsOpenSearch(false)}>
               <Button className="circle">
                 <div className="d-flex align-items-center justify-content-center flex-column">
                   <FaRegUser />

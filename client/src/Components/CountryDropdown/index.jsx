@@ -3,7 +3,6 @@ import Button from '@mui/material/Button';
 import { FaAngleDown } from "react-icons/fa6";
 import Dialog from '@mui/material/Dialog';
 import { IoIosSearch } from "react-icons/io";
-import { MdClose } from "react-icons/md";
 import { useState } from 'react';
 import Slide from '@mui/material/Slide';
 import { MyContext } from '../../App';
@@ -63,7 +62,9 @@ const CountryDropdown = () => {
             <Dialog open={isOpenModal} onClose={() => setisOpenModal(false)} className='locationModal' TransitionComponent={Transition}>
                 <h4 className='mb-0'>Choose your Delivery Location</h4>
                 <p>Enter your address and we will specify the offer for your area.</p>
-                <Button className='close_' onClick={() => setisOpenModal(false)}><MdClose /></Button>
+                <button type="button" className="close_" onClick={() => setisOpenModal(false)} aria-label="Close">
+                <span aria-hidden="true">×</span>
+              </button>
 
                 <div className='headerSearch w-100'>
                     <input type='text' placeholder='Search your area...' onChange={filterList} />

@@ -1,5 +1,4 @@
 import Dialog from '@mui/material/Dialog';
-import { MdClose } from "react-icons/md";
 import Button from '@mui/material/Button';
 import Rating from '@mui/material/Rating';
 import { useContext, useEffect, useState } from 'react';
@@ -195,7 +194,9 @@ const ProductModal = (props) => {
     return (
         <>
             <Dialog open={context.isOpenProductModal} className="productModal" onClose={() => context.setisOpenProductModal(false)}>
-                <Button className='close_' onClick={() => context.setisOpenProductModal(false)}><MdClose /></Button>
+                <button type="button" className="close_" onClick={() => context.setisOpenProductModal(false)} aria-label="Close">
+              <span aria-hidden="true">×</span>
+            </button>
                 <h4 class="mb-1 font-weight-bold pr-5">{props?.data?.name}</h4>
                 <div className='d-flex align-items-center'>
                     <div className='d-flex align-items-center mr-4'>

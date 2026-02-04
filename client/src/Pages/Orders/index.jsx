@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState } from "react";
 import { fetchDataFromApi } from "../../utils/api";
 import Pagination from "@mui/material/Pagination";
 import Dialog from "@mui/material/Dialog";
-import { MdClose } from "react-icons/md";
 import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
 import { MyContext } from "../../App";
@@ -123,9 +122,9 @@ const Orders = () => {
       </section>
 
       <Dialog open={isOpenModal} className="productModal">
-        <Button className="close_" onClick={() => setIsOpenModal(false)}>
-          <MdClose />
-        </Button>
+        <button type="button" className="close_" onClick={() => setIsOpenModal(false)} aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
         <h4 class="mb-1 font-weight-bold pr-5 mb-4">Products</h4>
 
         <div className="table-responsive orderTable">
