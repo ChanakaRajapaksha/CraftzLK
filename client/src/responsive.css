@@ -76,7 +76,6 @@
 
   nav .navPart1 .catWrapper .sidebarNav ul li{display: inline-block !important; vertical-align: top !important; width: max-content !important; padding: 0px !important;}
 
-  .headerWrapperFixed + div{margin-top: 160px !important;}
 
   .homeProducts .homeProductsRow .col-md-3{order: 2; max-width: 100% !important; flex: 0 0 100% !important;}
   .homeProducts .homeProductsRow .col-md-9{order: 1; padding-right: 0px !important; max-width: 100% !important; flex: 0 0 100% !important;}
@@ -110,7 +109,6 @@
   footer .linksWrap::-webkit-scrollbar{display: none !important;}
   footer .linksWrap .col{width: 200px !important; max-width: 200px !important; flex: 0 0 200px !important; display: inline-block !important;}
 
-  .headerWrapperFixed + section{margin-top: 140px !important;}
 
   .product_row{margin: 0px !important;}
   .productScroller{white-space: nowrap !important; overflow: scroll; overflow-y: hidden; display: block !important; width: 100% !important; transform: inherit !important; padding: 15px 0px;}

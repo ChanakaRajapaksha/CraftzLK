@@ -161,44 +161,20 @@ button {
   background: #faf8f3;
 }
 
+/* Header in document flow so it scrolls with the page */
 .headerWrapperFixed {
   background: #faf8f3;
   transition: all 0.3s ease-in-out;
-  position: fixed;
-  top: 34px;
-  left: 0px;
+  position: relative;
   width: 100%;
   z-index: 10000;
-}
-
-.headerWrapperFixed {
-  background: #faf8f3;
-  transition: all 0.3s ease-in-out;
-  position: fixed;
-  top: 0px;
-  left: 0px;
-  width: 100%;
-  z-index: 10000;
-}
-
-.headerWrapperFixed.fixed {
-  top: -123px;
-  box-shadow:
-    0 1px 3px rgb(0 0 0 / 6%),
-    0 1px 2px rgb(0 0 0 / 12%);
 }
 
 .MuiDialog-root {
   z-index: 100000 !important;
 }
 
-.headerWrapperFixed+div {
-  margin-top: 210px !important;
-}
-
-.headerWrapperFixed+section {
-  margin-top: 195px !important;
-}
+/* No extra margin needed; header and content scroll together */
 
 .headerWrapper .top-strip {
   padding: 10px 0px;

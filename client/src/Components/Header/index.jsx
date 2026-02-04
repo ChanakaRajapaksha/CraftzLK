@@ -88,7 +88,7 @@ const Header = () => {
 
   useEffect(() => {
     if (!isTopStripVisible) return;
-    const t = setTimeout(() => setShowTopStripAfterDelay(true), 1500);
+    const t = setTimeout(() => setShowTopStripAfterDelay(true), 2000);
     return () => clearTimeout(t);
   }, [isTopStripVisible]);
 
