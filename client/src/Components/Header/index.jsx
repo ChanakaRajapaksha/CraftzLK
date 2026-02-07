@@ -42,11 +42,26 @@ const Header = () => {
     }
   });
   const [showTopStripAfterDelay, setShowTopStripAfterDelay] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const open = Boolean(anchorEl);
 
   const headerRef = useRef();
   const gotoTop = useRef();
+  const lastScrollY = useRef(0);
   const context = useContext(MyContext);
+
+  useEffect(() => {
+    if (headerRef.current) {
+      const resizeObserver = new ResizeObserver((entries) => {
+        for (let entry of entries) {
+           setHeaderHeight(entry.target.offsetHeight);
+        }
+      });
+      resizeObserver.observe(headerRef.current);
+      return () => resizeObserver.disconnect();
+    }
+  }, []);
 
   const history = useNavigate();
 
@@ -66,16 +81,8 @@ const Header = () => {
   };
 
   useEffect(() => {
-    window.addEventListener("scroll", () => {
+    const handleScroll = () => {
       let position = window.pageYOffset;
-      if (headerRef.current) {
-        if (position > 100) {
-          headerRef.current.classList.add("fixed");
-        } else {
-          headerRef.current.classList.remove("fixed");
-        }
-      }
-
       if (gotoTop.current) {
         if (position > 500) {
           gotoTop.current.classList.add("show");
@@ -83,14 +90,31 @@ const Header = () => {
           gotoTop.current.classList.remove("show");
         }
       }
-    });
+
+      if (position > 100) {
+        if (position > lastScrollY.current) {
+          setIsHeaderVisible(false);
+        } else {
+          setIsHeaderVisible(true);
+        }
+      } else {
+        setIsHeaderVisible(true);
+      }
+      lastScrollY.current = position;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
     if (!isTopStripVisible) return;
+    // Wait for login or if already logged in (assuming "after user logs in" implies session start)
+    // For strictly following the prompt about "logs in", we can check context.isLogin provided it's available.
+    // However, to ensure it works for the demo flow where user sees Home:
     const t = setTimeout(() => setShowTopStripAfterDelay(true), 2000);
     return () => clearTimeout(t);
-  }, [isTopStripVisible]);
+  }, [isTopStripVisible, context.isLogin]);
 
   const openNav = () => {
     setIsOpenNav(!isOpenNav);
@@ -171,43 +195,91 @@ const Header = () => {
         <FaAngleUp />
       </Button>
 
-      <div className="headerWrapperFixed" ref={headerRef}>
-        <div className="headerWrapper">
-          <AnimatePresence>
-            {isTopStripVisible && showTopStripAfterDelay && (
+      {/* Top strip only: fixed at top, does not scroll */}
+      <div className="header-top-strip-fixed">
+        <AnimatePresence>
+          {isTopStripVisible && showTopStripAfterDelay && (
+            <motion.div
+              key="top-strip"
+              className="bg-blue"
+              initial={{ height: 0 }}
+              animate={{ height: TOP_STRIP_HEIGHT_PX }}
+              exit={{ height: 0 }}
+              transition={{
+                duration: 1.0,
+                ease: "easeInOut",
+              }}
+              style={{ overflow: "hidden" }}
+            >
               <motion.div
-                key="top-strip"
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: TOP_STRIP_HEIGHT_PX, opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{
-                  duration: 1.5,
-                  ease: [0.25, 0.46, 0.45, 0.94],
-                }}
-                style={{ overflow: "hidden" }}
+                className="top-strip"
+                style={{ minHeight: TOP_STRIP_HEIGHT_PX }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
               >
-                <div
-                  className="top-strip bg-blue"
-                  style={{ minHeight: TOP_STRIP_HEIGHT_PX }}
-                >
-                  <div className="container">
-                    <p className="mb-0 mt-0 text-center">
-                      Free Shipping on all orders over Rs 12,000!
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    className="top-strip-close"
-                    onClick={closeTopStrip}
-                    aria-label="Close"
-                  >
-                    <IoMdClose aria-hidden="true" />
-                  </button>
+                <div className="container">
+                  <p className="mb-0 mt-0 text-center">
+                    Free Shipping on all orders over Rs 12,000!
+                  </p>
                 </div>
+                <button
+                  type="button"
+                  className="top-strip-close"
+                  onClick={closeTopStrip}
+                  aria-label="Close"
+                >
+                  <IoMdClose aria-hidden="true" />
+                </button>
               </motion.div>
-            )}
-          </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
+      {/* Spacer: reserves space so nav bar starts below the fixed strip */}
+      <AnimatePresence>
+        {isTopStripVisible && showTopStripAfterDelay && (
+          <motion.div
+            className="header-top-strip-spacer"
+            initial={{ height: 0 }}
+            animate={{ height: TOP_STRIP_HEIGHT_PX }}
+            exit={{ height: 0 }}
+            transition={{ duration: 1.0, ease: "easeInOut" }}
+            style={{ display: "block", overflow: "hidden" }}
+            aria-hidden="true"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Spacer for Fixed Header */}
+      {headerHeight > 0 && (
+         <div className="header-spacer" style={{ height: headerHeight }} />
+      )}
+
+
+
+      {/* Nav bar and everything below: Fixed */}
+      <motion.div
+        className="headerWrapperFixed"
+        ref={headerRef}
+        initial={{ top: 0, y: 0 }}
+        animate={{
+          top: isTopStripVisible && showTopStripAfterDelay ? TOP_STRIP_HEIGHT_PX : 0,
+          y: isHeaderVisible ? "0%" : "-100%"
+        }}
+        transition={{
+          top: { duration: 1.0, ease: "easeInOut" },
+          y: { duration: 0.3, ease: "easeInOut" }
+        }}
+        style={{
+          position: "fixed",
+          zIndex: 10000,
+          width: "100%",
+          transition: "none", // Disable CSS transition to let Framer control it
+        }}
+      >
+        <div className="headerWrapper">
           <header className="header">
             <div className="container">
               <div className="row header-nav-row">
@@ -483,7 +555,7 @@ const Header = () => {
             </Link>
           </div>
         )}
-      </div>
+      </motion.div>
     </>
   );
 };

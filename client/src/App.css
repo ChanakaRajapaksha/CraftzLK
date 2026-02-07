@@ -176,6 +176,64 @@ button {
 
 /* No extra margin needed; header and content scroll together */
 
+/* Fixed top strip: "Free Shipping..." stays at top while page scrolls */
+.header-top-strip-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10001;
+}
+
+.header-top-strip-spacer {
+  display: block;
+  flex-shrink: 0;
+}
+
+.header-top-strip-fixed .top-strip {
+  padding: 10px 0px;
+  position: relative;
+}
+
+.header-top-strip-fixed .top-strip p {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 200;
+  text-transform: capitalize;
+  line-height: 1.5;
+  letter-spacing: 0.1em;
+}
+
+.header-top-strip-fixed .top-strip-close {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-top-strip-fixed .top-strip-close:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.header-top-strip-fixed .top-strip-close svg {
+  width: 20px;
+  height: 20px;
+  color: #fff;
+  fill: #fff;
+}
+
 .headerWrapper .top-strip {
   padding: 10px 0px;
   position: relative;
