@@ -4,7 +4,7 @@
  * Following MVC Architecture Pattern
  */
 
-import { postData } from "../utils/api";
+import { postData, setAccessToken, clearAccessToken, getAccessToken } from "../utils/api";
 
 /**
  * Auth Controller Class
@@ -123,29 +123,22 @@ class AuthController {
   }
 
   /**
-   * Logout user (clear local data)
-   * @returns {Object} Logout response
+   * Logout user — call API (cookie sent automatically), then clear access token and user
+   * @returns {Promise<Object>} Logout response
    */
-  static logout() {
+  static async logout() {
     try {
-      // Clear all auth-related data from localStorage
-      localStorage.removeItem("token");
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("user");
-
-      return {
-        success: true,
-        message: "Logout successful",
-        data: null,
-      };
-    } catch (error) {
-      console.error("[AuthController.logout] Error:", error);
-      return {
-        success: false,
-        message: "Logout failed",
-        data: null,
-      };
+      await postData(`${this.BASE_PATH}/logout`, {});
+    } catch (_) {
+      // Proceed to clear local state even if API fails (e.g. already expired)
     }
+    clearAccessToken();
+    localStorage.removeItem("user");
+    return {
+      success: true,
+      message: "Logout successful",
+      data: null,
+    };
   }
 
   /**
@@ -153,7 +146,7 @@ class AuthController {
    * @returns {boolean} Authentication status
    */
   static isAuthenticated() {
-    const token = localStorage.getItem("token");
+    const token = getAccessToken();
     const user = localStorage.getItem("user");
     return !!(token && user);
   }
@@ -173,19 +166,11 @@ class AuthController {
   }
 
   /**
-   * Get access token from localStorage
+   * Get access token (from memory; refresh token is in httpOnly cookie)
    * @returns {string|null} Access token or null
    */
   static getAccessToken() {
-    return localStorage.getItem("token");
-  }
-
-  /**
-   * Get refresh token from localStorage
-   * @returns {string|null} Refresh token or null
-   */
-  static getRefreshToken() {
-    return localStorage.getItem("refreshToken");
+    return getAccessToken();
   }
 
   /**
@@ -269,16 +254,13 @@ class AuthController {
   // ========== Private Helper Methods ==========
 
   /**
-   * Store authentication tokens in localStorage
+   * Store access token in memory only (refresh token is in httpOnly cookie).
    * @private
-   * @param {Object} data - Response data containing tokens
+   * @param {Object} data - Response data containing accessToken
    */
   static _storeAuthTokens(data) {
-    if (data.accessToken) {
-      localStorage.setItem("token", data.accessToken);
-    }
-    if (data.refreshToken) {
-      localStorage.setItem("refreshToken", data.refreshToken);
+    if (data?.accessToken) {
+      setAccessToken(data.accessToken);
     }
   }
 

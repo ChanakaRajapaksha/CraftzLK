@@ -4,11 +4,27 @@ const apiBaseUrl = import.meta.env.VITE_API_URL || "";
 
 const apiClient = axios.create({
     baseURL: apiBaseUrl,
+    withCredentials: true,
 });
 
-// Request interceptor to add auth token
+// Access token: short-lived, in memory only; sent with every API request (Authorization: Bearer).
+// Refresh token: in httpOnly cookie; browser sends it automatically; used only by refresh endpoint.
+let accessTokenMemory = null;
+
+export function setAccessToken(token) {
+    accessTokenMemory = token || null;
+}
+
+export function getAccessToken() {
+    return accessTokenMemory;
+}
+
+export function clearAccessToken() {
+    accessTokenMemory = null;
+}
+
 apiClient.interceptors.request.use((config) => {
-    const token = localStorage.getItem("token");
+    const token = getAccessToken();
     if (token) {
         config.headers = config.headers || {};
         config.headers.Authorization = `Bearer ${token}`;
@@ -26,49 +42,36 @@ const publicEndpoints = [
     '/api/auth/refresh-token'
 ];
 
-// Response interceptor to handle token refresh
+// Response interceptor to handle token refresh (cookie sent automatically)
 apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
         
-        // Check if this is a public endpoint
         const isPublicEndpoint = publicEndpoints.some(endpoint => 
             originalRequest.url?.includes(endpoint)
         );
         
-        // Don't try to refresh token for public endpoints
         if (isPublicEndpoint) {
             return Promise.reject(error);
         }
         
-        // Only try to refresh once
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
             
             try {
-                const refreshToken = localStorage.getItem("refreshToken");
-                if (!refreshToken) {
-                    throw new Error("No refresh token available");
-                }
+                const response = await apiClient.post("/api/auth/refresh-token");
                 
-                const response = await apiClient.post("/api/auth/refresh-token", {
-                    refreshToken: refreshToken
-                });
-                
-                if (response.data.success) {
-                    localStorage.setItem("token", response.data.data.accessToken);
-                    // Retry the original request with new token
-                    originalRequest.headers.Authorization = `Bearer ${response.data.data.accessToken}`;
+                if (response.data.success && response.data.data?.accessToken) {
+                    const accessToken = response.data.data.accessToken;
+                    setAccessToken(accessToken);
+                    originalRequest.headers.Authorization = `Bearer ${accessToken}`;
                     return apiClient(originalRequest);
                 }
             } catch (refreshError) {
-                // Refresh failed, clear tokens and redirect to login
-                localStorage.removeItem("token");
-                localStorage.removeItem("refreshToken");
+                clearAccessToken();
                 localStorage.removeItem("user");
                 
-                // Don't redirect if already on auth pages
                 const currentPath = window.location.pathname;
                 if (!['/signIn', '/signUp', '/forgot-password', '/reset-password'].includes(currentPath)) {
                     window.location.href = "/signIn";
@@ -79,6 +82,20 @@ apiClient.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+/** Call refresh endpoint (cookie sent automatically); store new access token in memory. Returns true if session restored. */
+export const restoreSession = async () => {
+    try {
+        const response = await apiClient.post("/api/auth/refresh-token");
+        if (response.data?.success && response.data?.data?.accessToken) {
+            setAccessToken(response.data.data.accessToken);
+            return true;
+        }
+    } catch (_) {
+        clearAccessToken();
+    }
+    return false;
+};
 
 export const fetchDataFromApi = async (url) => {
     try {

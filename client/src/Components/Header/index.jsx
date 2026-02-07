@@ -20,6 +20,7 @@ import { FaRegUser } from "react-icons/fa6";
 import { CiFilter } from "react-icons/ci";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
+import AuthController from "../../controllers/auth.controller";
 import SearchBox from "./SearchBox/index.jsx";
 
 const TOP_STRIP_CLOSED_KEY = "craftzlk_top_strip_closed";
@@ -67,10 +68,9 @@ const Header = () => {
     setAnchorEl(null);
   };
 
-  const logout = () => {
+  const logout = async () => {
     setAnchorEl(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
+    await AuthController.logout();
     context.setIsLogin(false);
     toast.success("Logout Successfully");
     history("/signIn");
@@ -310,18 +310,15 @@ const Header = () => {
 
                 {/* Center section: logo only - true center because left/right have equal flex */}
                 <div className="header-nav-center d-flex align-items-center justify-content-center">
-                  <motion.div
-                    animate={{ scale: [1, 1.04, 1] }}
-                    transition={{
-                      duration: 2.5,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                  >
                     <Link to={"/"} className="logo logo-blur-bg">
-                      <img src="/images/craftzlk.png" alt="CraftzLK logo" />
+                      <motion.img
+                        src="/images/craftzlk.png"
+                        alt="CraftzLK logo"
+                        initial={{ rotate: 0 }}
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 0.8, ease: "easeInOut" }}
+                      />
                     </Link>
-                  </motion.div>
                 </div>
 
                 {/* Right section: sign in or profile (same spot), then cart - equal flex to left */}

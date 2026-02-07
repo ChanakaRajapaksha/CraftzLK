@@ -52,6 +52,10 @@ app.use(xssProtection);
 app.use(hppProtection);
 app.use(requestLogger);
 
+// Cookie parsing (for refresh token in httpOnly cookie)
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
 // Body parsing middleware
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));

@@ -216,19 +216,23 @@ class AuthService {
     }
   }
 
-  // Refresh access token
+  // Refresh access token (with refresh token rotation: issue new refresh, invalidate old)
   async refreshToken(refreshToken) {
     try {
       const user = await User.findOne({
         'refreshTokens.token': refreshToken,
         'refreshTokens.expiresAt': { $gt: new Date() }
-      });
+      }).select('+refreshTokens');
 
       if (!user) {
         throw new Error('Invalid or expired refresh token');
       }
 
-      // Generate new access token
+      // Remove the used refresh token (rotation: one-time use)
+      user.refreshTokens = user.refreshTokens.filter(
+        (t) => t.token !== refreshToken
+      );
+
       const tokenPayload = {
         userId: user._id,
         email: user.email,
@@ -236,12 +240,28 @@ class AuthService {
       };
 
       const newAccessToken = generateAccessToken(tokenPayload);
+      const newRefreshToken = generateRefreshToken({ userId: user._id });
+
+      // Store new refresh token
+      const refreshExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      user.refreshTokens.push({
+        token: newRefreshToken,
+        createdAt: new Date(),
+        expiresAt: refreshExpiresAt
+      });
+
+      if (user.refreshTokens.length > 5) {
+        user.refreshTokens = user.refreshTokens.slice(-5);
+      }
+
+      await user.save();
 
       return {
         success: true,
         message: 'Token refreshed successfully',
         data: {
-          accessToken: newAccessToken
+          accessToken: newAccessToken,
+          refreshToken: newRefreshToken
         }
       };
     } catch (error) {

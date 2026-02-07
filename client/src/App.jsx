@@ -23,7 +23,7 @@ import VerifyOTP from "./Pages/VerifyOTP/index.jsx";
 import ChangePassword from "./Pages/ChangePassword/index.jsx";
 import ForgotPassword from "./Pages/ForgotPassword/index.jsx";
 import ResetPassword from "./Pages/ResetPassword/index.jsx";
-import { fetchDataFromApi, postData } from "./utils/api";
+import { fetchDataFromApi, postData, restoreSession } from "./utils/api";
 import HandcraftAlert from "./Components/HandcraftAlert";
 import Compare from "./Pages/Compare/index.jsx";
 import { Toaster } from "sonner";
@@ -159,34 +159,30 @@ function AppContent() {
     }
   };
 
+  // Restore session from refresh cookie (access token in memory; refresh token in httpOnly cookie)
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (token !== "" && token !== undefined && token !== null) {
-      const userStr = localStorage.getItem("user");
-      if (userStr) {
-        try {
-          const userData = JSON.parse(userStr);
-          if (userData && (userData.userId || userData.email)) {
-            console.log('App.jsx - Setting user from localStorage:', userData);
-            setUser(userData);
-            setIsLogin(true);
-          }
-        } catch (error) {
-          console.error("Error parsing user data:", error);
+    let cancelled = false;
+    (async () => {
+      const restored = await restoreSession();
+      if (cancelled) return;
+      if (restored) {
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          try {
+            const userData = JSON.parse(userStr);
+            if (userData && (userData.userId || userData.email)) {
+              setUser(userData);
+              setIsLogin(true);
+            }
+          } catch (_) {}
         }
       } else {
-        setIsLogin(true);
+        localStorage.removeItem("user");
+        setIsLogin(false);
+        setUser({ name: "", email: "", userId: "", image: null });
       }
-    } else {
-      setIsLogin(false);
-      setUser({
-        name: "",
-        email: "",
-        userId: "",
-        image: null,
-      });
-    }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
 

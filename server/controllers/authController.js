@@ -1,6 +1,17 @@
 const authService = require('../services/authService');
 const { validateRegister, validateLogin, validatePasswordResetRequest, validatePasswordReset, validateProfileUpdate, validateChangePassword } = require('../validators/authValidation');
 
+// Cookie options for refresh token (httpOnly, not sent to JS; rotated on each refresh)
+const REFRESH_COOKIE_NAME = 'refreshToken';
+const REFRESH_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const getRefreshCookieOptions = () => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+  maxAge: REFRESH_COOKIE_MAX_AGE_MS,
+  path: '/',
+});
+
 class AuthController {
   // Register a new user
   async register(req, res, next) {
@@ -16,11 +27,16 @@ class AuthController {
     }
   }
 
-  // Login user
+  // Login user — access token in body, refresh token in httpOnly cookie
   async login(req, res, next) {
     try {
       const { email, password } = req.body;
       const result = await authService.login(email, password);
+      if (result.success && result.data?.refreshToken) {
+        res.cookie(REFRESH_COOKIE_NAME, result.data.refreshToken, getRefreshCookieOptions());
+        const { refreshToken, ...dataWithoutRefresh } = result.data;
+        return res.status(200).json({ ...result, data: dataWithoutRefresh });
+      }
       res.status(200).json(result);
     } catch (error) {
       res.status(401).json({
@@ -30,18 +46,23 @@ class AuthController {
     }
   }
 
-  // Refresh access token
+  // Refresh access token — refresh token from cookie; new access token in body, rotate cookie
   async refreshToken(req, res, next) {
     try {
-      const { refreshToken } = req.body;
+      const refreshToken = req.cookies?.[REFRESH_COOKIE_NAME];
       if (!refreshToken) {
-        return res.status(400).json({
+        return res.status(401).json({
           success: false,
-          message: 'Refresh token is required'
+          message: 'Refresh token required (cookie)'
         });
       }
 
       const result = await authService.refreshToken(refreshToken);
+      if (result.success && result.data?.refreshToken) {
+        res.cookie(REFRESH_COOKIE_NAME, result.data.refreshToken, getRefreshCookieOptions());
+        const { refreshToken: _r, ...dataWithoutRefresh } = result.data;
+        return res.status(200).json({ ...result, data: dataWithoutRefresh });
+      }
       res.status(200).json(result);
     } catch (error) {
       res.status(401).json({
@@ -51,13 +72,15 @@ class AuthController {
     }
   }
 
-  // Logout user
+  // Logout user — refresh token from cookie, then clear cookie
   async logout(req, res, next) {
     try {
-      const { refreshToken } = req.body;
+      const refreshToken = req.cookies?.[REFRESH_COOKIE_NAME];
       const result = await authService.logout(req.user._id, refreshToken);
+      res.clearCookie(REFRESH_COOKIE_NAME, { path: '/', sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax' });
       res.status(200).json(result);
     } catch (error) {
+      res.clearCookie(REFRESH_COOKIE_NAME, { path: '/', sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax' });
       res.status(400).json({
         success: false,
         message: error.message
@@ -65,12 +88,14 @@ class AuthController {
     }
   }
 
-  // Logout from all devices
+  // Logout from all devices — invalidate all refresh tokens, clear current cookie
   async logoutAll(req, res, next) {
     try {
       const result = await authService.logout(req.user._id);
+      res.clearCookie(REFRESH_COOKIE_NAME, { path: '/', sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax' });
       res.status(200).json(result);
     } catch (error) {
+      res.clearCookie(REFRESH_COOKIE_NAME, { path: '/', sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax' });
       res.status(400).json({
         success: false,
         message: error.message
@@ -273,6 +298,11 @@ class AuthController {
       }
 
       const result = await authService.googleAuth(token, userInfo);
+      if (result.success && result.data?.refreshToken) {
+        res.cookie(REFRESH_COOKIE_NAME, result.data.refreshToken, getRefreshCookieOptions());
+        const { refreshToken: _r, ...dataWithoutRefresh } = result.data;
+        return res.status(200).json({ ...result, data: dataWithoutRefresh });
+      }
       res.status(200).json(result);
     } catch (error) {
       console.error('Google Auth Error:', error);
