@@ -3,17 +3,13 @@ import { Link, useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
 import CountryDropdown from "../CountryDropdown/index.jsx";
 import { FiUser } from "react-icons/fi";
-import { IoBagOutline } from "react-icons/io5";
+import { IoBagOutline, IoPersonOutline, IoBagCheckOutline, IoHeartOutline, IoLogOutOutline, IoGitCompareOutline, IoGridOutline } from "react-icons/io5";
 import Navigation from "./Navigation/index.jsx";
 import { useContext } from "react";
 import { MyContext } from "../../App";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
-import { FaClipboardCheck } from "react-icons/fa";
-import { FaHeart } from "react-icons/fa";
-import { RiLogoutCircleRFill } from "react-icons/ri";
-import { FaUserAlt } from "react-icons/fa";
 import { IoMdMenu } from "react-icons/io";
 import { IoIosSearch, IoMdClose } from "react-icons/io";
 import { FaAngleUp } from "react-icons/fa6";
@@ -22,9 +18,8 @@ import { IoHomeOutline } from "react-icons/io5";
 import { IoMdHeartEmpty } from "react-icons/io";
 import { FaRegUser } from "react-icons/fa6";
 import { CiFilter } from "react-icons/ci";
-import { IoBagCheckOutline } from "react-icons/io5";
-import { FaCodeCompare } from "react-icons/fa6";
 import { AnimatePresence, motion } from "framer-motion";
+import { toast } from "sonner";
 import SearchBox from "./SearchBox/index.jsx";
 
 const TOP_STRIP_CLOSED_KEY = "craftzlk_top_strip_closed";
@@ -77,6 +72,7 @@ const Header = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     context.setIsLogin(false);
+    toast.success("Logout Successfully");
     history("/signIn");
   };
 
@@ -109,10 +105,7 @@ const Header = () => {
 
   useEffect(() => {
     if (!isTopStripVisible) return;
-    // Wait for login or if already logged in (assuming "after user logs in" implies session start)
-    // For strictly following the prompt about "logs in", we can check context.isLogin provided it's available.
-    // However, to ensure it works for the demo flow where user sees Home:
-    const t = setTimeout(() => setShowTopStripAfterDelay(true), 2000);
+    const t = setTimeout(() => setShowTopStripAfterDelay(true), 1500);
     return () => clearTimeout(t);
   }, [isTopStripVisible, context.isLogin]);
 
@@ -388,19 +381,29 @@ const Header = () => {
                             </div>
 
                             <div className="ml-3">
-                              <h5 className="mb-1 mt-0">
+                              <h5 className="mb-1 mt-0" style={{ color: "#000" }}>
                                 {context?.user?.name}
                               </h5>
-                              <h6 className="text-sml text-light">
+                              <h6 className="text-sml" style={{ color: "#000" }}>
                                 {context?.user?.email}
                               </h6>
                             </div>
                           </div>
 
+                          {context?.user?.role === "admin" && (
+                            <Link to="/dashboard">
+                              <MenuItem onClick={handleClose}>
+                                <ListItemIcon>
+                                  <IoGridOutline />
+                                </ListItemIcon>
+                                Dashboard
+                              </MenuItem>
+                            </Link>
+                          )}
                           <Link to="/my-account">
                             <MenuItem onClick={handleClose}>
                               <ListItemIcon>
-                                <FaUserAlt fontSize="small" />
+                                <IoPersonOutline />
                               </ListItemIcon>
                               My Account
                             </MenuItem>
@@ -408,7 +411,7 @@ const Header = () => {
                           <Link to="/orders">
                             <MenuItem onClick={handleClose}>
                               <ListItemIcon>
-                                <FaClipboardCheck fontSize="small" />
+                                <IoBagCheckOutline />
                               </ListItemIcon>
                               Orders
                             </MenuItem>
@@ -416,21 +419,21 @@ const Header = () => {
                           <Link to="/my-list">
                             <MenuItem onClick={handleClose}>
                               <ListItemIcon>
-                                <FaHeart fontSize="small" />
+                                <IoHeartOutline />
                               </ListItemIcon>
                               My List
                             </MenuItem>
                           </Link>
                           <MenuItem onClick={logout}>
                             <ListItemIcon>
-                              <RiLogoutCircleRFill fontSize="small" />
+                              <IoLogOutOutline />
                             </ListItemIcon>
                             Logout
                           </MenuItem>
                           <Link to="/compare">
-                            <MenuItem>
+                            <MenuItem onClick={handleClose}>
                               <ListItemIcon>
-                                <FaCodeCompare fontSize="small" />
+                                <IoGitCompareOutline />
                               </ListItemIcon>
                               Compare
                             </MenuItem>

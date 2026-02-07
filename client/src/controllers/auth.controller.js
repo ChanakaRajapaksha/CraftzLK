@@ -296,6 +296,7 @@ class AuthController {
       email: userData.email || "",
       userId: userData.id || userData._id || "",
       image: googlePicture || userData.images?.[0] || userData.image || userData.picture || null,
+      role: userData.role || "user",
     };
 
     localStorage.setItem("user", JSON.stringify(user));

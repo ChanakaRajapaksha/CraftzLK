@@ -35,7 +35,7 @@ class EmailService {
       console.error('Email sending failed:', error);
       throw new Error('Failed to send email');
     }
-  }
+  } 
 
   getEmailTemplate(template, data) {
     const templates = {

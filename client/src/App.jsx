@@ -28,7 +28,14 @@ import HandcraftAlert from "./Components/HandcraftAlert";
 import Compare from "./Pages/Compare/index.jsx";
 import { Toaster } from "sonner";
 
-const MyContext = createContext();
+// Default context value so consumers never get undefined (e.g. before Provider mounts or in edge cases)
+const defaultContextValue = {
+  setisHeaderFooterShow: () => {},
+  setEnableFilterTab: () => {},
+  setUser: () => {},
+  setIsLogin: () => {},
+};
+const MyContext = createContext(defaultContextValue);
 
 // Routes that should NOT show header/footer
 const noHeaderFooterRoutes = ['/signIn', '/signUp', '/verifyOTP', '/changePassword', '/forgot-password', '/reset-password'];

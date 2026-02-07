@@ -37,8 +37,8 @@ const SignIn = () => {
   });
 
   useEffect(() => {
-    context.setisHeaderFooterShow(false);
-    context.setEnableFilterTab(false);
+    context?.setisHeaderFooterShow?.(false);
+    context?.setEnableFilterTab?.(false);
 
     // Load Google Identity Services script
     if (!window.google) {

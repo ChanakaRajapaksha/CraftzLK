@@ -48,8 +48,8 @@ const Home = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    context.setisHeaderFooterShow(true);
-    setselectedCat(context.categoryData[0]?.name);
+    context?.setisHeaderFooterShow?.(true);
+    setselectedCat(context?.categoryData?.[0]?.name);
 
     const location = localStorage.getItem("location");
 
@@ -83,33 +83,34 @@ const Home = () => {
       setHomeBottomBanners(res);
     });
 
-    context.setEnableFilterTab(false);
-    context.setIsBottomShow(true);
+    context?.setEnableFilterTab?.(false);
+    context?.setIsBottomShow?.(true);
   }, []);
 
   useEffect(() => {
-    if (context.categoryData[0] !== undefined) {
-      setselectedCat(context.categoryData[0].name);
+    const categoryData = context?.categoryData;
+    if (categoryData?.[0] !== undefined) {
+      setselectedCat(categoryData[0].name);
     }
 
-    if (context.categoryData?.length !== 0) {
+    if (categoryData?.length !== 0) {
       const randomIndex = Math.floor(
-        Math.random() * context.categoryData.length
+        Math.random() * categoryData.length
       );
 
       fetchDataFromApi(
         `/api/products/catId?catId=${
-          context.categoryData[randomIndex]?.id
+          categoryData[randomIndex]?.id
         }&location=${localStorage.getItem("location")}`
       ).then((res) => {
         setRandomCatProducts({
-          catName: context.categoryData[randomIndex]?.name,
-          catId: context.categoryData[randomIndex]?.id,
+          catName: categoryData[randomIndex]?.name,
+          catId: categoryData[randomIndex]?.id,
           products: res?.products,
         });
       });
     }
-  }, [context.categoryData]);
+  }, [context?.categoryData]);
 
   useEffect(() => {
     if (selectedCat !== undefined) {
@@ -138,8 +139,8 @@ const Home = () => {
         </div>
       )}
 
-      {context.categoryData?.length !== 0 && (
-        <HomeCat catData={context.categoryData} />
+      {context?.categoryData?.length !== 0 && (
+        <HomeCat catData={context?.categoryData} />
       )}
 
       <section className="homeProducts pb-0">
@@ -200,7 +201,7 @@ const Home = () => {
                     scrollButtons="auto"
                     className="filterTabs"
                   >
-                    {context.categoryData?.map((item, index) => {
+                    {context?.categoryData?.map((item, index) => {
                       return (
                         <Tab
                           className="item"
@@ -219,13 +220,13 @@ const Home = () => {
                   opacity: `${isLoading === true ? "0.5" : "1"}`,
                 }}
               >
-                {context.windowWidth > 992 ? (
+                {context?.windowWidth > 992 ? (
                   <Swiper
                     ref={filterSlider}
                     slidesPerView={4}
                     spaceBetween={0}
                     navigation={true}
-                    slidesPerGroup={context.windowWidth > 992 ? 3 : 1}
+                    slidesPerGroup={context?.windowWidth > 992 ? 3 : 1}
                     modules={[Navigation]}
                     className="mySwiper"
                   >
@@ -303,12 +304,12 @@ const Home = () => {
 
           {featuredProducts?.length !== 0 && (
             <div className="product_row w-100 mt-2">
-              {context.windowWidth > 992 ? (
+              {context?.windowWidth > 992 ? (
                 <Swiper
                   slidesPerView={4}
                   spaceBetween={0}
                   navigation={true}
-                  slidesPerGroup={context.windowWidth > 992 ? 3 : 1}
+                  slidesPerGroup={context?.windowWidth > 992 ? 3 : 1}
                   modules={[Navigation]}
                   className="mySwiper"
                   breakpoints={{
@@ -397,12 +398,12 @@ const Home = () => {
                 </div>
               ) : (
                 <div className="product_row w-100 mt-2">
-                  {context.windowWidth > 992 ? (
+                  {context?.windowWidth > 992 ? (
                     <Swiper
                       slidesPerView={5}
                       spaceBetween={0}
                       navigation={true}
-                      slidesPerGroup={context.windowWidth > 992 ? 3 : 1}
+                      slidesPerGroup={context?.windowWidth > 992 ? 3 : 1}
                       modules={[Navigation]}
                       className="mySwiper"
                       breakpoints={{

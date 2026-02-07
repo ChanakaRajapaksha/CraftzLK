@@ -299,8 +299,9 @@ class AuthService {
 
       await user.save();
 
-      // Send reset email
-      const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+      // Send reset email (fallback to localhost if FRONTEND_URL not set in .env)
+      const baseUrl = (process.env.FRONTEND_URL).replace(/\/$/, '');
+      const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
       await emailService.sendEmail({
         to: user.email,
         subject: 'Password Reset Request',
@@ -326,23 +327,36 @@ class AuthService {
       const user = await User.findOne({
         resetPasswordToken: token,
         resetPasswordExpires: { $gt: new Date() }
-      }).select('+password +temporaryPassword');
+      }).select('_id');
 
       if (!user) {
         throw new Error('Invalid or expired reset token');
       }
 
-      // Set new password (will be hashed by pre-save middleware)
-      user.password = newPassword;
-      
-      // Clear all temporary/reset fields
-      user.temporaryPassword = undefined;         // Clear temporary password
-      user.temporaryPasswordExpires = undefined;   // Clear temporary password expiration
-      user.resetPasswordToken = undefined;
-      user.resetPasswordExpires = undefined;
-      user.refreshTokens = []; // Invalidate all refresh tokens
+      // Hash the new password the same way the User model does (so login compare works)
+      const saltRounds = 12;
+      const salt = await bcrypt.genSalt(saltRounds);
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-      await user.save();
+      // Update in DB: set new password and clear reset/temporary fields explicitly.
+      // Using updateOne + $unset ensures temporaryPassword etc. are removed so login
+      // uses the regular password, not stale temporary password.
+      await User.updateOne(
+        { _id: user._id },
+        {
+          $set: {
+            password: hashedPassword,
+            refreshTokens: [],
+            updatedAt: new Date()
+          },
+          $unset: {
+            temporaryPassword: 1,
+            temporaryPasswordExpires: 1,
+            resetPasswordToken: 1,
+            resetPasswordExpires: 1
+          }
+        }
+      );
 
       return {
         success: true,

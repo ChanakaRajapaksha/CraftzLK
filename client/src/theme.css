@@ -794,6 +794,10 @@ header .part3 .circle:hover {
   color: rgba(61, 40, 23, 0.9) !important;
 }
 
+#accDrop .info h6 {
+  color: rgba(61, 40, 23, 0.7) !important;
+}
+
 #accDrop .info p {
   color: rgba(61, 40, 23, 0.6) !important;
 }
@@ -809,6 +813,26 @@ header .part3 .circle:hover {
 #accDrop .MuiPaper-root {
   background: rgba(250, 245, 235, 0.98) !important;
   border: 1px solid rgba(201, 169, 97, 0.3) !important;
+}
+
+/* Profile dropdown: dark text and icons on light background (override global white) */
+#accDrop .MuiMenuItem-root {
+  color: rgba(61, 40, 23, 0.9) !important;
+}
+#accDrop .MuiMenuItem-root:hover {
+  background: rgba(245, 240, 230, 0.8) !important;
+  color: var(--accent-blue) !important;
+}
+#accDrop .MuiListItemIcon-root {
+  color: rgba(61, 40, 23, 0.85) !important;
+  min-width: 36px !important;
+}
+#accDrop .MuiListItemIcon-root svg {
+  color: inherit !important;
+  fill: currentColor !important;
+  font-size: 22px !important;
+  width: 22px !important;
+  height: 22px !important;
 }
 
 .userImg {

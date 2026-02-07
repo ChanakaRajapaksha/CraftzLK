@@ -758,23 +758,9 @@
   filter: drop-shadow(0 0 8px rgba(144, 238, 144, 0.4));
 }
 
-/* Success Glow Effect */
+/* Success - no left bar (removed to prevent bar appearing on hover) */
 [data-sonner-toast][data-type="success"]::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 4px;
-  height: 80%;
-  transform: translateY(-50%);
-  background: linear-gradient(
-    180deg,
-    rgba(144, 238, 144, 0.8) 0%,
-    rgba(107, 142, 35, 0.8) 50%,
-    rgba(144, 238, 144, 0.8) 100%
-  );
-  border-radius: 0 4px 4px 0;
-  box-shadow: 0 0 20px rgba(144, 238, 144, 0.5);
+  display: none !important;
 }
 
 /* Error Toast */
@@ -809,23 +795,9 @@
   filter: drop-shadow(0 0 8px rgba(255, 138, 128, 0.4));
 }
 
-/* Error Glow Effect */
+/* Error - no left bar (removed to prevent bar appearing on hover) */
 [data-sonner-toast][data-type="error"]::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 4px;
-  height: 80%;
-  transform: translateY(-50%);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 138, 128, 0.8) 0%,
-    rgba(244, 67, 54, 0.8) 50%,
-    rgba(255, 138, 128, 0.8) 100%
-  );
-  border-radius: 0 4px 4px 0;
-  box-shadow: 0 0 20px rgba(255, 138, 128, 0.5);
+  display: none !important;
 }
 
 /* Warning Toast */
@@ -860,23 +832,9 @@
   filter: drop-shadow(0 0 8px rgba(255, 213, 79, 0.4));
 }
 
-/* Warning Glow Effect */
+/* Warning - no left bar */
 [data-sonner-toast][data-type="warning"]::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 4px;
-  height: 80%;
-  transform: translateY(-50%);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 213, 79, 0.8) 0%,
-    rgba(255, 193, 7, 0.8) 50%,
-    rgba(255, 213, 79, 0.8) 100%
-  );
-  border-radius: 0 4px 4px 0;
-  box-shadow: 0 0 20px rgba(255, 213, 79, 0.5);
+  display: none !important;
 }
 
 /* Info Toast */
@@ -911,23 +869,9 @@
   filter: drop-shadow(0 0 8px rgba(100, 181, 246, 0.4));
 }
 
-/* Info Glow Effect */
+/* Info - no left bar */
 [data-sonner-toast][data-type="info"]::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 4px;
-  height: 80%;
-  transform: translateY(-50%);
-  background: linear-gradient(
-    180deg,
-    rgba(100, 181, 246, 0.8) 0%,
-    rgba(66, 165, 245, 0.8) 50%,
-    rgba(100, 181, 246, 0.8) 100%
-  );
-  border-radius: 0 4px 4px 0;
-  box-shadow: 0 0 20px rgba(100, 181, 246, 0.5);
+  display: none !important;
 }
 
 /* Loading Toast */
@@ -969,27 +913,9 @@
   transition: all 0.2s ease !important;
 }
 
-/* Progress Bar (if used) */
+/* Progress Bar - hidden to prevent bar appearing on hover over message text */
 [data-sonner-toast] [data-progress] {
-  background: rgba(222, 184, 135, 0.3) !important;
-  height: 3px !important;
-  border-radius: 0 0 10px 10px !important;
-}
-
-[data-sonner-toast][data-type="success"] [data-progress] {
-  background: rgba(144, 238, 144, 0.4) !important;
-}
-
-[data-sonner-toast][data-type="error"] [data-progress] {
-  background: rgba(255, 138, 128, 0.4) !important;
-}
-
-[data-sonner-toast][data-type="warning"] [data-progress] {
-  background: rgba(255, 213, 79, 0.4) !important;
-}
-
-[data-sonner-toast][data-type="info"] [data-progress] {
-  background: rgba(100, 181, 246, 0.4) !important;
+  display: none !important;
 }
 
 /* Responsive Toast Sizing */
