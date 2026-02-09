@@ -27,6 +27,25 @@ import { fetchDataFromApi, postData, restoreSession } from "./utils/api";
 import HandcraftAlert from "./Components/HandcraftAlert";
 import Compare from "./Pages/Compare/index.jsx";
 import { Toaster } from "sonner";
+import AdminGuard from "./Pages/Admin/AdminGuard";
+import AdminLayout from "./Pages/Admin/AdminLayout";
+import AdminDashboard from "./Pages/Admin/Dashboard/index.jsx";
+import AdminPlaceholder from "./Pages/Admin/AdminPlaceholder";
+import CategoryList from "./Pages/Admin/Category/CategoryList";
+import AddCategory from "./Pages/Admin/Category/AddCategory";
+import SubCategoryList from "./Pages/Admin/Category/SubCategoryList";
+import AddSubCategory from "./Pages/Admin/Category/AddSubCategory";
+import EditCategory from "./Pages/Admin/Category/EditCategory";
+import EditSubCategory from "./Pages/Admin/Category/EditSubCategory";
+import ProductList from "./Pages/Admin/Products/ProductList";
+import AddProductRAMS from "./Pages/Admin/Products/AddProductRAMS";
+import AddProductWeight from "./Pages/Admin/Products/AddProductWeight";
+import AddProductSize from "./Pages/Admin/Products/AddProductSize";
+import AdminOrders from "./Pages/Admin/Orders/index.jsx";
+import HomeMainBannerList from "./Pages/Admin/Banners/HomeMainBannerList";
+import BannersList from "./Pages/Admin/Banners/BannersList";
+import HomeSideBannersList from "./Pages/Admin/Banners/HomeSideBannersList";
+import HomeBottomBannersList from "./Pages/Admin/Banners/HomeBottomBannersList";
 
 // Default context value so consumers never get undefined (e.g. before Provider mounts or in edge cases)
 const defaultContextValue = {
@@ -37,8 +56,9 @@ const defaultContextValue = {
 };
 const MyContext = createContext(defaultContextValue);
 
-// Routes that should NOT show header/footer
+// Routes that should NOT show header/footer (admin dashboard uses its own layout)
 const noHeaderFooterRoutes = ['/signIn', '/signUp', '/verifyOTP', '/changePassword', '/forgot-password', '/reset-password'];
+const isAdminRoute = (pathname) => pathname.startsWith('/dashboard');
 
 function AppContent() {
   const location = useLocation();
@@ -78,9 +98,9 @@ function AppContent() {
     image: null,
   });
 
-  // Update header/footer visibility based on current route
+  // Update header/footer visibility based on current route (hide on auth pages and admin dashboard)
   useEffect(() => {
-    const shouldHide = noHeaderFooterRoutes.includes(location.pathname);
+    const shouldHide = noHeaderFooterRoutes.includes(location.pathname) || isAdminRoute(location.pathname);
     setisHeaderFooterShow(!shouldHide);
   }, [location.pathname]);
 
@@ -319,6 +339,37 @@ function AppContent() {
         <Route exact={true} path="/search" element={<SearchPage />} />
         <Route exact={true} path="/verifyOTP" element={<VerifyOTP />} />
         <Route exact={true} path="/changePassword" element={<ChangePassword />} />
+
+        {/* Admin dashboard (role=admin only, same port; no separate admin app) */}
+        <Route path="/dashboard" element={<AdminGuard><AdminLayout /></AdminGuard>}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="category" element={<CategoryList />} />
+          <Route path="category/add" element={<AddCategory />} />
+          <Route path="category/edit/:id" element={<EditCategory />} />
+          <Route path="subCategory" element={<SubCategoryList />} />
+          <Route path="subCategory/add" element={<AddSubCategory />} />
+          <Route path="subCategory/edit/:id" element={<EditSubCategory />} />
+          <Route path="products" element={<ProductList />} />
+          <Route path="product/upload" element={<AdminPlaceholder title="Product Upload" />} />
+          <Route path="product/details/:id" element={<AdminPlaceholder title="Product Details" />} />
+          <Route path="product/edit/:id" element={<AdminPlaceholder title="Edit Product" />} />
+          <Route path="productRAMS/add" element={<AddProductRAMS />} />
+          <Route path="productWEIGHT/add" element={<AddProductWeight />} />
+          <Route path="productSIZE/add" element={<AddProductSize />} />
+          <Route path="homeBannerSlide/list" element={<HomeMainBannerList />} />
+          <Route path="homeBannerSlide/add" element={<AdminPlaceholder title="Add Home Banner" />} />
+          <Route path="homeBannerSlide/edit/:id" element={<AdminPlaceholder title="Edit Home Banner" />} />
+          <Route path="banners" element={<BannersList />} />
+          <Route path="banners/add" element={<AdminPlaceholder title="Add Banner" />} />
+          <Route path="banners/edit/:id" element={<AdminPlaceholder title="Edit Banner" />} />
+          <Route path="homeSideBanners" element={<HomeSideBannersList />} />
+          <Route path="homeSideBanners/add" element={<AdminPlaceholder title="Add Home Side Banner" />} />
+          <Route path="homeSideBanners/edit/:id" element={<AdminPlaceholder title="Edit Home Side Banner" />} />
+          <Route path="homeBottomBanners" element={<HomeBottomBannersList />} />
+          <Route path="homeBottomBanners/add" element={<AdminPlaceholder title="Add Home Bottom Banner" />} />
+          <Route path="homeBottomBanners/edit/:id" element={<AdminPlaceholder title="Edit Home Bottom Banner" />} />
+          <Route path="orders" element={<AdminOrders />} />
+        </Route>
       </Routes>
       {isHeaderFooterShow === true && <Footer />}
 

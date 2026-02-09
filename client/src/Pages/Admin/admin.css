@@ -1,0 +1,105 @@
+/* Admin layout - same port as client, used when path is /dashboard */
+/* Sidebar and main content use Tailwind in components; only dashboard/content styles below */
+.admin-sidebar {
+  width: 18rem; /* 288px / w-72 */
+}
+
+/* Sub-module links: override global link styles so text is visible and matches main modules */
+.admin-sidebar nav ul ul li a {
+  color: #475569 !important; /* slate-600 */
+}
+.admin-sidebar nav ul ul li a:hover {
+  color: #1e293b !important; /* slate-800 */
+}
+.admin-sidebar nav ul ul li a.active {
+  color: #92400e !important; /* amber-800 */
+  background-color: #fffbeb !important; /* amber-50 */
+  border-left-color: #d97706 !important; /* amber-500 */
+}
+
+.admin-right-content {
+  min-height: calc(100vh - 0px);
+}
+
+.dashboard_Box {
+  justify-content: space-between;
+}
+
+.dashboardBoxWrapper {
+  gap: 25px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.dashboardBoxWrapper .dashboardBox {
+  width: 48%;
+  height: 170px;
+  border-radius: 10px;
+  overflow: hidden;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  text-align: left !important;
+  position: relative;
+  color: #fff;
+  text-transform: capitalize !important;
+}
+
+.dashboardBoxWrapper .dashboardBox .col1 h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff !important;
+}
+
+.dashboardBoxWrapper .dashboardBox .col1 span {
+  font-size: 35px !important;
+  font-weight: bold;
+  line-height: 45px;
+  color: #fff !important;
+}
+
+.dashboardBoxWrapper .dashboardBox .icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  background: linear-gradient(to bottom right, rgba(0,0,0,0), rgba(0,0,0,0.3));
+}
+
+.dashboardBoxWrapper .dashboardBox .icon svg {
+  font-size: 36px;
+  opacity: 0.9;
+  color: #fff;
+}
+
+.dashboardBoxWrapper .dashboardBox .chart {
+  opacity: 0.15;
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+}
+
+.dashboardBoxWrapper .dashboardBox .chart svg {
+  font-size: 110px;
+  color: #fff;
+}
+
+.dashboardBoxWrapper .dashboardBox .ml-auto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboardBoxWrapperRowV2 .dashboardBox {
+  width: 23% !important;
+  height: 120px !important;
+}
+
+.admin-right-content .card.hd,
+.admin-right-content h3.hd {
+  color: #403e57;
+  font-weight: 700;
+}
