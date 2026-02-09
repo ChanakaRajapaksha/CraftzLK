@@ -322,7 +322,7 @@ const Orders = () => {
         <Button className="close_" onClick={() => setIsOpenModal(false)}>
           <MdClose />
         </Button>
-        <h4 class="mb-1 font-weight-bold pr-5 mb-4">Products</h4>
+        <h4 class="font-weight-bold pr-5 mb-4">Products</h4>
 
         <div className="table-responsive orderTable">
           <table className="table table-striped table-bordered">
