@@ -42,7 +42,7 @@ const Footer = () => {
           </div>
         </div>
       </section>
-      <footer>
+      <footer id="footer">
         <div className="container">
           <div className="topInfo row">
             <div className="col d-flex align-items-center">

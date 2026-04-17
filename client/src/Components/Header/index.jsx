@@ -4,7 +4,7 @@ import Button from "@mui/material/Button";
 import CountryDropdown from "../CountryDropdown/index.jsx";
 import { FiUser } from "react-icons/fi";
 import { IoBagOutline, IoPersonOutline, IoBagCheckOutline, IoHeartOutline, IoLogOutOutline, IoGitCompareOutline, IoGridOutline } from "react-icons/io5";
-import Navigation from "./Navigation/index.jsx";
+import SecondaryCategoryNav from "./SecondaryCategoryNav/index.jsx";
 import { useContext } from "react";
 import { MyContext } from "../../App";
 import Menu from "@mui/material/Menu";
@@ -485,13 +485,11 @@ const Header = () => {
             </div>
           </header>
 
-          {context.categoryData?.length !== 0 && (
-            <Navigation
-              navData={context.categoryData}
-              isOpenNav={isOpenNav}
-              closeNav={closeNav}
-            />
-          )}
+          <SecondaryCategoryNav
+            navData={context.categoryData || []}
+            isOpenNav={isOpenNav}
+            closeNav={closeNav}
+          />
         </div>
 
         {context.windowWidth < 992 && context?.isBottomShow === true && (

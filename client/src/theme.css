@@ -1,8 +1,11 @@
 /* Global Vintage Warm Theme with 3D Glass Effects */
 
 :root {
+  /* Typography - retro vintage */
+  --font-heading: "Playfair Display", serif;
+  --font-body: "Bricolage Grotesque", sans-serif;
   /* Background Gradients - Light Vintage Warm */
-  --bg-gradient-dark: linear-gradient(180deg, 
+  --bg-gradient-dark: linear-gradient(180deg,
     #faf8f3 0%, 
     #f7f4ed 16.67%, 
     #f5f1e8 33.33%, 
@@ -595,9 +598,10 @@ table tr:hover td,
   color: var(--accent-blue) !important;
 }
 
-/* Text Colors Override */
+/* Text Colors Override - dark text on light vintage backgrounds */
 h1, h2, h3, h4, h5, h6 {
   color: var(--text-primary) !important;
+  font-family: var(--font-heading) !important;
 }
 
 p, span, li {
@@ -627,6 +631,7 @@ a:hover {
 .sectionTitle,
 .hd {
   color: var(--text-primary) !important;
+  font-family: var(--font-heading) !important;
 }
 
 /* White backgrounds override */
@@ -962,11 +967,11 @@ button svg {
 
 .productItem:hover,
 .productThumb:hover {
-  background: rgba(20, 30, 55, 0.85) !important;
+  background: var(--glass-bg-hover) !important;
   box-shadow: 
-    0 25px 60px rgba(0, 0, 0, 0.35),
-    0 0 50px rgba(201, 169, 97, 0.12) !important;
-  transform: translateY(-8px) scale(1.02);
+    0 25px 60px rgba(0, 0, 0, 0.12),
+    0 0 50px rgba(201, 169, 97, 0.15) !important;
+  transform: translateY(-6px) scale(1.02);
 }
 
 .productItem .info,
@@ -978,7 +983,7 @@ button svg {
 .productThumb .info h4,
 .productItem .title,
 .productThumb .title {
-  color: rgba(255, 255, 255, 0.95) !important;
+  color: var(--text-primary) !important;
   font-weight: 600;
 }
 
@@ -991,20 +996,20 @@ button svg {
 
 .productItem .oldPrice,
 .productThumb .oldPrice {
-  color: rgba(255, 255, 255, 0.4) !important;
+  color: var(--text-muted) !important;
 }
 
 .productItem .brand,
 .productThumb .brand {
-  color: rgba(255, 255, 255, 0.6) !important;
+  color: var(--text-secondary) !important;
 }
 
 /* Product Actions */
 .productItem .actions button,
 .productThumb .actions button {
-  background: rgba(15, 25, 50, 0.8) !important;
-  border: 1px solid rgba(201, 169, 97, 0.3) !important;
-  color: rgba(255, 255, 255, 0.8) !important;
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
   backdrop-filter: blur(10px);
 }
 
@@ -1763,24 +1768,25 @@ select.form-control {
 }
 
 /* ========================================
-   GENERIC TEXT COLOR FIXES
+   GENERIC TEXT COLOR FIXES - vintage warm (dark text on light)
    ======================================== */
 
 h1, h2, h3, h4, h5, h6,
 .hd, .sectionTitle, .title {
-  color: rgba(255, 255, 255, 0.95) !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-heading) !important;
 }
 
 p {
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--text-secondary);
 }
 
 .text-light {
-  color: rgba(255, 255, 255, 0.5) !important;
+  color: var(--text-muted) !important;
 }
 
 .text-muted {
-  color: rgba(255, 255, 255, 0.4) !important;
+  color: var(--text-hint) !important;
 }
 
 /* Link styles */
@@ -1827,8 +1833,9 @@ a:hover {
 .homeProductsRow .hd,
 .featuredProducts .hd,
 section h3.hd {
-  color: rgba(255, 255, 255, 0.95) !important;
+  color: var(--text-primary) !important;
   position: relative;
+  font-family: var(--font-heading) !important;
 }
 
 /* Section headers with underline */

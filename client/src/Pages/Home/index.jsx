@@ -1,3 +1,4 @@
+import CategoryHeroSlider from "../../Components/CategoryHeroSlider";
 import HomeBanner from "../../Components/HomeBanner";
 import Button from "@mui/material/Button";
 import { IoIosArrowRoundForward } from "react-icons/io";
@@ -129,6 +130,8 @@ const Home = () => {
 
   return (
     <>
+      <CategoryHeroSlider />
+
       {homeSlides?.length !== 0 ? (
         <HomeBanner data={homeSlides} />
       ) : (

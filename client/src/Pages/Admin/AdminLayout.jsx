@@ -28,7 +28,7 @@ export default function AdminLayout() {
   };
 
   return (
-    <div className="admin-main flex min-h-screen bg-slate-100">
+    <div className="admin-main flex min-h-screen">
       <div className="flex-shrink-0">
         <AdminSidebar />
       </div>
