@@ -1,26 +1,120 @@
-/* Admin layout - same port as client, used when path is /dashboard */
-/* Sidebar and main content use Tailwind in components; only dashboard/content styles below */
-.admin-sidebar {
-  width: 18rem; /* 288px / w-72 */
+/* ============================================
+   Admin – Vintage Warm Retro Design
+   Matches Client theme.css (fonts, colors, glass)
+   ============================================ */
+
+/* Layout */
+.admin-main {
+  background: var(--bg-gradient-dark) !important;
+  min-height: 100vh;
+  font-family: var(--font-body) !important;
 }
 
-/* Sub-module links: override global link styles so text is visible and matches main modules */
+.admin-sidebar {
+  width: 18rem;
+  min-height: 100vh;
+  background: rgba(250, 245, 235, 0.98) !important;
+  border-right: 1px solid var(--glass-border) !important;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(20px);
+}
+
+.admin-sidebar * {
+  font-family: var(--font-body) !important;
+}
+
 .admin-sidebar nav ul ul li a {
-  color: #475569 !important; /* slate-600 */
+  color: var(--text-muted) !important;
+  font-size: 0.8125rem;
 }
+
 .admin-sidebar nav ul ul li a:hover {
-  color: #1e293b !important; /* slate-800 */
+  color: var(--text-primary) !important;
+  background: rgba(245, 240, 230, 0.8) !important;
 }
+
 .admin-sidebar nav ul ul li a.active {
-  color: #92400e !important; /* amber-800 */
-  background-color: #fffbeb !important; /* amber-50 */
-  border-left-color: #d97706 !important; /* amber-500 */
+  color: var(--primary-dark) !important;
+  background: rgba(255, 251, 235, 0.9) !important;
+  border-left-color: var(--accent-blue) !important;
+  font-weight: 600;
+}
+
+/* Top-level nav links – override Tailwind for vintage */
+.admin-sidebar nav > ul > li > a,
+.admin-sidebar nav > ul > li > button {
+  color: var(--text-secondary) !important;
+}
+
+.admin-sidebar nav > ul > li > a:hover,
+.admin-sidebar nav > ul > li > button:hover {
+  background: var(--glass-bg-hover) !important;
+  color: var(--text-primary) !important;
+}
+
+.admin-sidebar nav > ul > li > a.bg-amber-100,
+.admin-sidebar nav > ul > li > a[class*="bg-amber"] {
+  background: rgba(255, 251, 235, 0.95) !important;
+  color: var(--primary-dark) !important;
+  border-left: 4px solid var(--accent-blue) !important;
+}
+
+.admin-sidebar nav > ul > li > button.bg-slate-100 {
+  background: var(--glass-bg-hover) !important;
+  color: var(--text-primary) !important;
+}
+
+.admin-sidebar .flex-shrink-0.w-8.h-8.rounded-lg {
+  background: rgba(201, 169, 97, 0.15) !important;
+  color: var(--accent-blue) !important;
+}
+
+.admin-sidebar .flex-shrink-0.w-8.h-8.rounded-lg svg {
+  color: inherit !important;
+}
+
+/* Sidebar user block */
+.admin-sidebar .border-b.border-slate-100 {
+  border-color: var(--glass-border) !important;
+}
+
+.admin-sidebar .text-slate-800 {
+  color: var(--text-primary) !important;
+  font-family: var(--font-heading) !important;
+}
+
+.admin-sidebar .text-amber-600 {
+  color: var(--accent-blue) !important;
+}
+
+/* Logout button */
+.admin-sidebar .border-t.border-slate-200 {
+  border-color: var(--glass-border) !important;
+}
+
+.admin-sidebar button.text-slate-600 {
+  color: var(--text-secondary) !important;
+}
+
+.admin-sidebar button.text-slate-600:hover,
+.admin-sidebar button.hover\:bg-red-50:hover {
+  background: rgba(201, 169, 97, 0.12) !important;
+  color: var(--primary-dark) !important;
 }
 
 .admin-right-content {
   min-height: calc(100vh - 0px);
+  background: transparent !important;
 }
 
+.admin-right-content .card.hd,
+.admin-right-content h3.hd {
+  color: var(--text-primary) !important;
+  font-family: var(--font-heading) !important;
+  font-weight: 700;
+}
+
+/* Dashboard boxes – vintage warm gradients */
 .dashboard_Box {
   justify-content: space-between;
 }
@@ -34,7 +128,7 @@
 .dashboardBoxWrapper .dashboardBox {
   width: 48%;
   height: 170px;
-  border-radius: 10px;
+  border-radius: 16px;
   overflow: hidden;
   padding: 20px;
   display: flex;
@@ -44,12 +138,22 @@
   position: relative;
   color: #fff;
   text-transform: capitalize !important;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  font-family: var(--font-body) !important;
+}
+
+.dashboardBoxWrapper .dashboardBox:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
 }
 
 .dashboardBoxWrapper .dashboardBox .col1 h4 {
   font-size: 16px;
   font-weight: 600;
   color: #fff !important;
+  font-family: var(--font-heading) !important;
 }
 
 .dashboardBoxWrapper .dashboardBox .col1 span {
@@ -65,18 +169,19 @@
   justify-content: center;
   width: 50px;
   height: 50px;
-  border-radius: 10px;
-  background: linear-gradient(to bottom right, rgba(0,0,0,0), rgba(0,0,0,0.3));
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
 }
 
 .dashboardBoxWrapper .dashboardBox .icon svg {
   font-size: 36px;
-  opacity: 0.9;
+  opacity: 0.95;
   color: #fff;
 }
 
 .dashboardBoxWrapper .dashboardBox .chart {
-  opacity: 0.15;
+  opacity: 0.2;
   position: absolute;
   bottom: 20px;
   left: 20px;
@@ -98,8 +203,177 @@
   height: 120px !important;
 }
 
-.admin-right-content .card.hd,
-.admin-right-content h3.hd {
-  color: #403e57;
-  font-weight: 700;
+/* Admin cards – glass vintage */
+.admin-right-content .card {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 16px !important;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+}
+
+.admin-right-content .card .hd,
+.admin-right-content .card h3 {
+  color: var(--text-primary) !important;
+  font-family: var(--font-heading) !important;
+  border-bottom: 1px solid var(--glass-border);
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+/* Tables */
+.admin-right-content .MuiPaper-root,
+.admin-right-content .TableContainer {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+.admin-right-content .MuiTableHead-root .MuiTableCell-head {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-medium) 100%) !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  font-family: var(--font-heading) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.admin-right-content .MuiTableBody-root .MuiTableCell-root {
+  color: var(--text-secondary) !important;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.1) !important;
+}
+
+.admin-right-content .MuiTableRow-root:hover .MuiTableCell-root {
+  background: var(--glass-bg-hover) !important;
+}
+
+.admin-right-content .productBox .info h6,
+.admin-right-content .productBox .info p {
+  color: var(--text-primary) !important;
+}
+
+.admin-right-content .badge {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+.admin-right-content .old {
+  color: var(--text-muted) !important;
+}
+
+.admin-right-content .new.text-danger {
+  color: var(--accent-blue) !important;
+}
+
+/* Form controls in admin */
+.admin-right-content .MuiFormControl-root .MuiOutlinedInput-root,
+.admin-right-content .MuiSelect-select {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+  border-radius: 10px !important;
+}
+
+.admin-right-content .MuiInputLabel-root {
+  color: var(--text-muted) !important;
+}
+
+.admin-right-content .MuiOutlinedInput-root.Mui-focused,
+.admin-right-content .MuiSelect-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--accent-blue) !important;
+}
+
+/* Buttons in admin */
+.admin-right-content .btn-blue,
+.admin-right-content .MuiButton-containedPrimary {
+  background: linear-gradient(135deg, var(--primary-medium) 0%, var(--primary-light) 100%) !important;
+  color: #fff !important;
+  border: 1px solid rgba(201, 169, 97, 0.4) !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+}
+
+.admin-right-content .btn-blue:hover,
+.admin-right-content .MuiButton-containedPrimary:hover {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-medium) 100%) !important;
+  box-shadow: 0 6px 20px rgba(184, 134, 11, 0.25) !important;
+}
+
+.admin-right-content .MuiButton-root.MuiButton-secondary {
+  color: var(--text-secondary) !important;
+  border-color: var(--glass-border) !important;
+}
+
+.admin-right-content .MuiButton-root.MuiButton-secondary:hover {
+  background: var(--glass-bg-hover) !important;
+  color: var(--accent-blue) !important;
+}
+
+/* Chart area */
+.admin-right-content .BarChart,
+.admin-right-content .recharts-wrapper {
+  color: var(--text-primary);
+}
+
+.admin-right-content .recharts-cartesian-grid line {
+  stroke: var(--glass-border);
+}
+
+.admin-right-content .recharts-bar-rectangle {
+  fill: var(--accent-blue) !important;
+}
+
+/* Pagination */
+.admin-right-content .MuiTablePagination-root {
+  color: var(--text-secondary) !important;
+}
+
+.admin-right-content .MuiTablePagination-selectIcon {
+  color: var(--text-muted) !important;
+}
+
+/* Bootstrap-style tables in admin */
+.admin-right-content .table thead.thead-dark th,
+.admin-right-content .table thead th {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-medium) 100%) !important;
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  font-family: var(--font-heading) !important;
+  font-weight: 600;
+}
+
+.admin-right-content .table td,
+.admin-right-content .table tbody th {
+  color: var(--text-secondary) !important;
+  border-color: var(--glass-border) !important;
+}
+
+.admin-right-content .table tbody tr:hover td,
+.admin-right-content .table tbody tr:hover th {
+  background: var(--glass-bg-hover) !important;
+}
+
+.admin-right-content .table-bordered {
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Breadcrumbs in admin */
+.admin-right-content .breadcrumbs_ .MuiChip-root,
+.admin-right-content .StyledBreadcrumb {
+  background: var(--glass-bg) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+.admin-right-content .breadcrumbs_ .MuiChip-root:hover {
+  background: var(--glass-bg-hover) !important;
+  color: var(--accent-blue) !important;
+}
+
+.admin-right-content .right-content h5 {
+  color: var(--text-primary) !important;
+  font-family: var(--font-heading) !important;
 }

@@ -101,10 +101,10 @@ export default function AdminDashboard() {
         <div className="row dashboardBoxWrapperRow dashboard_Box dashboardBoxWrapperRowV2">
           <div className="col-md-12">
             <div className="dashboardBoxWrapper d-flex">
-              <DashboardBox color={["#1da256", "#48d483"]} icon={<FaUserCircle />} grow title="Total Users" count={totalUsers} />
-              <DashboardBox color={["#c012e2", "#eb64fe"]} icon={<IoMdCart />} title="Total Orders" count={totalOrders} />
-              <DashboardBox color={["#2c78e5", "#60aff5"]} icon={<MdShoppingBag />} title="Total Products" count={totalProducts} />
-              <DashboardBox color={["#e1950e", "#f3cd29"]} icon={<GiStarsStack />} title="Total Reviews" count={totalProductsReviews} />
+              <DashboardBox color={["#8b6f47", "#b8860b"]} icon={<FaUserCircle />} grow title="Total Users" count={totalUsers} />
+              <DashboardBox color={["#a67c52", "#c9a961"]} icon={<IoMdCart />} title="Total Orders" count={totalOrders} />
+              <DashboardBox color={["#6b5344", "#d4a574"]} icon={<MdShoppingBag />} title="Total Products" count={totalProducts} />
+              <DashboardBox color={["#b8860b", "#daa520"]} icon={<GiStarsStack />} title="Total Reviews" count={totalProductsReviews} />
             </div>
           </div>
         </div>
@@ -198,7 +198,7 @@ export default function AdminDashboard() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="sales" fill="#777c83" />
+                <Bar dataKey="sales" fill="#c9a961" />
               </BarChart>
             </ResponsiveContainer>
           )}
