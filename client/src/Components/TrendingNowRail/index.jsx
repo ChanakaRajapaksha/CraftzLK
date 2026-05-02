@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useCallback, useId, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { HOME_RAIL_SECTION } from "../homeRailLayout";
 
 const IMG_BASE = "/images/product_images/jack_fruit_curry.png";
 const IMG_ZOOM = "/images/product_images/jack_fruit_curry_zomm.png";
@@ -10,7 +11,6 @@ const BASE_CARDS = Array.from({ length: 5 }, (_, i) => ({
   name: "Jack Fruit Curry",
   wasPrice: "1,950",
   nowPrice: "1,450",
-  installmentLine: "OR 3 X Rs 483 WITH",
 }));
 
 const ROWS = [
@@ -27,7 +27,7 @@ const GRID_CLASS =
   "flex snap-x snap-mandatory flex-nowrap gap-4 overflow-x-auto pb-2 [-webkit-overflow-scrolling:touch] sm:gap-6 md:grid md:snap-none md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0 lg:grid-cols-5 lg:gap-6";
 
 const glassCard =
-  "rounded-[1.35rem] border border-white/55 bg-gradient-to-b from-white/45 via-white/25 to-white/[0.18] p-[1px] shadow-[0_12px_40px_-8px_rgba(61,40,23,0.12),0_4px_16px_-4px_rgba(61,40,23,0.08),inset_0_1px_0_0_rgba(255,255,255,0.75)] ring-1 ring-white/35 backdrop-blur-2xl backdrop-saturate-150";
+  "rounded-[1.35rem] border border-white/55 bg-gradient-to-b from-white/45 via-white/25 to-white/[0.18] p-[1px] shadow-none ring-0 backdrop-blur-2xl backdrop-saturate-150";
 
 const glassInner =
   "overflow-hidden rounded-[1.3rem] bg-gradient-to-b from-white/20 to-transparent";
@@ -36,10 +36,10 @@ const glassPanelNoSave =
   "border-t border-white/35 bg-white/15 px-2.5 pb-3.5 pt-4 text-center backdrop-blur-xl sm:px-3.5 sm:pb-4 sm:pt-5";
 
 const glassImageWell =
-  "relative aspect-[1/1.05] overflow-hidden rounded-t-[1.28rem] bg-white/10 ring-1 ring-inset ring-white/25";
+  "relative aspect-[1/1.05] overflow-hidden rounded-t-[1.28rem] bg-white/10 ring-0";
 
 const glassButton =
-  "mt-auto w-full max-w-full rounded-xl border border-white/50 bg-white/25 px-2 py-2.5 font-sans text-[0.65rem] font-bold uppercase tracking-widest text-vintage-brown shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-md transition-[background,box-shadow,transform] hover:bg-white/40 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.85),0_2px_12px_rgba(61,40,23,0.08)] active:scale-[0.99] sm:px-3 sm:py-2.5 sm:text-[0.72rem]";
+  "mt-auto w-full max-w-full rounded-xl border border-white/50 bg-white/25 px-2 py-2.5 font-sans text-[0.65rem] font-bold uppercase tracking-widest text-vintage-brown shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-md transition-[background,box-shadow,transform,border-color] hover:border-black/50 hover:bg-white/70 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_0_0_2px_rgba(0,0,0,0.45),0_10px_28px_-8px_rgba(0,0,0,0.45)] active:scale-[0.99] sm:px-3 sm:py-2.5 sm:text-[0.72rem]";
 
 const CARD_WIDTH_CLASS =
   "group relative flex min-h-0 w-[min(90vw,380px)] shrink-0 snap-start flex-col sm:w-[min(84vw,360px)] md:w-auto md:min-w-0";
@@ -183,7 +183,7 @@ const TrendingNowRail = () => {
 
   return (
     <section
-      className="relative w-full bg-transparent px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-5 lg:px-8"
+      className={HOME_RAIL_SECTION}
       aria-labelledby="trending-now-rail-heading"
     >
       <div className="mx-auto w-full max-w-[1500px]">
@@ -225,7 +225,9 @@ const TrendingNowRail = () => {
                   className={`${CARD_WIDTH_CLASS} ${glassCard}`}
                   role="listitem"
                 >
-                  <div className={`flex min-h-0 flex-1 flex-col ${glassInner}`}>
+                  <div
+                    className={`bg-[#FADA5E] flex min-h-0 flex-1 flex-col ${glassInner} cursor-pointer`}
+                  >
                     <div className="relative z-0">
                       <div className={glassImageWell}>
                         <img
@@ -254,16 +256,11 @@ const TrendingNowRail = () => {
                         <span className="mr-2 text-red-700/95 line-through decoration-1">
                           Rs {item.wasPrice}
                         </span>
-                        <span className="font-semibold">Rs {item.nowPrice}</span>
-                      </p>
-                      <p className="mb-3 font-sans text-[0.65rem] leading-relaxed text-vintage-brown/80 sm:mb-4 sm:text-[0.68rem]">
-                        {item.installmentLine}{" "}
-                        <span className="inline-flex items-center gap-1 align-middle" aria-hidden>
-                          <span className="h-2.5 w-3.5 rounded border border-white/40 bg-gradient-to-br from-white/90 to-white/40 shadow-sm backdrop-blur-sm" />
-                          <span className="h-2.5 w-3.5 rounded border border-white/40 bg-gradient-to-br from-white/90 to-white/40 shadow-sm backdrop-blur-sm" />
-                          <span className="h-2.5 w-3.5 rounded border border-white/40 bg-gradient-to-br from-white/90 to-white/40 shadow-sm backdrop-blur-sm" />
+                        <span className="font-semibold">
+                          Rs {item.nowPrice}
                         </span>
                       </p>
+
                       <button type="button" className={glassButton}>
                         ADD TO CART
                       </button>
@@ -305,7 +302,7 @@ const TrendingNowRail = () => {
           </div>
           <Link
             to="/products"
-            className="inline-block rounded-xl border border-white/50 bg-white/30 px-9 py-2.5 font-sans text-[0.7rem] font-bold uppercase tracking-[0.14em] text-vintage-brown shadow-[0_8px_24px_rgba(61,40,23,0.08),inset_0_1px_0_rgba(255,255,255,0.7)] backdrop-blur-xl transition-[background,box-shadow,color] hover:bg-white/45 hover:text-vintage-brown sm:text-xs"
+            className="inline-block rounded-xl border border-white/50 bg-white/30 px-9 py-2.5 font-sans text-[0.7rem] font-bold uppercase tracking-[0.14em] text-vintage-brown shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] backdrop-blur-xl transition-[background,box-shadow,color] hover:bg-white/45 hover:text-vintage-brown sm:text-xs"
           >
             VIEW ALL
           </Link>

@@ -1101,35 +1101,44 @@ nav .navPart2 ul li:hover .submenu {
   width: 100%;
 }
 
+/* Category strip, promo banners, random category — grouped below Featured / Trending / New Arrivals */
+.homeContentAfterRails {
+  width: 100%;
+}
+
 .homePatternBg::before {
   content: "";
   position: absolute;
   top: 0;
   right: 0;
   bottom: 0;
-  width: 62%;
+  width: 100%;
+  max-width: 900px;
   overflow: hidden;
   background-image: url("/images/background_pattern.png");
+  /*
+   * Single instance, fixed scale: size uses px/vw only (not % of this layer’s height), so adding
+   * more sections does not zoom the artwork. The strip is tall; only the top-right shows one image.
+   */
   background-repeat: no-repeat;
-  /* Cover + right anchor: the PNG has a large empty area on the left and a thin margin on the right;
-     stretching with 100% 100% made that margin look like a gap. Zoom slightly from the right edge
-     so the margin is cropped inside this layer. */
-  background-size: cover;
-  background-position: right center;
-  opacity: 0.1;
+  background-position: right top;
+  background-size: min(2500px, 100vw) auto;
+  opacity: 0.2;
   pointer-events: none;
   z-index: -1;
 }
 
 @media (max-width: 768px) {
   .homePatternBg::before {
-    width: 85%;
+    width: 72%;
+    max-width: none;
+    background-size: min(520px, 94vw) auto;
     opacity: 0.08;
   }
 }
 
 .homeProducts {
-  padding: 25px 0px;
+  padding: 24px 0px;
   width: 100%;
   position: relative;
   background: transparent;
@@ -1485,7 +1494,7 @@ nav .navPart2 ul li:hover .submenu {
 }
 
 .homeCat {
-  padding: 35px 0px;
+  padding: 24px 0px;
 }
 
 .homeCat .swiper {
@@ -1595,81 +1604,6 @@ nav .navPart2 ul li:hover .submenu {
   position: sticky;
   top: 85px;
   z-index: 100;
-}
-
-.newsLetterSection {
-  width: 100%;
-  height: auto;
-  background-image: linear-gradient(to bottom right, #d4a574, #c9a961);
-  position: relative;
-  overflow: hidden;
-  padding: 60px 0px;
-}
-
-.newsLetterSection .col-md-6 {
-  position: static !important;
-}
-
-.newsLetterSection p {
-  font-size: 18px;
-  margin: 10px 0px !important;
-}
-
-.newsLetterSection h3 {
-  font-size: 40px;
-  font-weight: bold;
-}
-
-.newsLetterSection p.text-light {
-  color: #fff !important;
-  opacity: 0.7;
-  font-size: 15px;
-}
-
-.newsLetterSection img {
-  position: absolute;
-  bottom: 0px;
-  right: 0px;
-  width: 500px;
-}
-
-.newsLetterSection form {
-  width: 80%;
-  height: 60px;
-  background: #fff;
-  padding: 10px;
-  position: relative;
-  border-radius: 5px;
-}
-
-.newsLetterSection form svg {
-  position: absolute;
-  top: 17px;
-  left: 10px;
-  font-size: 25px;
-  opacity: 0.3;
-}
-
-.newsLetterSection form input {
-  width: 100%;
-  height: 100%;
-  background: #fff !important;
-  outline: none !important;
-  border: 0px !important;
-  padding-left: 40px;
-  padding-right: 200px;
-}
-
-.newsLetterSection form button {
-  position: absolute;
-  top: 6px;
-  right: 7px;
-  background: #b8860b !important;
-  font-size: 14px !important;
-  padding: 12px 25px !important;
-  color: #fff !important;
-  text-transform: capitalize !important;
-  font-weight: 600 !important;
 }
 
 footer {

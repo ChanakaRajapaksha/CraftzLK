@@ -87,7 +87,7 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
     { label: "Gifts", to: findCategoryPath(navData, "Gifts") || "/" },
     { label: "Eco", to: findCategoryPath(navData, "Eco") || "/" },
     { label: "Custom", to: findCategoryPath(navData, "Custom") || "/" },
-    { label: "About", to: "/#footer" },
+    { label: "About", to: "/" },
   ];
 
   const isHomeActive = location.pathname === "/";

@@ -1092,12 +1092,6 @@ footer a:hover {
   color: var(--accent-blue) !important;
 }
 
-.footerWrapper .newsletter input {
-  background: rgba(255, 255, 255, 0.8) !important;
-  border: 1px solid rgba(201, 169, 97, 0.3) !important;
-  color: rgba(61, 40, 23, 0.9) !important;
-}
-
 /* ========================================
    SIDEBAR OVERRIDES
    ======================================== */

@@ -9,7 +9,6 @@ import ProductDetails from "./Pages/ProductDetails/index.jsx";
 import Header from "./Components/Header/index.jsx";
 import { createContext, useEffect, useState } from "react";
 import axios from "axios";
-import Footer from "./Components/Footer/index.jsx";
 import ProductModal from "./Components/ProductModal/index.jsx";
 import Cart from "./Pages/Cart/index.jsx";
 import SignIn from "./Pages/SignIn/index.jsx";
@@ -371,8 +370,6 @@ function AppContent() {
           <Route path="orders" element={<AdminOrders />} />
         </Route>
       </Routes>
-      {isHeaderFooterShow === true && <Footer />}
-
       {isOpenProductModal === true && <ProductModal data={productData} />}
     </MyContext.Provider>
   );

@@ -97,9 +97,6 @@
 
   .homeProductsRow .sticky::-webkit-scrollbar{display: none !important;}
 
-  .newsLetterSection{padding: 25px 0px !important;}
-  .newsLetterSection img{display: none !important;}
-
   footer{overflow: hidden;}
   footer .topInfo{ display: block !important; white-space: nowrap !important; overflow: scroll !important; overflow-y: hidden !important;}
   footer .topInfo::-webkit-scrollbar{display: none !important;}
@@ -270,11 +267,6 @@
   #accDrop ul li{padding: 5px 12px !important; font-size: 14px !important;}
 
   .quantityDrop{width: 100% !important;}
-
-  .newsLetterSection h3{font-size: 30px !important;}
-  .newsLetterSection p br{display: none !important;}
-
-  .newsLetterSection form{width: 100% !important;}
 
   .copyright {flex-direction: column; justify-content: center;}
   .copyright *{text-align: center !important; margin: auto !important;}

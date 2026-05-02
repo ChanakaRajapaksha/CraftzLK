@@ -1,6 +1,7 @@
 import CategoryHeroSlider from "../../Components/CategoryHeroSlider";
 import FeaturedProductsRail from "../../Components/FeaturedProductsRail";
 import TrendingNowRail from "../../Components/TrendingNowRail";
+import NewArrivalsRail from "../../Components/NewArrivalsRail";
 import Button from "@mui/material/Button";
 import { IoIosArrowRoundForward } from "react-icons/io";
 import React, { useContext, useEffect, useState } from "react";
@@ -77,6 +78,9 @@ const Home = () => {
 
         <TrendingNowRail />
 
+        <NewArrivalsRail />
+
+        <div className="homeContentAfterRails">
         {context?.categoryData?.length !== 0 && (
           <HomeCat catData={context?.categoryData} />
         )}
@@ -209,6 +213,7 @@ const Home = () => {
               </div>
             </>
           )}
+        </div>
         </div>
       </div>
 
