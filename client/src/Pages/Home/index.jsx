@@ -2,6 +2,7 @@ import CategoryHeroSlider from "../../Components/CategoryHeroSlider";
 import FeaturedProductsRail from "../../Components/FeaturedProductsRail";
 import TrendingNowRail from "../../Components/TrendingNowRail";
 import NewArrivalsRail from "../../Components/NewArrivalsRail";
+import HomeBanner from "../../Components/HomeBanner";
 import Button from "@mui/material/Button";
 import { IoIosArrowRoundForward } from "react-icons/io";
 import React, { useContext, useEffect, useState } from "react";
