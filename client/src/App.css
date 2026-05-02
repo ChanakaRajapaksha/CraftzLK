@@ -1,12 +1,12 @@
+@import url("https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css");
+@import url("https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css");
+
+/* Fonts loaded via index.css (Bricolage Grotesque, Playfair Display) for vintage warm theme */
+
 * {
   margin: 0px;
   padding: 0px;
 }
-
-/* Fonts loaded via index.css (Bricolage Grotesque, Playfair Display) for vintage warm theme */
-
-@import url("https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css");
-@import url("https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css");
 
 body {
   font-family: var(--font-bricolage, "Bricolage Grotesque", sans-serif);
@@ -1014,6 +1014,157 @@ nav .navPart2 ul li:hover .submenu {
   opacity: 1;
   visibility: inherit;
   top: 100%;
+}
+
+/* ---------- Secondary category strip + mega menu (BEM in SecondaryCategoryNav) ---------- */
+.secondary-category-nav {
+  position: relative;
+  z-index: 120;
+}
+
+.secondary-category-nav__bar {
+  position: relative;
+  background: rgba(245, 241, 232, 0.98);
+  border-bottom: 1px solid rgba(201, 169, 97, 0.15);
+}
+
+.secondary-category-nav__inner {
+  gap: 0.35rem 1.25rem;
+  min-height: 48px;
+}
+
+.secondary-category-nav__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(61, 40, 23, 0.88) !important;
+  text-decoration: none !important;
+  white-space: nowrap;
+  border-radius: 6px;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+.secondary-category-nav__link:hover,
+.secondary-category-nav__link:focus-visible {
+  color: var(--accent-blue, #c9a961) !important;
+  background: rgba(201, 169, 97, 0.1);
+}
+
+.secondary-category-nav__link.is-active {
+  color: var(--accent-blue, #c9a961) !important;
+}
+
+.secondary-category-nav__link--button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+}
+
+.secondary-category-nav__chev {
+  font-size: 0.65rem;
+  opacity: 0.8;
+  transition: transform 0.2s ease;
+}
+
+.secondary-category-nav__chev--open {
+  transform: rotate(180deg);
+}
+
+.secondary-category-nav__chev-drawer-open {
+  transform: rotate(90deg);
+}
+
+.secondary-category-nav__mega {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  background: rgba(250, 245, 235, 0.98);
+  border-bottom: 1px solid rgba(201, 169, 97, 0.22);
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.09);
+}
+
+.secondary-category-nav__mega.is-open {
+  display: block;
+}
+
+.secondary-category-nav__mega-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem 1.75rem;
+}
+
+@media (min-width: 992px) {
+  .secondary-category-nav__mega-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .secondary-category-nav__mega-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+.secondary-category-nav__mega-heading {
+  font-family: var(--font-heading, "Playfair Display", serif);
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0 0 0.55rem;
+  color: var(--text-primary, #3d2817);
+}
+
+.secondary-category-nav__mega-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.secondary-category-nav__mega-list li {
+  margin-bottom: 0.3rem;
+}
+
+.secondary-category-nav__mega-sublink {
+  display: inline-block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(61, 40, 23, 0.78) !important;
+  text-decoration: none !important;
+  transition: color 0.15s ease;
+}
+
+.secondary-category-nav__mega-sublink:hover {
+  color: var(--accent-blue, #c9a961) !important;
+}
+
+.secondary-category-nav__drawer-col-title {
+  color: rgba(61, 40, 23, 0.92) !important;
+}
+
+.secondary-category-nav__drawer-sublink {
+  color: rgba(61, 40, 23, 0.78) !important;
+  text-decoration: none !important;
+}
+
+.secondary-category-nav__drawer-sublink:hover {
+  color: var(--accent-blue, #c9a961) !important;
+}
+
+/* Slide-out drawer: responsive.css only positions .res-nav off-canvas for max-width 992px.
+   Wider viewports would render the duplicate vertical list in normal flow — hide wrapper on desktop */
+@media (min-width: 993px) {
+  .secondary-category-nav__drawer.res-nav-wrapper {
+    display: none !important;
+  }
 }
 
 .homeBannerSection {

@@ -75,8 +75,6 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
   const location = useLocation();
   const history = useNavigate();
   const [megaOpen, setMegaOpen] = useState(false);
-  const [mobileMegaOpen, setMobileMegaOpen] = useState(false);
-  const [openMobileColIndex, setOpenMobileColIndex] = useState(null);
   const [drawerCategoriesOpen, setDrawerCategoriesOpen] = useState(false);
   const wrapRef = useRef(null);
 
@@ -127,12 +125,11 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
 
   useEffect(() => {
     setMegaOpen(false);
-    setMobileMegaOpen(false);
   }, [location.pathname]);
 
   return (
     <nav className="secondary-category-nav" aria-label="Main site sections">
-      <div className="secondary-category-nav__bar" ref={wrapRef}>
+      <div className="secondary-category-nav__bar d-none d-lg-block" ref={wrapRef}>
         <div className="container">
           <div className="secondary-category-nav__inner d-none d-lg-flex align-items-center justify-content-center flex-wrap">
             <Link
@@ -204,84 +201,6 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
             </div>
           </div>
         </div>
-
-        <div className="container">
-          <div className="secondary-category-nav__mobile d-flex d-lg-none align-items-center">
-            <div className="secondary-category-nav__scroll">
-              <Link to="/" className="secondary-category-nav__link" onClick={closeNav}>
-                Home
-              </Link>
-              <Link to={shopPath} className="secondary-category-nav__link" onClick={closeNav}>
-                Shop
-              </Link>
-              <button
-                type="button"
-                className={`secondary-category-nav__link secondary-category-nav__link--button ${mobileMegaOpen ? "is-active" : ""}`}
-                onClick={() => setMobileMegaOpen((v) => !v)}
-                aria-expanded={mobileMegaOpen}
-              >
-                Categories
-                <FaAngleDown
-                  className={`secondary-category-nav__chev ${mobileMegaOpen ? "secondary-category-nav__chev--open" : ""}`}
-                  aria-hidden
-                />
-              </button>
-              {tailLinks.map((link) => (
-                <Link
-                  key={link.label}
-                  to={link.to}
-                  className="secondary-category-nav__link"
-                  onClick={closeNav}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {mobileMegaOpen && (
-          <div className="secondary-category-nav__mobile-mega d-lg-none">
-            <div className="container py-3">
-              {MEGA_MENU_COLUMNS.map((col, idx) => (
-                <div key={col.title} className="secondary-category-nav__mobile-col">
-                  <button
-                    type="button"
-                    className="secondary-category-nav__mobile-col-toggle"
-                    onClick={() =>
-                      setOpenMobileColIndex(openMobileColIndex === idx ? null : idx)
-                    }
-                  >
-                    <span>{col.title}</span>
-                    <FaAngleDown
-                      className={
-                        openMobileColIndex === idx ? "secondary-category-nav__chev-flip" : ""
-                      }
-                    />
-                  </button>
-                  {openMobileColIndex === idx && (
-                    <ul className="secondary-category-nav__mega-list pl-3 pb-2">
-                      {col.items.map((item) => (
-                        <li key={item}>
-                          <Link
-                            to={subLink(item)}
-                            onClick={() => {
-                              setMobileMegaOpen(false);
-                              closeNav?.();
-                            }}
-                            className="secondary-category-nav__mega-sublink d-block py-1"
-                          >
-                            {item}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       <div
