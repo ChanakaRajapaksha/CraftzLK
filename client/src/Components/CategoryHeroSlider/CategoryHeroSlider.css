@@ -88,17 +88,22 @@
 
 .category-hero-slider__sweep {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 18%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.38),
-    transparent
-  );
+  top: -8%;
+  bottom: -8%;
+  left: 0;
+  width: min(52%, 320px);
+  transform-origin: 50% 50%;
   pointer-events: none;
   z-index: 1;
+  background: linear-gradient(
+    102deg,
+    transparent 12%,
+    rgba(255, 255, 255, 0.08) 36%,
+    rgba(250, 248, 243, 0.5) 50%,
+    rgba(212, 165, 116, 0.22) 58%,
+    transparent 82%
+  );
+  mix-blend-mode: soft-light;
 }
 
 /* Edge hit areas + chevrons */

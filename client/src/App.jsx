@@ -3,7 +3,7 @@ import "./App.css";
 import "./responsive.css";
 import "./ChatBox.css";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
-import Home from "./Pages/Home/index.jsx";
+import HomeGate from "./Pages/Home/HomeGate.jsx";
 import Listing from "./Pages/Listing/index.jsx";
 import ProductDetails from "./Pages/ProductDetails/index.jsx";
 import Header from "./Components/Header/index.jsx";
@@ -309,7 +309,7 @@ function AppContent() {
       {isHeaderFooterShow === true && <Header />}
 
       <Routes>
-        <Route path="/" exact={true} element={<Home />} />
+        <Route path="/" exact={true} element={<HomeGate />} />
         <Route
           path="/products/category/:id"
           exact={true}

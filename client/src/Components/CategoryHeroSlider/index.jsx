@@ -25,77 +25,115 @@ const SLIDES = [
 const AUTOPLAY_MS = 5000;
 const TRANSITION_MS = 1300;
 
-const easeReveal = [0.76, 0, 0.24, 1];
+/** Snappy editorial ease — readable motion without bounce */
+const easePremium = [0.22, 1, 0.36, 1];
 
-/** Build variants — transform + opacity only (compositor-friendly; avoids clip-path repaint during scroll) */
+/**
+ * “Cinematic drift” — directional lateral move + shallow Z-roll + layered scale wash.
+ * Stays transform/opacity-only for smooth scrolling (no clip-path).
+ */
 function buildSlideVariants(durationSec) {
-  return {
-    enter: (direction) => ({
-      x: direction >= 0 ? "100%" : "-100%",
-      opacity: 0,
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
-      transition: {
-        x: { duration: durationSec, ease: easeReveal },
-        opacity: { duration: Math.min(0.4, durationSec * 0.45), ease: "easeOut" },
-      },
-    },
-    exit: (direction) => ({
-      x: direction >= 0 ? "-12%" : "12%",
-      opacity: 0,
-      transition: {
-        x: { duration: durationSec, ease: easeReveal },
-        opacity: { duration: durationSec * 0.55, ease: easeReveal },
-      },
-    }),
-  };
-}
+  if (durationSec < 0.05) {
+    return {
+      enter: { opacity: 0 },
+      center: { opacity: 1, transition: { duration: 0 } },
+      exit: { opacity: 0, transition: { duration: 0 } },
+    };
+  }
 
-/** Inner image: short parallax on enter/exit only — no always-on scale (that caused scroll jank) */
-function buildImageVariants(durationSec) {
+  const t = durationSec;
+
   return {
     enter: (direction) => ({
-      x: direction >= 0 ? "4%" : "-4%",
+      opacity: 0,
+      x: direction >= 0 ? "32%" : "-32%",
       scale: 1.05,
+      rotateZ: direction >= 0 ? 2.75 : -2.75,
     }),
     center: {
-      x: "0%",
+      opacity: 1,
+      x: 0,
       scale: 1,
+      rotateZ: 0,
       transition: {
-        x: { duration: durationSec, ease: easeReveal },
-        scale: { duration: durationSec, ease: easeReveal },
+        duration: t,
+        ease: easePremium,
+        opacity: { duration: t * 0.52, ease: easePremium },
       },
     },
     exit: (direction) => ({
-      x: direction >= 0 ? "-3%" : "3%",
-      scale: 1,
+      opacity: 0,
+      x: direction >= 0 ? "-26%" : "26%",
+      scale: 0.9,
+      rotateZ: direction >= 0 ? -2.25 : 2.25,
       transition: {
-        x: { duration: durationSec, ease: easeReveal },
-        scale: { duration: durationSec * 0.6, ease: easeReveal },
+        duration: t,
+        ease: easePremium,
+        opacity: { duration: t * 0.38, ease: easePremium },
       },
     }),
   };
 }
 
-/** Bright sweep that travels with the wipe edge (only visible during transition) */
-const sweepVariants = {
-  enter: (direction) => ({
-    left: direction >= 0 ? "100%" : "-2%",
-    opacity: 0,
-  }),
-  center: (direction) => ({
-    left: direction >= 0 ? "-2%" : "100%",
-    opacity: [0, 0.55, 0.55, 0],
-    transition: {
-      duration: TRANSITION_MS / 1000,
-      ease: easeReveal,
-      times: [0, 0.15, 0.85, 1],
+/** Inner image counters the frame motion for subtle parallax depth */
+function buildImageVariants(durationSec) {
+  if (durationSec < 0.05) {
+    return {
+      enter: {},
+      center: { transition: { duration: 0 } },
+      exit: { transition: { duration: 0 } },
+    };
+  }
+
+  const t = durationSec;
+
+  return {
+    enter: (direction) => ({
+      scale: 1.14,
+      x: direction >= 0 ? "-4.5%" : "4.5%",
+    }),
+    center: {
+      scale: 1,
+      x: "0%",
+      transition: { duration: t, ease: easePremium },
     },
-  }),
-  exit: { opacity: 0, transition: { duration: 0.2 } },
-};
+    exit: (direction) => ({
+      scale: 1.09,
+      x: direction >= 0 ? "5%" : "-5%",
+      transition: { duration: t, ease: easePremium },
+    }),
+  };
+}
+
+/** Diagonal light streak synced to slide direction (transform-only) */
+function buildSweepVariants(durationSec) {
+  if (durationSec < 0.05) {
+    return {
+      enter: { opacity: 0 },
+      center: { opacity: 0 },
+      exit: { opacity: 0 },
+    };
+  }
+
+  return {
+    enter: (direction) => ({
+      x: direction >= 0 ? "115%" : "-115%",
+      opacity: 0,
+      skewX: direction >= 0 ? -14 : 14,
+    }),
+    center: (direction) => ({
+      x: direction >= 0 ? "-95%" : "95%",
+      opacity: [0, 0.42, 0.32, 0],
+      skewX: 0,
+      transition: {
+        duration: durationSec,
+        ease: easePremium,
+        times: [0, 0.12, 0.82, 1],
+      },
+    }),
+    exit: { opacity: 0, transition: { duration: 0.12 } },
+  };
+}
 
 /** Dots after the active slide shrink (Instagram-style); farther = smaller */
 function afterDotScale(index, active) {
@@ -110,6 +148,7 @@ const CategoryHeroSlider = () => {
   const transSec = reduceMotion ? 0.01 : TRANSITION_MS / 1000;
   const slideVariants = useMemo(() => buildSlideVariants(transSec), [transSec]);
   const imageVariants = useMemo(() => buildImageVariants(transSec), [transSec]);
+  const sweepVariants = useMemo(() => buildSweepVariants(transSec), [transSec]);
 
   const [active, setActive] = useState(0);
   const [direction, setDirection] = useState(1);
