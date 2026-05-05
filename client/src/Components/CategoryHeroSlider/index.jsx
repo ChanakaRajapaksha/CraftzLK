@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import "./CategoryHeroSlider.css";
 
 /** Images from public/images/slidebar_images — add files here when you add assets */
 const SLIDES = [
@@ -26,58 +27,57 @@ const TRANSITION_MS = 1300;
 
 const easeReveal = [0.76, 0, 0.24, 1];
 
-/** Curtain wipe + parallax — direction comes from how the user moved through the deck */
-const slideVariants = {
-  enter: (direction) => ({
-    clipPath:
-      direction >= 0
-        ? "inset(0 0 0 100%)"
-        : "inset(0 100% 0 0)",
-    opacity: 1,
-  }),
-  center: {
-    clipPath: "inset(0 0 0 0)",
-    opacity: 1,
-    transition: {
-      clipPath: { duration: TRANSITION_MS / 1000, ease: easeReveal },
-      opacity: { duration: 0.25 },
+/** Build variants — transform + opacity only (compositor-friendly; avoids clip-path repaint during scroll) */
+function buildSlideVariants(durationSec) {
+  return {
+    enter: (direction) => ({
+      x: direction >= 0 ? "100%" : "-100%",
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      transition: {
+        x: { duration: durationSec, ease: easeReveal },
+        opacity: { duration: Math.min(0.4, durationSec * 0.45), ease: "easeOut" },
+      },
     },
-  },
-  exit: (direction) => ({
-    clipPath:
-      direction >= 0
-        ? "inset(0 100% 0 0)"
-        : "inset(0 0 0 100%)",
-    opacity: 1,
-    transition: {
-      clipPath: { duration: TRANSITION_MS / 1000, ease: easeReveal },
-    },
-  }),
-};
+    exit: (direction) => ({
+      x: direction >= 0 ? "-12%" : "12%",
+      opacity: 0,
+      transition: {
+        x: { duration: durationSec, ease: easeReveal },
+        opacity: { duration: durationSec * 0.55, ease: easeReveal },
+      },
+    }),
+  };
+}
 
-/** Inner image: subtle parallax shift on enter/exit + slow Ken-Burns zoom while resting */
-const imageVariants = {
-  enter: (direction) => ({
-    x: direction >= 0 ? "8%" : "-8%",
-    scale: 1.12,
-  }),
-  center: {
-    x: "0%",
-    scale: 1.04,
-    transition: {
-      x: { duration: TRANSITION_MS / 1000, ease: easeReveal },
-      scale: { duration: AUTOPLAY_MS / 1000 + 1, ease: "linear" },
+/** Inner image: short parallax on enter/exit only — no always-on scale (that caused scroll jank) */
+function buildImageVariants(durationSec) {
+  return {
+    enter: (direction) => ({
+      x: direction >= 0 ? "4%" : "-4%",
+      scale: 1.05,
+    }),
+    center: {
+      x: "0%",
+      scale: 1,
+      transition: {
+        x: { duration: durationSec, ease: easeReveal },
+        scale: { duration: durationSec, ease: easeReveal },
+      },
     },
-  },
-  exit: (direction) => ({
-    x: direction >= 0 ? "-6%" : "6%",
-    scale: 1.0,
-    transition: {
-      x: { duration: TRANSITION_MS / 1000, ease: easeReveal },
-      scale: { duration: TRANSITION_MS / 1000, ease: easeReveal },
-    },
-  }),
-};
+    exit: (direction) => ({
+      x: direction >= 0 ? "-3%" : "3%",
+      scale: 1,
+      transition: {
+        x: { duration: durationSec, ease: easeReveal },
+        scale: { duration: durationSec * 0.6, ease: easeReveal },
+      },
+    }),
+  };
+}
 
 /** Bright sweep that travels with the wipe edge (only visible during transition) */
 const sweepVariants = {
@@ -106,10 +106,16 @@ function afterDotScale(index, active) {
 
 const CategoryHeroSlider = () => {
   const sectionRef = useRef(null);
+  const reduceMotion = useReducedMotion();
+  const transSec = reduceMotion ? 0.01 : TRANSITION_MS / 1000;
+  const slideVariants = useMemo(() => buildSlideVariants(transSec), [transSec]);
+  const imageVariants = useMemo(() => buildImageVariants(transSec), [transSec]);
+
   const [active, setActive] = useState(0);
   const [direction, setDirection] = useState(1);
   const [fillKey, setFillKey] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [scrollPause, setScrollPause] = useState(false);
   /** True while exit/enter animation runs — autoplay waits so it never stacks broken transitions */
   const transitioningRef = useRef(false);
   const skipTransitionLock = useRef(true);
@@ -164,12 +170,31 @@ const CategoryHeroSlider = () => {
     return () => document.removeEventListener("pointerdown", onDocPointerDown, true);
   }, []);
 
+  /** Pause lightweight CSS animations while scrolling so the page keeps moving smoothly */
+  useEffect(() => {
+    let done = false;
+    let endTimer;
+    const settleMs = 120;
+    const onScroll = () => {
+      if (done) return;
+      setScrollPause(true);
+      window.clearTimeout(endTimer);
+      endTimer = window.setTimeout(() => setScrollPause(false), settleMs);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      done = true;
+      window.clearTimeout(endTimer);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, []);
+
   const slide = SLIDES[active];
 
   return (
     <section
       ref={sectionRef}
-      className="category-hero-slider"
+      className={`category-hero-slider${scrollPause ? " category-hero-slider--scrolling" : ""}`}
       aria-label="Featured slides"
       aria-roledescription="carousel"
       tabIndex={0}
@@ -192,7 +217,6 @@ const CategoryHeroSlider = () => {
             initial="enter"
             animate="center"
             exit="exit"
-            style={{ willChange: "clip-path, opacity" }}
           >
             <motion.img
               src={slide.src}
@@ -206,7 +230,6 @@ const CategoryHeroSlider = () => {
               loading={active === 0 ? "eager" : "lazy"}
               decoding="async"
               draggable={false}
-              style={{ willChange: "transform" }}
             />
 
             <motion.span
@@ -220,70 +243,70 @@ const CategoryHeroSlider = () => {
             />
           </motion.div>
         </AnimatePresence>
-      </div>
 
-      {SLIDES.length > 1 && (
-        <>
-          <button
-            type="button"
-            className="category-hero-slider__edge category-hero-slider__edge--prev"
-            onClick={goPrev}
-            aria-label="Previous slide"
-          />
-          <button
-            type="button"
-            className="category-hero-slider__edge category-hero-slider__edge--next"
-            onClick={goNext}
-            aria-label="Next slide"
-          />
+        {SLIDES.length > 1 && (
+          <>
+            <button
+              type="button"
+              className="category-hero-slider__edge category-hero-slider__edge--prev"
+              onClick={goPrev}
+              aria-label="Previous slide"
+            />
+            <button
+              type="button"
+              className="category-hero-slider__edge category-hero-slider__edge--next"
+              onClick={goNext}
+              aria-label="Next slide"
+            />
 
-          <div
-            className="category-hero-slider__rail"
-            role="tablist"
-            aria-label="Slide navigation"
-          >
-            {SLIDES.map((_, index) => {
-              if (index === active) {
+            <div
+              className="category-hero-slider__rail"
+              role="tablist"
+              aria-label="Slide navigation"
+            >
+              {SLIDES.map((_, index) => {
+                if (index === active) {
+                  return (
+                    <button
+                      key={index}
+                      type="button"
+                      role="tab"
+                      aria-selected
+                      className="category-hero-slider__pill"
+                      onClick={() => goTo(index)}
+                      aria-label={`Slide ${index + 1}, progress`}
+                    >
+                      <span className="category-hero-slider__pill-track" aria-hidden />
+                      <span
+                        key={fillKey}
+                        className="category-hero-slider__pill-fill"
+                        style={{ animationDuration: `${AUTOPLAY_MS}ms` }}
+                        aria-hidden
+                      />
+                    </button>
+                  );
+                }
+
+                const isBefore = index < active;
+                const scale = isBefore ? 1 : afterDotScale(index, active);
+
                 return (
                   <button
                     key={index}
                     type="button"
                     role="tab"
-                    aria-selected
-                    className="category-hero-slider__pill"
+                    aria-selected={false}
+                    className={`category-hero-slider__dot ${isBefore ? "category-hero-slider__dot--before" : "category-hero-slider__dot--after"}`}
+                    style={{ transform: `scale(${scale})` }}
                     onClick={() => goTo(index)}
-                    aria-label={`Slide ${index + 1}, progress`}
-                  >
-                    <span className="category-hero-slider__pill-track" aria-hidden />
-                    <span
-                      key={fillKey}
-                      className="category-hero-slider__pill-fill"
-                      style={{ animationDuration: `${AUTOPLAY_MS}ms` }}
-                      aria-hidden
-                    />
-                  </button>
+                    aria-label={`Go to slide ${index + 1}`}
+                  />
                 );
-              }
-
-              const isBefore = index < active;
-              const scale = isBefore ? 1 : afterDotScale(index, active);
-
-              return (
-                <button
-                  key={index}
-                  type="button"
-                  role="tab"
-                  aria-selected={false}
-                  className={`category-hero-slider__dot ${isBefore ? "category-hero-slider__dot--before" : "category-hero-slider__dot--after"}`}
-                  style={{ transform: `scale(${scale})` }}
-                  onClick={() => goTo(index)}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              );
-            })}
-          </div>
-        </>
-      )}
+              })}
+            </div>
+          </>
+        )}
+      </div>
     </section>
   );
 };

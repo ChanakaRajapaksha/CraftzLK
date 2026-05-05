@@ -1045,33 +1045,84 @@ nav .navPart2 ul li:hover .submenu {
   color: rgba(61, 40, 23, 0.88) !important;
   text-decoration: none !important;
   white-space: nowrap;
-  border-radius: 6px;
+  position: relative;
+  border-radius: 0;
+  background: transparent !important;
   transition:
     color 0.2s ease,
-    background 0.2s ease;
+    opacity 0.2s ease;
+}
+
+/* Underline: show on hover/focus or when active — no tinted pill background */
+.secondary-category-nav__link::after {
+  content: "";
+  position: absolute;
+  left: 0.65rem;
+  right: 0.65rem;
+  bottom: 0.1rem;
+  height: 2px;
+  background: currentColor;
+  opacity: 0.92;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.22s ease;
+  pointer-events: none;
 }
 
 .secondary-category-nav__link:hover,
 .secondary-category-nav__link:focus-visible {
-  color: var(--accent-blue, #c9a961) !important;
-  background: rgba(201, 169, 97, 0.1);
+  color: rgba(61, 40, 23, 0.98) !important;
+  background: transparent !important;
+}
+
+.secondary-category-nav__link:focus-visible {
+  outline: 2px solid rgba(61, 40, 23, 0.28);
+  outline-offset: 3px;
+}
+
+.secondary-category-nav__link:hover::after,
+.secondary-category-nav__link:focus-visible::after {
+  transform: scaleX(1);
 }
 
 .secondary-category-nav__link.is-active {
-  color: var(--accent-blue, #c9a961) !important;
+  color: rgba(61, 40, 23, 0.98) !important;
+  background: transparent !important;
+}
+
+.secondary-category-nav__link.is-active::after {
+  transform: scaleX(1);
 }
 
 .secondary-category-nav__link--button {
   border: none;
-  background: transparent;
+  background: transparent !important;
   cursor: pointer;
-  font: inherit;
+  /* Match strip <a> links: global `button { text-transform: capitalize }` must not apply */
+  text-transform: uppercase !important;
+  font-family: var(--font-bricolage, "Bricolage Grotesque", sans-serif) !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* theme.css `button svg { color: accent !important }` — chevron should match nav text, not gold */
+.secondary-category-nav .secondary-category-nav__link--button svg.secondary-category-nav__chev {
+  color: rgba(61, 40, 23, 0.52) !important;
+}
+
+.secondary-category-nav .secondary-category-nav__link--button:hover svg.secondary-category-nav__chev,
+.secondary-category-nav .secondary-category-nav__link--button:focus-visible svg.secondary-category-nav__chev,
+.secondary-category-nav .secondary-category-nav__link--button.is-active svg.secondary-category-nav__chev {
+  color: rgba(61, 40, 23, 0.75) !important;
 }
 
 .secondary-category-nav__chev {
   font-size: 0.65rem;
-  opacity: 0.8;
-  transition: transform 0.2s ease;
+  opacity: 0.92;
+  transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .secondary-category-nav__chev--open {
@@ -1116,11 +1167,13 @@ nav .navPart2 ul li:hover .submenu {
 }
 
 .secondary-category-nav__mega-heading {
-  font-family: var(--font-heading, "Playfair Display", serif);
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-family: var(--font-bricolage, "Bricolage Grotesque", sans-serif);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   margin: 0 0 0.55rem;
-  color: var(--text-primary, #3d2817);
+  color: rgba(61, 40, 23, 0.88);
 }
 
 .secondary-category-nav__mega-list {
@@ -1147,7 +1200,12 @@ nav .navPart2 ul li:hover .submenu {
 }
 
 .secondary-category-nav__drawer-col-title {
-  color: rgba(61, 40, 23, 0.92) !important;
+  font-family: var(--font-bricolage, "Bricolage Grotesque", sans-serif) !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: rgba(61, 40, 23, 0.88) !important;
 }
 
 .secondary-category-nav__drawer-sublink {
@@ -1157,6 +1215,20 @@ nav .navPart2 ul li:hover .submenu {
 
 .secondary-category-nav__drawer-sublink:hover {
   color: var(--accent-blue, #c9a961) !important;
+}
+
+/* Mobile drawer: MUI Buttons for Home / Shop / Categories — align with desktop strip typography */
+.secondary-category-nav__drawer .res-nav .MuiButton-root:not(.btn-blue) {
+  font-family: var(--font-bricolage, "Bricolage Grotesque", sans-serif) !important;
+  text-transform: uppercase !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em !important;
+  font-size: 0.8125rem !important;
+  color: rgba(61, 40, 23, 0.88) !important;
+}
+
+.secondary-category-nav__drawer .res-nav .MuiButton-root:not(.btn-blue) svg {
+  color: rgba(61, 40, 23, 0.52) !important;
 }
 
 /* Slide-out drawer: responsive.css only positions .res-nav off-canvas for max-width 992px.

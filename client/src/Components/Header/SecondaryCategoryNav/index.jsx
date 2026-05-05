@@ -90,7 +90,7 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
 
   const isHomeActive = location.pathname === "/";
   const isShopActive =
-    location.pathname.startsWith("/products/") && !megaOpen;
+    shopPath !== "/" && location.pathname === shopPath && !megaOpen;
 
   const subLink = (name) => {
     const path = findSubCatPath(navData, name);
@@ -161,15 +161,20 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
               </button>
             </div>
 
-            {tailLinks.map((link) => (
-              <Link
-                key={link.label}
-                to={link.to}
-                className="secondary-category-nav__link"
-              >
-                {link.label}
-              </Link>
-            ))}
+            {tailLinks.map((link) => {
+              const tailActive =
+                link.to.startsWith("/products/") &&
+                location.pathname === link.to;
+              return (
+                <Link
+                  key={link.label}
+                  to={link.to}
+                  className={`secondary-category-nav__link ${tailActive ? "is-active" : ""}`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </div>
         </div>
 
