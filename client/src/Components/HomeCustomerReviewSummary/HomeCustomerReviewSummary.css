@@ -141,6 +141,7 @@
 .home-review-summary__cta {
   display: inline-block;
   padding: 0.45rem 1.15rem;
+  border: none;
   border-radius: 999px;
   background: var(--primary-dark, #b8860b);
   color: #faf8f3 !important;
@@ -149,6 +150,7 @@
   font-weight: 600;
   letter-spacing: 0.02em;
   text-decoration: none;
+  cursor: pointer;
   transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 

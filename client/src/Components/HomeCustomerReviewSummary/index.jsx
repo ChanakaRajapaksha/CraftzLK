@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
 import {
   HiHandThumbUp,
   HiOutlineHeart,
@@ -7,11 +7,11 @@ import {
   HiOutlineTruck,
   HiSparkles,
 } from "react-icons/hi2";
+import CustomerReviewsModal from "../CustomerReviewsModal";
+import { REVIEW_AVERAGE, REVIEW_TOTAL_LABEL } from "../CustomerReviewsModal/reviewStats";
 import "./HomeCustomerReviewSummary.css";
 
 const BRAND = "CraftzLK";
-const RATING = "4.9";
-const REVIEW_COUNT = "8,720";
 
 const TAGS = [
   "Handmade Quality",
@@ -56,6 +56,8 @@ const FEATURES = [
 ];
 
 export default function HomeCustomerReviewSummary() {
+  const [reviewsOpen, setReviewsOpen] = useState(false);
+
   return (
     <div className="home-customer-block">
       <section
@@ -68,11 +70,11 @@ export default function HomeCustomerReviewSummary() {
             <span className="home-review-summary__brand">{BRAND}</span>
             <span
               className="home-review-summary__score"
-              aria-label={`${RATING} out of 5 stars`}
+              aria-label={`${REVIEW_AVERAGE} out of 5 stars`}
             >
-              {RATING} <span aria-hidden="true">★</span>
+              {REVIEW_AVERAGE} <span aria-hidden="true">★</span>
             </span>
-            <span className="home-review-summary__count">({REVIEW_COUNT})</span>
+            <span className="home-review-summary__count">({REVIEW_TOTAL_LABEL})</span>
           </h2>
 
           <div className="home-review-summary__body">
@@ -100,9 +102,13 @@ export default function HomeCustomerReviewSummary() {
             AI-powered review summary based on recent customer reviews
           </p>
 
-          <Link to="/products" className="home-review-summary__cta">
+          <button
+            type="button"
+            className="home-review-summary__cta"
+            onClick={() => setReviewsOpen(true)}
+          >
             View customer reviews
-          </Link>
+          </button>
         </div>
       </section>
 
@@ -119,6 +125,8 @@ export default function HomeCustomerReviewSummary() {
           </ul>
         </div>
       </section>
+
+      <CustomerReviewsModal open={reviewsOpen} onClose={() => setReviewsOpen(false)} />
     </div>
   );
 }

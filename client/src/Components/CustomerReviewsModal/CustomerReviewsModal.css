@@ -1,0 +1,886 @@
+/* ── Dialog shell ── */
+.customer-reviews-modal .MuiBackdrop-root {
+  background-color: rgba(17, 17, 17, 0.52) !important;
+  transition: opacity 320ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.customer-reviews-modal .MuiPaper-elevation {
+  position: relative;
+  width: min(96vw, 900px) !important;
+  max-width: 900px !important;
+  height: min(92vh, 860px) !important;
+  max-height: 92vh !important;
+  min-height: min(680px, 92vh) !important;
+  margin: 1rem;
+  padding: 0 !important;
+  border-radius: 14px !important;
+  background: #fff !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2) !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  will-change: transform, opacity;
+}
+
+@keyframes crm-close-in {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .customer-reviews-modal .MuiBackdrop-root,
+  .customer-reviews-modal .MuiPaper-elevation,
+  .customer-reviews-modal .close_ {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+.customer-reviews-modal .MuiDialogContent-root {
+  padding: 0 !important;
+  overflow: hidden !important;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* ── Close button ── */
+.customer-reviews-modal .close_ {
+  top: 12px !important;
+  right: 12px !important;
+  min-width: 40px !important;
+  width: 40px !important;
+  height: 40px !important;
+  background: var(--primary-dark, #b8860b) !important;
+  color: #fff !important;
+  border: 2px solid rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 0 2px 10px rgba(184, 134, 11, 0.35) !important;
+  z-index: 30 !important;
+  animation: crm-close-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
+}
+
+.customer-reviews-modal .close_:hover {
+  background: var(--accent-blue-hover, #9a7209) !important;
+}
+
+.customer-reviews-modal .close_ span {
+  display: block;
+  font-size: 1.65rem;
+  font-weight: 400;
+  line-height: 1;
+  color: #fff !important;
+  transform: translateY(-1px);
+}
+
+/* ── Two-column layout ── */
+.crm-layout {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+/* ── Left sidebar ── */
+.crm-sidebar {
+  flex: 0 0 220px;
+  width: 220px;
+  padding: 2rem 1.5rem 1.5rem;
+  border-right: 1px solid #f0ebe3;
+  background: #faf8f3;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow-y: auto;
+}
+
+.crm-sidebar__title {
+  margin: 0 0 1.15rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111;
+  line-height: 1.3;
+  padding-right: 2.5rem;
+}
+
+.crm-sidebar__score {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+}
+
+.crm-sidebar__average {
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: #111;
+}
+
+.crm-sidebar__total {
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.78rem;
+  color: #888;
+  line-height: 1.4;
+}
+
+/* Histogram */
+.crm-histogram {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.crm-histogram__row {
+  display: grid;
+  grid-template-columns: 0.75rem 1rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0 0.4rem;
+}
+
+.crm-histogram__label {
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #333;
+  text-align: right;
+}
+
+.crm-histogram__star {
+  font-size: 0.82rem;
+  color: var(--primary-dark, #b8860b);
+}
+
+.crm-histogram__track {
+  height: 0.55rem;
+  border-radius: 999px;
+  background: rgba(201, 169, 97, 0.2);
+  overflow: hidden;
+}
+
+.crm-histogram__fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    var(--primary-dark, #b8860b) 0%,
+    var(--primary-medium, #c9a961) 100%
+  );
+  transition: width 0.4s ease;
+}
+
+.crm-histogram__count {
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.72rem;
+  color: #777;
+  min-width: 2.5rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Right main panel ── */
+.crm-main {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* AI summary */
+.crm-summary {
+  padding: 1.5rem 3.5rem 1rem 1.5rem;
+  border-bottom: 1px solid #f0ebe3;
+  flex-shrink: 0;
+}
+
+.crm-summary__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.crm-summary__heading {
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111;
+}
+
+.crm-summary__ai-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.7rem;
+  color: #aaa;
+}
+
+.crm-summary__ai-badge svg {
+  font-size: 0.82rem;
+  color: var(--primary-medium, #c9a961);
+  flex-shrink: 0;
+}
+
+.crm-summary__body {
+  margin: 0;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.83rem;
+  line-height: 1.65;
+  color: #444;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Toolbar: tab + search / filters / sort */
+.crm-toolbar {
+  position: relative;
+  z-index: 30;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  padding: 0.85rem 1.5rem 0;
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+  overflow: visible;
+}
+
+.crm-toolbar__tab {
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #111;
+  padding-bottom: 0.55rem;
+  border-bottom: 2px solid #111;
+  white-space: nowrap;
+}
+
+.crm-toolbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-left: auto;
+  padding-bottom: 0.35rem;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.crm-toolbar__icon-btn,
+.crm-toolbar__pill-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  height: 2.15rem;
+  padding: 0 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #222;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  text-transform: none !important;
+}
+
+.crm-toolbar__icon-btn {
+  width: 2.15rem;
+  min-width: 2.15rem;
+  padding: 0;
+}
+
+.crm-toolbar__icon-btn svg {
+  font-size: 1.05rem;
+  color: #333 !important;
+}
+
+.crm-toolbar__pill-btn svg {
+  font-size: 0.72rem;
+  color: #333 !important;
+}
+
+.crm-toolbar__icon-btn:hover,
+.crm-toolbar__pill-btn:hover {
+  border-color: var(--primary-medium, #c9a961);
+  background: #faf8f3;
+}
+
+.crm-toolbar__icon-btn--active,
+.crm-toolbar__pill-btn--active {
+  border-color: var(--primary-dark, #b8860b);
+  background: #faf3e7;
+}
+
+.crm-toolbar__pill-btn--has-filter {
+  border-color: var(--primary-dark, #b8860b);
+}
+
+.crm-toolbar__filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  background: var(--primary-dark, #b8860b);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.crm-toolbar__filters-wrap {
+  position: relative;
+  z-index: 40;
+}
+
+.crm-filters-panel {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  right: 0;
+  z-index: 50;
+  width: min(16rem, 78vw);
+  padding: 0.85rem 0.9rem;
+  border: 1px solid #e0d8cb;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+  isolation: isolate;
+}
+
+.crm-filters-panel__title {
+  margin: 0 0 0.55rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #111;
+}
+
+.crm-filters-panel__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.crm-filters-panel__option {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.78rem;
+  color: #333;
+  cursor: pointer;
+}
+
+.crm-filters-panel__option input {
+  accent-color: var(--primary-dark, #b8860b);
+}
+
+.crm-filters-panel__stars {
+  display: inline-flex;
+  gap: 0.05rem;
+  color: var(--primary-dark, #b8860b);
+  font-size: 0.72rem;
+}
+
+.crm-filters-panel__clear {
+  margin-top: 0.5rem;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary-dark, #b8860b);
+  cursor: pointer;
+  text-transform: none !important;
+}
+
+.crm-toolbar__sort-wrap {
+  position: relative;
+  z-index: 45;
+  flex-shrink: 0;
+}
+
+.crm-toolbar__sort-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  width: 10.5rem;
+  height: 2.15rem;
+  padding: 0 0.55rem 0 0.75rem;
+  border: 1px solid #222;
+  border-radius: 8px;
+  background: #fff;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #111;
+  cursor: pointer;
+  text-transform: none !important;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.crm-toolbar__sort-trigger:hover,
+.crm-toolbar__sort-trigger--open {
+  border-color: #111;
+  background: #fff;
+}
+
+.crm-toolbar__sort-label {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
+.crm-toolbar__sort-chevron {
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  color: #333 !important;
+  transition: transform 0.2s ease;
+}
+
+.crm-toolbar__sort-trigger--open .crm-toolbar__sort-chevron {
+  transform: rotate(180deg);
+}
+
+.crm-sort-panel {
+  position: absolute;
+  top: calc(100% - 1px);
+  left: 0;
+  right: 0;
+  z-index: 55;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid #222;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.crm-toolbar__sort-trigger--open {
+  border-radius: 8px 8px 0 0;
+  border-bottom-color: transparent;
+}
+
+.crm-sort-panel__option {
+  display: block;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: none;
+  border-top: 1px solid #ececec;
+  background: #fff;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #111;
+  text-align: left;
+  cursor: pointer;
+  text-transform: none !important;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.crm-sort-panel li:first-child .crm-sort-panel__option {
+  border-top: none;
+}
+
+.crm-sort-panel__option:hover,
+.crm-sort-panel__option--active {
+  background: var(--primary-dark, #b8860b);
+  color: #fff;
+}
+
+/* Search bar */
+.crm-search {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.65rem 1.5rem 0;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fafafa;
+  flex-shrink: 0;
+}
+
+.crm-search__icon {
+  font-size: 1rem;
+  color: #888 !important;
+  flex-shrink: 0;
+}
+
+.crm-search__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.82rem;
+  color: #222;
+  outline: none;
+}
+
+.crm-search__input::placeholder {
+  color: #aaa;
+}
+
+/* Scrollable reviews area */
+.crm-scroll {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-medium, #c9a961) rgba(201, 169, 97, 0.15);
+  border-top: 1px solid #f0ebe3;
+}
+
+.crm-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.crm-scroll::-webkit-scrollbar-track {
+  background: rgba(201, 169, 97, 0.12);
+  border-radius: 999px;
+}
+
+.crm-scroll::-webkit-scrollbar-thumb {
+  background: var(--primary-medium, #c9a961);
+  border-radius: 999px;
+}
+
+.crm-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark, #b8860b);
+}
+
+.crm-list {
+  margin: 0;
+  padding: 0 1.5rem 0.5rem;
+  list-style: none;
+  min-width: min(100%, 420px);
+}
+
+/* Individual review card */
+.crm-card {
+  padding: 1.1rem 0;
+  border-bottom: 1px solid #f0ebe3;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.crm-card:last-child {
+  border-bottom: none;
+}
+
+/* Stars */
+.crm-stars {
+  display: flex;
+  gap: 0.1rem;
+}
+
+.crm-star {
+  font-size: 1.1rem;
+  color: #ddd;
+}
+
+.crm-star--filled {
+  color: var(--primary-dark, #b8860b);
+}
+
+/* Name + avatar row */
+.crm-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.crm-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: #e8e8e8;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #555;
+  flex-shrink: 0;
+}
+
+.crm-card__meta-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.crm-card__name {
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #111;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.crm-card__verified {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.95rem;
+  height: 0.95rem;
+  border-radius: 50%;
+  background: #111;
+  color: #fff;
+  font-size: 0.55rem;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.crm-card__date {
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.75rem;
+  color: #999;
+}
+
+/* Review text */
+.crm-card__title {
+  margin: 0;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #111;
+}
+
+.crm-card__body {
+  margin: 0;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: #555;
+}
+
+/* Product reference box */
+.crm-card__product {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  background: #f3f0f8;
+  margin-top: 0.15rem;
+  max-width: 100%;
+}
+
+.crm-card__product-thumb {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #fff;
+}
+
+.crm-card__product-link {
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.78rem;
+  color: #222;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  text-transform: none !important;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.crm-card__product-link:hover {
+  color: var(--primary-dark, #b8860b);
+}
+
+.crm-empty {
+  padding: 2rem 0;
+  text-align: center;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.85rem;
+  color: #888;
+}
+
+/* ── Pagination ── */
+.crm-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.9rem 1.5rem;
+  border-top: 1px solid #f0ebe3;
+  flex-shrink: 0;
+}
+
+.crm-pagination__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.5rem;
+  border: 1px solid #e0d8cb;
+  border-radius: 6px;
+  background: #fff;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #444;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  text-transform: none !important;
+}
+
+.crm-pagination__btn:hover:not(:disabled) {
+  background: #faf3e7;
+  border-color: var(--primary-medium, #c9a961);
+  color: var(--primary-dark, #b8860b);
+}
+
+.crm-pagination__btn--active {
+  background: var(--primary-dark, #b8860b) !important;
+  border-color: var(--primary-dark, #b8860b) !important;
+  color: #fff !important;
+}
+
+.crm-pagination__btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.crm-pagination__arrow {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.crm-pagination__ellipsis {
+  font-size: 0.82rem;
+  color: #aaa;
+  padding: 0 0.2rem;
+  user-select: none;
+}
+
+/* ── Responsive ── */
+@media (max-width: 680px) {
+  .customer-reviews-modal .MuiPaper-elevation {
+    width: 98vw !important;
+    height: 94vh !important;
+    max-height: 94vh !important;
+    min-height: 560px !important;
+    border-radius: 10px !important;
+  }
+
+  .crm-layout {
+    flex-direction: column;
+    max-height: 100%;
+    overflow: hidden;
+  }
+
+  .crm-sidebar {
+    flex: none;
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #f0ebe3;
+    padding: 1.5rem 1.25rem 1rem;
+    max-height: 38%;
+    overflow-y: auto;
+  }
+
+  .crm-sidebar__title {
+    padding-right: 3rem;
+  }
+
+  .crm-main {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .crm-scroll {
+    overflow-x: auto;
+    overflow-y: auto;
+  }
+
+  .crm-summary {
+    padding: 1rem 1.25rem 0.75rem;
+  }
+
+  .crm-toolbar {
+    padding: 0.75rem 1.25rem 0;
+  }
+
+  .crm-toolbar__actions {
+    flex-shrink: 0;
+  }
+
+  .crm-search {
+    margin: 0.55rem 1.25rem 0;
+  }
+
+  .crm-list {
+    padding: 0 1.25rem 0.5rem;
+  }
+
+  .crm-pagination {
+    padding: 0.75rem 1.25rem;
+  }
+}
