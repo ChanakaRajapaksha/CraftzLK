@@ -1,16 +1,15 @@
 import CategoryHeroSlider from "../../Components/CategoryHeroSlider";
+import HomePosterStrip from "../../Components/HomePosterStrip";
 import FeaturedProductsRail from "../../Components/FeaturedProductsRail";
 import TrendingNowRail from "../../Components/TrendingNowRail";
 import NewArrivalsRail from "../../Components/NewArrivalsRail";
-import HomeBanner from "../../Components/HomeBanner";
-import Button from "@mui/material/Button";
-import { IoIosArrowRoundForward } from "react-icons/io";
+import BestSellersRail from "../../Components/BestSellersRail";
+import HomeHeroBanner from "../../Components/HomeHeroBanner";
+import HomeCustomerReviewSummary from "../../Components/HomeCustomerReviewSummary";
+import HomePageFooter from "../../Components/HomePageFooter";
+import HomeProductImagesSection from "../../Components/HomeProductImagesSection";
+import PopularCategoriesGrid from "../../Components/PopularCategoriesGrid";
 import React, { useContext, useEffect, useState } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/navigation";
-import { Navigation } from "swiper/modules";
-import ProductItem from "../../Components/ProductItem";
 import HomeCat from "../../Components/HomeCat";
 
 import { MyContext } from "../../App";
@@ -19,6 +18,7 @@ import { fetchDataFromApi } from "../../utils/api";
 import Banners from "../../Components/banners";
 import { Link } from "react-router-dom";
 import ChatBox from "../Chat";
+import { HOME_SECTION_INNER_DIVIDED } from "../../Components/homeRailLayout";
 
 const Home = () => {
   const [bannerList, setBannerList] = useState([]);
@@ -75,147 +75,91 @@ const Home = () => {
       <CategoryHeroSlider />
 
       <div className="homePatternBg">
+        <HomePosterStrip />
+
         <FeaturedProductsRail />
 
         <TrendingNowRail />
 
         <NewArrivalsRail />
 
+        <PopularCategoriesGrid />
+
+        <BestSellersRail />
+
+        <HomeHeroBanner />
+
+        <HomeProductImagesSection
+          randomCatProducts={randomCatProducts}
+          windowWidth={context?.windowWidth ?? 0}
+        />
+
         <div className="homeContentAfterRails">
-        {context?.categoryData?.length !== 0 && (
-          <HomeCat catData={context?.categoryData} />
-        )}
+          {context?.categoryData?.length !== 0 && (
+            <HomeCat catData={context?.categoryData} />
+          )}
 
-        <section className="homeProducts pb-0">
-          <div className="container">
-            <div className="row homeProductsRow">
-              <div className="col-md-3">
-                <div className="sticky">
-                  {homeSideBanners?.length !== 0 &&
-                    homeSideBanners?.map((item, index) => {
-                      return (
-                        <div className="banner mb-3" key={index}>
-                          {item?.subCatId !== null ? (
-                            <Link
-                              to={`/products/subCat/${item?.subCatId}`}
-                              className="box"
-                            >
-                              <img
-                                src={item?.images[0]}
-                                className="w-100 transition"
-                                alt="banner img"
-                              />
-                            </Link>
-                          ) : (
-                            <Link
-                              to={`/products/category/${item?.catId}`}
-                              className="box"
-                            >
-                              <img
-                                src={item?.images[0]}
-                                className="cursor w-100 transition"
-                                alt="banner img"
-                              />
-                            </Link>
-                          )}
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
-
-              <div className="col-md-9 productRow">
-                {bannerList?.length !== 0 && (
-                  <Banners data={bannerList} col={3} />
-                )}
-              </div>
-            </div>
-
-            {homeBottomBanners?.length !== 0 && (
-              <Banners data={homeBottomBanners} col={3} />
-            )}
-          </div>
-        </section>
-
-        <div className="container">
-          {randomCatProducts?.products?.length > 0 && (
-            <>
-              <div className="d-flex align-items-center mt-1 pr-3">
-                <div className="info">
-                  <h3 className="mb-0 hd">{randomCatProducts?.catName}</h3>
-                  <p className="text-light text-sml mb-0">
-                    Do not miss the current offers until the end of March.
-                  </p>
-                </div>
-
-                <Link
-                  to={`/products/category/${randomCatProducts?.catId}`}
-                  className="ml-auto"
-                >
-                  <Button className="viewAllBtn">
-                    View All <IoIosArrowRoundForward />
-                  </Button>
-                </Link>
-              </div>
-
-              <div className="product_row w-100 mt-2">
-                {context?.windowWidth > 992 ? (
-                  <Swiper
-                    slidesPerView={5}
-                    spaceBetween={0}
-                    navigation={true}
-                    slidesPerGroup={context?.windowWidth > 992 ? 3 : 1}
-                    modules={[Navigation]}
-                    className="mySwiper"
-                    breakpoints={{
-                      300: {
-                        slidesPerView: 1,
-                        spaceBetween: 5,
-                      },
-                      400: {
-                        slidesPerView: 2,
-                        spaceBetween: 5,
-                      },
-                      600: {
-                        slidesPerView: 4,
-                        spaceBetween: 5,
-                      },
-                      750: {
-                        slidesPerView: 5,
-                        spaceBetween: 5,
-                      },
-                    }}
-                  >
-                    {randomCatProducts.products
-                      ?.slice(0)
-                      ?.reverse()
-                      ?.map((item, index) => {
-                        return (
-                          <SwiperSlide key={index}>
-                            <ProductItem item={item} />
-                          </SwiperSlide>
-                        );
-                      })}
-
-                    <SwiperSlide style={{ opacity: 0 }}>
-                      <div className={`productItem`}></div>
-                    </SwiperSlide>
-                  </Swiper>
-                ) : (
-                  <div className="productScroller">
-                    {randomCatProducts.products
-                      ?.slice(0)
-                      ?.reverse()
-                      ?.map((item, index) => {
-                        return <ProductItem item={item} key={index} />;
-                      })}
+          {(homeSideBanners?.length !== 0 ||
+            bannerList?.length !== 0 ||
+            homeBottomBanners?.length !== 0) && (
+            <section className="homeProducts pb-0 px-3 sm:px-4 md:px-6 lg:px-8">
+              <div className={HOME_SECTION_INNER_DIVIDED}>
+                <div className="row homeProductsRow">
+                  <div className="col-md-3">
+                    <div className="sticky">
+                      {homeSideBanners?.length !== 0 &&
+                        homeSideBanners?.map((item, index) => {
+                          return (
+                            <div className="banner mb-3" key={index}>
+                              {item?.subCatId !== null ? (
+                                <Link
+                                  to={`/products/subCat/${item?.subCatId}`}
+                                  className="box"
+                                >
+                                  <img
+                                    src={item?.images[0]}
+                                    className="w-100 transition"
+                                    alt="banner img"
+                                  />
+                                </Link>
+                              ) : (
+                                <Link
+                                  to={`/products/category/${item?.catId}`}
+                                  className="box"
+                                >
+                                  <img
+                                    src={item?.images[0]}
+                                    className="cursor w-100 transition"
+                                    alt="banner img"
+                                  />
+                                </Link>
+                              )}
+                            </div>
+                          );
+                        })}
+                    </div>
                   </div>
+
+                  <div className="col-md-9 productRow">
+                    {bannerList?.length !== 0 && (
+                      <Banners data={bannerList} col={3} />
+                    )}
+                  </div>
+                </div>
+
+                {homeBottomBanners?.length !== 0 && (
+                  <Banners data={homeBottomBanners} col={3} />
                 )}
               </div>
-            </>
+            </section>
           )}
         </div>
-        </div>
+      </div>
+
+      <div className="home-tail">
+        <HomeCustomerReviewSummary />
+
+        <HomePageFooter />
       </div>
 
       <ChatBox />

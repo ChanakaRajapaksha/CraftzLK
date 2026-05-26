@@ -6,14 +6,15 @@ import { Navigation } from 'swiper/modules';
 import { Link } from "react-router-dom";
 
 import { MyContext } from "../../App";
+import { HOME_SECTION_INNER_DIVIDED } from "../homeRailLayout";
 
 const HomeCat = (props) => {
 
     const context = useContext(MyContext);
 
     return (
-        <section className="homeCat pb-2">
-            <div className="container">
+        <section className="homeCat pb-2 px-3 sm:px-4 md:px-6 lg:px-8">
+            <div className={HOME_SECTION_INNER_DIVIDED}>
                 <h3 className="mb-3 hd">Featured Categories</h3>
                 <Swiper
                     slidesPerView={8}

@@ -308,26 +308,26 @@ button.MuiButton-containedPrimary:hover {
   overflow: hidden;
 }
 
-/* Footer */
-footer {
+/* Footer — legacy #footer only; home page uses footer.home-page-footer */
+footer#footer {
   background: rgba(245, 241, 232, 0.98) !important;
   border-top: 1px solid rgba(201, 169, 97, 0.2) !important;
   backdrop-filter: blur(20px);
 }
 
-footer h5,
-footer h6,
-footer .title {
+footer#footer h5,
+footer#footer h6,
+footer#footer .title {
   color: var(--text-primary) !important;
 }
 
-footer a,
-footer p,
-footer li {
+footer#footer a,
+footer#footer p,
+footer#footer li {
   color: var(--text-secondary) !important;
 }
 
-footer a:hover {
+footer#footer a:hover {
   color: var(--accent-blue) !important;
 }
 
@@ -1070,25 +1070,25 @@ button svg {
    FOOTER OVERRIDES
    ======================================== */
 
-footer,
+footer#footer,
 .footerWrapper {
   background: linear-gradient(180deg, rgba(245, 241, 232, 0.98) 0%, rgba(240, 235, 225, 1) 100%) !important;
   border-top: 1px solid rgba(201, 169, 97, 0.2) !important;
 }
 
-footer h5,
-footer h6,
-footer .title {
+footer#footer h5,
+footer#footer h6,
+footer#footer .title {
   color: rgba(61, 40, 23, 0.95) !important;
 }
 
-footer a,
-footer p,
-footer li {
+footer#footer a,
+footer#footer p,
+footer#footer li {
   color: rgba(61, 40, 23, 0.7) !important;
 }
 
-footer a:hover {
+footer#footer a:hover {
   color: var(--accent-blue) !important;
 }
 

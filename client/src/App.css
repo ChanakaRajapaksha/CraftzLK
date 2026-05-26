@@ -1324,7 +1324,27 @@ nav .navPart2 ul li:hover .submenu {
   width: 100%;
 }
 
-/* Category strip, promo banners, random category — grouped below Featured / Trending / New Arrivals */
+/* Review → perks → value strip → footer with no gap between sections */
+.home-tail {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+}
+
+.home-tail .home-page-footer {
+  flex: 0 0 auto;
+  margin-top: 0;
+}
+
+/* Top rule matches home rail content width (max 1500px), not full viewport */
+.home-section-inner--divided {
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+/* Category strip, promo banners — grouped below home rails (Popular Categories, Featured, etc.) */
 .homeContentAfterRails {
   width: 100%;
 }
@@ -1829,7 +1849,8 @@ nav .navPart2 ul li:hover .submenu {
   z-index: 100;
 }
 
-footer {
+/* Legacy site footer only — do not apply to home-page-footer */
+footer#footer {
   width: 100%;
   height: 500px;
   margin: auto;

@@ -1,0 +1,84 @@
+/* No Framer Motion / no scroll observers — pure CSS, compositor-friendly. */
+
+.popular-categories-underline {
+  display: block;
+}
+
+.popular-categories-underline .pcg-line-ghost,
+.popular-categories-underline .pcg-line-main {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .popular-categories-underline .pcg-line-ghost,
+  .popular-categories-underline .pcg-line-main {
+    animation: pcg-line-draw 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .popular-categories-underline .pcg-line-main {
+    animation-delay: 0.04s;
+  }
+
+  .popular-categories-underline .pcg-dot {
+    opacity: 0;
+    animation: pcg-dot-in 0.28s ease-out 0.82s forwards;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popular-categories-underline .pcg-line-ghost,
+  .popular-categories-underline .pcg-line-main {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes pcg-line-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes pcg-dot-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Cards: opacity-only hover (no bitmap scale / no shadow interpolation). */
+.pcg-card-media {
+  transform: none;
+}
+
+.pcg-card-shade {
+  transition: background-color 0.15s ease-out;
+}
+
+.pcg-card:hover .pcg-card-shade,
+.pcg-card:focus-visible .pcg-card-shade {
+  background-color: rgba(0, 0, 0, 0.22);
+}
+
+.pcg-card-cta {
+  transition: transform 0.15s ease-out;
+}
+
+.pcg-card:hover .pcg-card-cta,
+.pcg-card:focus-visible .pcg-card-cta {
+  transform: translateX(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pcg-card-shade,
+  .pcg-card-cta {
+    transition: none;
+  }
+
+  .pcg-card:hover .pcg-card-cta,
+  .pcg-card:focus-visible .pcg-card-cta {
+    transform: none;
+  }
+}

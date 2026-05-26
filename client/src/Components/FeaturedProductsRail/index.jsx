@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useCallback, useId, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { HOME_RAIL_SECTION_FIRST } from "../homeRailLayout";
+import { HOME_RAIL_SECTION, HOME_SECTION_INNER_DIVIDED } from "../homeRailLayout";
 
 const IMG_BASE = "/images/product_images/wooden_wine_glass.png";
 const IMG_ZOOM = "/images/product_images/wooden_wine_glass_zoom.png";
@@ -52,9 +52,9 @@ const CARD_WIDTH_CLASS =
 const TITLE_UNDERLINE_PATH =
   "M 1.5 9.2 C 24 4.8 46 11.5 68 7.2 C 91 2.8 112 10.2 134 6.5 C 152 3.8 168 2.2 182 5.8 C 190 7.5 196 4.2 200 2.8";
 
-/** Replays when the section leaves view and re-enters — scrolling down or back up */
+/** Runs when the heading first enters view (scroll-friendly: no repeat on re-entry). */
 const TITLE_SCROLL_VIEWPORT = {
-  once: false,
+  once: true,
   amount: 0.45,
   /* Slight vertical expansion of the intersection root so enter/exit is stable both ways */
   margin: "40px 0px",
@@ -201,10 +201,10 @@ const FeaturedProductsRail = () => {
 
   return (
     <section
-      className={HOME_RAIL_SECTION_FIRST}
+      className={HOME_RAIL_SECTION}
       aria-labelledby="featured-products-rail-heading"
     >
-      <div className="mx-auto w-full max-w-[1500px]">
+      <div className={HOME_SECTION_INNER_DIVIDED}>
         <h2
           id="featured-products-rail-heading"
           className="mb-5 flex flex-wrap items-baseline gap-x-2 font-heading text-lg font-bold uppercase tracking-[0.12em] text-vintage-brown sm:mb-6 sm:gap-x-3 sm:text-xl md:text-2xl"

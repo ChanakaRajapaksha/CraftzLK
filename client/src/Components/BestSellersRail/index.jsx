@@ -3,23 +3,25 @@ import { useCallback, useId, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { HOME_RAIL_SECTION, HOME_SECTION_INNER_DIVIDED } from "../homeRailLayout";
 
-const IMG_BASE = "/images/product_images/jack_fruit_curry.png";
-const IMG_ZOOM = "/images/product_images/jack_fruit_curry_zomm.png";
+const IMG_BASE = "/images/product_images/wooden_wine_glass.png";
+const IMG_ZOOM = "/images/product_images/wooden_wine_glass_zoom.png";
 
 const BASE_CARDS = Array.from({ length: 5 }, (_, i) => ({
   id: i,
-  name: "Jack Fruit Curry",
-  wasPrice: "1,950",
-  nowPrice: "1,450",
+  name: "Wooden Wine Glasses",
+  saveRs: "11,100",
+  wasPrice: "27,000",
+  nowPrice: "15,900",
 }));
 
 const ROWS = [
   BASE_CARDS,
   BASE_CARDS.map((c, i) => ({
     ...c,
-    id: `tn-row2-${i}`,
-    wasPrice: "2,100",
-    nowPrice: "1,590",
+    id: `bs-row2-${i}`,
+    saveRs: "9,800",
+    nowPrice: "16,500",
+    wasPrice: "26,500",
   })),
 ];
 
@@ -32,8 +34,8 @@ const glassCard =
 const glassInner =
   "overflow-hidden rounded-[1.3rem] bg-gradient-to-b from-white/20 to-transparent";
 
-const glassPanelNoSave =
-  "border-t border-white/35 bg-white/15 px-2.5 pb-3.5 pt-4 text-center backdrop-blur-xl sm:px-3.5 sm:pb-4 sm:pt-5";
+const glassPanel =
+  "border-t border-white/35 bg-white/15 px-2.5 pb-3.5 pt-6 text-center backdrop-blur-xl sm:px-3.5 sm:pb-4 sm:pt-7";
 
 const glassImageWell =
   "relative aspect-[1/1.05] overflow-hidden rounded-t-[1.28rem] bg-white/10 ring-0";
@@ -44,10 +46,9 @@ const glassButton =
 const CARD_WIDTH_CLASS =
   "group relative flex min-h-0 w-[min(90vw,380px)] shrink-0 snap-start flex-col sm:w-[min(84vw,360px)] md:w-auto md:min-w-0";
 
-/** Shorter path + viewBox sized for “Now” so the stroke and dot aren’t squashed or clipped */
-const NOW_UNDERLINE_PATH =
-  "M 2 9.4 C 20 5.2 38 11 54 7.4 C 68 4.6 84 3.4 94 6.8 C 99.5 8.8 104.5 4.8 107 3";
-const NOW_UNDERLINE_VIEWBOX = "0 0 112 14";
+const SELLERS_UNDERLINE_PATH =
+  "M 2 9.4 C 28 5.2 54 11 80 7.4 C 104 4.6 126 3.4 146 6.8 C 156 8.8 166 4.8 172 3";
+const SELLERS_UNDERLINE_VIEWBOX = "0 0 176 14";
 
 const TITLE_SCROLL_VIEWPORT = {
   once: true,
@@ -55,10 +56,10 @@ const TITLE_SCROLL_VIEWPORT = {
   margin: "40px 0px",
 };
 
-function TrendingTitleUnderline({ reduceMotion }) {
+function BestSellersTitleUnderline({ reduceMotion }) {
   const rawId = useId().replace(/:/g, "");
-  const lineGradId = `tnl-line-${rawId}`;
-  const dotGradId = `tnl-dot-${rawId}`;
+  const lineGradId = `bsl-line-${rawId}`;
+  const dotGradId = `bsl-dot-${rawId}`;
 
   const drawTransition = reduceMotion
     ? { duration: 0 }
@@ -71,10 +72,10 @@ function TrendingTitleUnderline({ reduceMotion }) {
 
   return (
     <span className="relative inline-block min-w-0 pb-2 sm:pb-2.5">
-      <span className="relative z-10">Now</span>
+      <span className="relative z-10">Sellers</span>
       <motion.svg
         className="pointer-events-none absolute -bottom-0.5 left-0 h-[15px] w-[calc(100%+0.35rem)] min-w-full overflow-visible sm:h-[17px]"
-        viewBox={NOW_UNDERLINE_VIEWBOX}
+        viewBox={SELLERS_UNDERLINE_VIEWBOX}
         preserveAspectRatio="none"
         aria-hidden="true"
         initial={false}
@@ -91,7 +92,7 @@ function TrendingTitleUnderline({ reduceMotion }) {
           </radialGradient>
         </defs>
         <motion.path
-          d={NOW_UNDERLINE_PATH}
+          d={SELLERS_UNDERLINE_PATH}
           fill="none"
           stroke="rgba(61,40,23,0.14)"
           strokeWidth={2.85}
@@ -103,7 +104,7 @@ function TrendingTitleUnderline({ reduceMotion }) {
           transition={drawTransition}
         />
         <motion.path
-          d={NOW_UNDERLINE_PATH}
+          d={SELLERS_UNDERLINE_PATH}
           fill="none"
           stroke={`url(#${lineGradId})`}
           strokeWidth={2.1}
@@ -115,11 +116,13 @@ function TrendingTitleUnderline({ reduceMotion }) {
           transition={drawTransition}
         />
         <motion.circle
-          cx={108}
+          cx={172}
           cy={3.1}
           r={2.45}
           fill={`url(#${dotGradId})`}
-          initial={reduceMotion ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
+          initial={
+            reduceMotion ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }
+          }
           whileInView={{ scale: 1, opacity: 1 }}
           viewport={TITLE_SCROLL_VIEWPORT}
           transition={
@@ -163,7 +166,7 @@ function rowVariants(reduceMotion) {
   };
 }
 
-const TrendingNowRail = () => {
+const BestSellersRail = () => {
   const [page, setPage] = useState(0);
   const [direction, setDirection] = useState(1);
   const reduceMotion = useReducedMotion();
@@ -184,15 +187,15 @@ const TrendingNowRail = () => {
   return (
     <section
       className={HOME_RAIL_SECTION}
-      aria-labelledby="trending-now-rail-heading"
+      aria-labelledby="best-sellers-rail-heading"
     >
       <div className={HOME_SECTION_INNER_DIVIDED}>
         <h2
-          id="trending-now-rail-heading"
+          id="best-sellers-rail-heading"
           className="mb-5 flex flex-wrap items-baseline gap-x-2 font-heading text-lg font-bold uppercase tracking-[0.12em] text-vintage-brown sm:mb-6 sm:gap-x-3 sm:text-xl md:text-2xl"
         >
-          <span>Trending</span>
-          <TrendingTitleUnderline reduceMotion={!!reduceMotion} />
+          <span>Best</span>
+          <BestSellersTitleUnderline reduceMotion={!!reduceMotion} />
         </h2>
 
         <div className="relative min-h-[280px] overflow-hidden sm:min-h-[320px] md:min-h-0 md:overflow-visible">
@@ -232,7 +235,7 @@ const TrendingNowRail = () => {
                       <div className={glassImageWell}>
                         <img
                           src={IMG_BASE}
-                          alt="Jack Fruit Curry"
+                          alt="Wooden Wine Glasses"
                           draggable={false}
                           className="relative z-10 h-full w-full object-cover object-center transition-[opacity,transform] duration-[450ms] ease-out group-hover:scale-105 group-hover:opacity-0 motion-reduce:transition-opacity motion-reduce:duration-200 motion-reduce:group-hover:scale-100 motion-reduce:group-hover:opacity-100"
                         />
@@ -247,18 +250,19 @@ const TrendingNowRail = () => {
                     </div>
 
                     <div
-                      className={`relative flex flex-1 flex-col items-center ${glassPanelNoSave}`}
+                      className={`relative -mt-2 flex flex-1 flex-col items-center ${glassPanel}`}
                     >
-                      <h3 className="mb-1.5 font-heading text-sm font-semibold leading-snug text-vintage-brown drop-shadow-[0_1px_0_rgba(255,255,255,0.5)] sm:mb-2 sm:text-base">
+                      <span className="absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border border-white/35 bg-emerald-600/95 px-3 py-1 text-[0.6rem] font-bold uppercase tracking-wide text-white shadow-[0_4px_16px_rgba(22,101,52,0.35),inset_0_1px_0_rgba(255,255,255,0.25)] backdrop-blur-md sm:px-3.5 sm:py-1.5 sm:text-[0.65rem]">
+                        SAVE RS {item.saveRs}
+                      </span>
+                      <h3 className="mb-1.5 mt-0.5 font-heading text-sm font-semibold leading-snug text-vintage-brown drop-shadow-[0_1px_0_rgba(255,255,255,0.5)] sm:text-base">
                         {item.name}
                       </h3>
                       <p className="mb-1 font-sans text-sm leading-snug text-vintage-brown sm:text-[0.9rem]">
                         <span className="mr-2 text-red-700/95 line-through decoration-1">
                           Rs {item.wasPrice}
                         </span>
-                        <span className="font-semibold">
-                          Rs {item.nowPrice}
-                        </span>
+                        <span className="font-semibold">Rs {item.nowPrice}</span>
                       </p>
 
                       <button type="button" className={glassButton}>
@@ -276,7 +280,7 @@ const TrendingNowRail = () => {
           <div
             className="inline-flex items-center gap-2 font-sans text-xs text-vintage-brown/60 sm:gap-3 sm:text-sm"
             role="navigation"
-            aria-label="Trending Now pages"
+            aria-label="Best Sellers pages"
           >
             <button
               type="button"
@@ -312,4 +316,4 @@ const TrendingNowRail = () => {
   );
 };
 
-export default TrendingNowRail;
+export default BestSellersRail;

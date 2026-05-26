@@ -1,0 +1,59 @@
+/* Full viewport width; breaks out of .homePatternBg horizontal padding */
+.home-hero-banner {
+  position: relative;
+  width: 100vw;
+  max-width: 100vw;
+  height: 60vh;
+  min-height: 14rem;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  overflow: hidden;
+  line-height: 0;
+  background: #2d2418;
+  isolation: isolate;
+}
+
+.home-hero-banner__layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* Taller than the frame so parallax translate does not expose edges */
+.home-hero-banner__img {
+  position: absolute;
+  left: 0;
+  top: -15%;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: 130%;
+  min-height: 130%;
+  object-fit: cover;
+  object-position: center center;
+  will-change: transform;
+  transform-origin: center center;
+}
+
+/* Soft edge blend for depth */
+.home-hero-banner__veil {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(26, 20, 16, 0.28) 0%,
+    transparent 22%,
+    transparent 72%,
+    rgba(26, 20, 16, 0.35) 100%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-hero-banner__img {
+    top: 0;
+    height: 100%;
+    min-height: 100%;
+    will-change: auto;
+  }
+}

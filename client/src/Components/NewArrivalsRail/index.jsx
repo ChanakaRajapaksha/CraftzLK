@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useCallback, useId, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { HOME_RAIL_SECTION } from "../homeRailLayout";
+import { HOME_RAIL_SECTION, HOME_SECTION_INNER_DIVIDED } from "../homeRailLayout";
 
 const IMG_BASE = "/images/product_images/tea_powder.png";
 const IMG_ZOOM = "/images/product_images/tea_powder_zoom.png";
@@ -46,7 +46,7 @@ const ARRIVALS_UNDERLINE_PATH =
 const ARRIVALS_UNDERLINE_VIEWBOX = "0 0 192 14";
 
 const TITLE_SCROLL_VIEWPORT = {
-  once: false,
+  once: true,
   amount: 0.45,
   margin: "40px 0px",
 };
@@ -182,7 +182,7 @@ const NewArrivalsRail = () => {
       className={HOME_RAIL_SECTION}
       aria-labelledby="new-arrivals-rail-heading"
     >
-      <div className="mx-auto w-full max-w-[1500px]">
+      <div className={HOME_SECTION_INNER_DIVIDED}>
         <h2
           id="new-arrivals-rail-heading"
           className="mb-5 flex flex-wrap items-baseline gap-x-2 font-heading text-lg font-bold uppercase tracking-[0.12em] text-vintage-brown sm:mb-6 sm:gap-x-3 sm:text-xl md:text-2xl"

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import HomeIntroSplash from "../../Components/HomeIntroSplash";
 import Home from "./index";
 
@@ -13,24 +13,12 @@ function shouldSkipSplash() {
   }
 }
 
-function minSplashMs() {
-  if (typeof window === "undefined") return 2200;
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ? 420
-    : 2600;
-}
-
 /** First visit to home (per tab session): 3D intro splash, then home content mounts. */
 export default function HomeGate() {
   const [showSplash, setShowSplash] = useState(() => !shouldSkipSplash());
-
-  useEffect(() => {
-    if (!showSplash) return undefined;
-    const id = window.setTimeout(() => {
-      setShowSplash(false);
-    }, minSplashMs());
-    return () => window.clearTimeout(id);
-  }, [showSplash]);
+  const handleSplashComplete = useCallback(() => {
+    setShowSplash(false);
+  }, []);
 
   useEffect(() => {
     if (!showSplash) return undefined;
@@ -55,7 +43,7 @@ export default function HomeGate() {
       }}
     >
       {showSplash ? (
-        <HomeIntroSplash key="craftzlk-intro" />
+        <HomeIntroSplash key="craftzlk-intro" onComplete={handleSplashComplete} />
       ) : (
         <motion.div
           key="craftzlk-home"
