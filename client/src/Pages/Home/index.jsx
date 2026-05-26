@@ -6,7 +6,6 @@ import NewArrivalsRail from "../../Components/NewArrivalsRail";
 import BestSellersRail from "../../Components/BestSellersRail";
 import HomeHeroBanner from "../../Components/HomeHeroBanner";
 import HomeCustomerReviewSummary from "../../Components/HomeCustomerReviewSummary";
-import HomePageFooter from "../../Components/HomePageFooter";
 import HomeProductImagesSection from "../../Components/HomeProductImagesSection";
 import PopularCategoriesGrid from "../../Components/PopularCategoriesGrid";
 import React, { useContext, useEffect, useState } from "react";
@@ -158,8 +157,6 @@ const Home = () => {
 
       <div className="home-tail">
         <HomeCustomerReviewSummary />
-
-        <HomePageFooter />
       </div>
 
       <ChatBox />

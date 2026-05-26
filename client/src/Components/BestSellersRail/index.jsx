@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useCallback, useId, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { getHomeRailProductId } from "../../data/sampleProductDetails";
 import { HOME_RAIL_SECTION, HOME_SECTION_INNER_DIVIDED } from "../homeRailLayout";
 
 const IMG_BASE = "/images/product_images/wooden_wine_glass.png";
@@ -8,6 +9,7 @@ const IMG_ZOOM = "/images/product_images/wooden_wine_glass_zoom.png";
 
 const BASE_CARDS = Array.from({ length: 5 }, (_, i) => ({
   id: i,
+  productId: getHomeRailProductId("best-sellers", 0, i),
   name: "Wooden Wine Glasses",
   saveRs: "11,100",
   wasPrice: "27,000",
@@ -19,6 +21,7 @@ const ROWS = [
   BASE_CARDS.map((c, i) => ({
     ...c,
     id: `bs-row2-${i}`,
+    productId: getHomeRailProductId("best-sellers", 1, i),
     saveRs: "9,800",
     nowPrice: "16,500",
     wasPrice: "26,500",
@@ -232,21 +235,27 @@ const BestSellersRail = () => {
                     className={`bg-[#FADA5E] flex min-h-0 flex-1 flex-col ${glassInner} cursor-pointer`}
                   >
                     <div className="relative z-0">
-                      <div className={glassImageWell}>
-                        <img
-                          src={IMG_BASE}
-                          alt="Wooden Wine Glasses"
-                          draggable={false}
-                          className="relative z-10 h-full w-full object-cover object-center transition-[opacity,transform] duration-[450ms] ease-out group-hover:scale-105 group-hover:opacity-0 motion-reduce:transition-opacity motion-reduce:duration-200 motion-reduce:group-hover:scale-100 motion-reduce:group-hover:opacity-100"
-                        />
-                        <img
-                          src={IMG_ZOOM}
-                          alt=""
-                          aria-hidden="true"
-                          draggable={false}
-                          className="absolute inset-0 z-20 h-full w-full object-cover object-center opacity-0 scale-110 transition-[opacity,transform] duration-[600ms] ease-[cubic-bezier(0.33,1,0.68,1)] group-hover:scale-100 group-hover:opacity-100 motion-reduce:transition-opacity motion-reduce:duration-200 motion-reduce:group-hover:scale-100 motion-reduce:group-hover:opacity-0"
-                        />
-                      </div>
+                      <Link
+                        to={`/product/${item.productId}`}
+                        className="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vintage-brown"
+                        aria-label={`View details for ${item.name}`}
+                      >
+                        <div className={glassImageWell}>
+                          <img
+                            src={IMG_BASE}
+                            alt={item.name}
+                            draggable={false}
+                            className="relative z-10 h-full w-full object-cover object-center transition-[opacity,transform] duration-[450ms] ease-out group-hover:scale-105 group-hover:opacity-0 motion-reduce:transition-opacity motion-reduce:duration-200 motion-reduce:group-hover:scale-100 motion-reduce:group-hover:opacity-100"
+                          />
+                          <img
+                            src={IMG_ZOOM}
+                            alt=""
+                            aria-hidden="true"
+                            draggable={false}
+                            className="absolute inset-0 z-20 h-full w-full object-cover object-center opacity-0 scale-110 transition-[opacity,transform] duration-[600ms] ease-[cubic-bezier(0.33,1,0.68,1)] group-hover:scale-100 group-hover:opacity-100 motion-reduce:transition-opacity motion-reduce:duration-200 motion-reduce:group-hover:scale-100 motion-reduce:group-hover:opacity-0"
+                          />
+                        </div>
+                      </Link>
                     </div>
 
                     <div
@@ -256,7 +265,12 @@ const BestSellersRail = () => {
                         SAVE RS {item.saveRs}
                       </span>
                       <h3 className="mb-1.5 mt-0.5 font-heading text-sm font-semibold leading-snug text-vintage-brown drop-shadow-[0_1px_0_rgba(255,255,255,0.5)] sm:text-base">
-                        {item.name}
+                        <Link
+                          to={`/product/${item.productId}`}
+                          className="hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vintage-brown"
+                        >
+                          {item.name}
+                        </Link>
                       </h3>
                       <p className="mb-1 font-sans text-sm leading-snug text-vintage-brown sm:text-[0.9rem]">
                         <span className="mr-2 text-red-700/95 line-through decoration-1">

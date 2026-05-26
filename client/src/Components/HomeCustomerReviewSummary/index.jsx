@@ -55,13 +55,22 @@ const FEATURES = [
   },
 ];
 
-export default function HomeCustomerReviewSummary() {
+export default function HomeCustomerReviewSummary({ variant = "home" }) {
   const [reviewsOpen, setReviewsOpen] = useState(false);
+  const isProduct = variant === "product";
 
   return (
-    <div className="home-customer-block">
+    <div
+      className={`home-customer-block${
+        isProduct ? " home-customer-block--product" : " home-customer-block--home"
+      }`}
+    >
       <section
-        className="home-review-summary relative w-full bg-transparent px-3 py-8 sm:px-4 sm:py-10 md:px-6 md:py-10 lg:px-8 lg:py-11"
+        className={`home-review-summary relative w-full bg-transparent${
+          isProduct
+            ? " home-review-summary--product px-0 py-0"
+            : " px-3 py-8 sm:px-4 sm:py-10 md:px-6 md:py-10 lg:px-8 lg:py-11"
+        }`}
         aria-labelledby="home-review-summary-heading"
       >
         <div className="home-review-summary__inner">
@@ -112,19 +121,21 @@ export default function HomeCustomerReviewSummary() {
         </div>
       </section>
 
-      <section className="home-value-strip" aria-label="Why choose CraftzLK">
-        <div className="home-value-strip__inner">
-          <ul className="home-value-strip__grid">
-            {FEATURES.map(({ Icon, title, description }) => (
-              <li key={title} className="home-value-strip__item">
-                <Icon className="home-value-strip__icon" aria-hidden="true" />
-                <h3 className="home-value-strip__title">{title}</h3>
-                <p className="home-value-strip__text">{description}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+      {!isProduct && (
+        <section className="home-value-strip" aria-label="Why choose CraftzLK">
+          <div className="home-value-strip__inner">
+            <ul className="home-value-strip__grid">
+              {FEATURES.map(({ Icon, title, description }) => (
+                <li key={title} className="home-value-strip__item">
+                  <Icon className="home-value-strip__icon" aria-hidden="true" />
+                  <h3 className="home-value-strip__title">{title}</h3>
+                  <p className="home-value-strip__text">{description}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
 
       <CustomerReviewsModal open={reviewsOpen} onClose={() => setReviewsOpen(false)} />
     </div>

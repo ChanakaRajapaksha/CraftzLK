@@ -1,0 +1,443 @@
+.write-review-modal .MuiBackdrop-root {
+  background-color: rgba(17, 17, 17, 0.52) !important;
+  transition: opacity 320ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.write-review-modal .MuiPaper-elevation {
+  position: relative;
+  width: min(94vw, 520px) !important;
+  max-width: 520px !important;
+  max-height: min(92vh, 720px) !important;
+  margin: 1rem;
+  padding: 0 !important;
+  border-radius: 16px !important;
+  background: #fff !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2) !important;
+  overflow: hidden !important;
+}
+
+.write-review-modal .close_.wrm-close {
+  top: 12px !important;
+  right: 12px !important;
+  min-width: 40px !important;
+  width: 40px !important;
+  height: 40px !important;
+  background: var(--primary-dark, #b8860b) !important;
+  color: #fff !important;
+  border: 2px solid rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 0 2px 10px rgba(184, 134, 11, 0.35) !important;
+  z-index: 30 !important;
+}
+
+.write-review-modal .close_.wrm-close:hover {
+  background: var(--accent-blue-hover, #9a7209) !important;
+}
+
+.write-review-modal .close_.wrm-close span {
+  display: block;
+  font-size: 1.65rem;
+  line-height: 1;
+  color: #fff !important;
+  transform: translateY(-1px);
+}
+
+.wrm-body {
+  display: flex;
+  flex-direction: column;
+  min-height: min(92vh, 720px);
+  max-height: min(92vh, 720px);
+  padding: 2.5rem 1.75rem 1.5rem;
+}
+
+.wrm-step {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 0.15rem;
+}
+
+.wrm-step--rating {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-top: 0.5rem;
+}
+
+.wrm-step--success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-top: 2rem;
+}
+
+.wrm-step__title {
+  margin: 0 0 0.65rem;
+  font-family: var(--font-heading, "Bricolage Grotesque", sans-serif);
+  font-size: clamp(1.25rem, 3vw, 1.55rem);
+  font-weight: 700;
+  line-height: 1.3;
+  color: #111;
+}
+
+.wrm-step__subtitle {
+  margin: 0 0 1.75rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: #666;
+}
+
+.wrm-step__subtitle--narrow {
+  max-width: 22rem;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.wrm-step__product-name {
+  margin: 0 0 1rem;
+  font-family: var(--font-heading, "Bricolage Grotesque", sans-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #111;
+}
+
+.wrm-product {
+  margin-bottom: 1.75rem;
+}
+
+.wrm-product__img {
+  display: block;
+  width: min(100%, 220px);
+  height: auto;
+  max-height: 180px;
+  margin: 0 auto 1rem;
+  object-fit: contain;
+}
+
+.wrm-product__name {
+  margin: 0;
+  max-width: 20rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #111;
+}
+
+.wrm-stars {
+  width: 100%;
+  max-width: 22rem;
+}
+
+.wrm-stars__row {
+  display: flex;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.wrm-stars__btn {
+  border: none;
+  background: none;
+  padding: 0.15rem;
+  cursor: pointer;
+  line-height: 1;
+  color: #c9a961;
+  transition: transform 0.15s ease, color 0.15s ease;
+  text-transform: none !important;
+}
+
+.wrm-stars__btn span {
+  display: block;
+  -webkit-text-stroke: 1.5px var(--primary-dark, #b8860b);
+  color: transparent;
+  transition: color 0.15s ease;
+}
+
+.wrm-stars__btn--filled span,
+.wrm-stars__btn:hover span {
+  color: var(--primary-dark, #b8860b);
+  -webkit-text-stroke: 0;
+}
+
+.wrm-stars__btn:hover {
+  transform: scale(1.06);
+}
+
+.wrm-stars--lg .wrm-stars__btn span {
+  font-size: 2.65rem;
+}
+
+.wrm-stars--md .wrm-stars__btn span {
+  font-size: 2rem;
+}
+
+.wrm-stars__labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.35rem;
+  padding: 0 0.2rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.78rem;
+  color: #888;
+}
+
+.wrm-stars-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.wrm-field {
+  margin-bottom: 1.1rem;
+}
+
+.wrm-field__label {
+  display: block;
+  margin-bottom: 0.45rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.write-review-modal label.wrm-field__label,
+.write-review-modal .wrm-field__label {
+  color: var(--text-primary, #3d2817) !important;
+}
+
+.write-review-modal .wrm-field__input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(184, 134, 11, 0.28) !important;
+  border-radius: 999px;
+  background: #faf8f3 !important;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.9rem;
+  color: var(--text-primary, #3d2817) !important;
+  outline: none;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.write-review-modal .wrm-field__textarea {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(184, 134, 11, 0.28) !important;
+  border-radius: 12px;
+  background: #faf8f3 !important;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.9rem;
+  color: var(--text-primary, #3d2817) !important;
+  outline: none;
+  resize: vertical;
+  min-height: 7.5rem;
+  line-height: 1.55;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.write-review-modal .wrm-field__input:focus,
+.write-review-modal .wrm-field__textarea:focus {
+  border-color: var(--primary-medium, #c9a961) !important;
+  background: #f5f1e8 !important;
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.2) !important;
+}
+
+.write-review-modal .wrm-field__input::placeholder,
+.write-review-modal .wrm-field__textarea::placeholder {
+  color: rgba(61, 40, 23, 0.45) !important;
+  opacity: 1 !important;
+}
+
+.write-review-modal .wrm-field__input--error,
+.write-review-modal .wrm-field__textarea.wrm-field__input--error {
+  border-color: #e05252 !important;
+  background: #fff0f0 !important;
+}
+
+.wrm-field__error {
+  margin: 0.4rem 0 0 0.85rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.78rem;
+  color: #d93030;
+}
+
+.wrm-field__hint {
+  margin: 0.4rem 0 0 0.85rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.78rem;
+  color: #888;
+}
+
+.wrm-legal {
+  margin: 0.5rem 0 0;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.72rem;
+  line-height: 1.55;
+  color: #777;
+}
+
+.wrm-legal a {
+  color: var(--primary-dark, #b8860b);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.write-review-modal label.wrm-checkbox,
+.write-review-modal .wrm-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.25rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.88rem;
+  color: var(--text-primary, #3d2817) !important;
+  cursor: pointer;
+}
+
+.wrm-checkbox input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--primary-dark, #b8860b);
+}
+
+.wrm-upload__input {
+  display: none;
+}
+
+.write-review-modal .wrm-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  width: 100%;
+  min-height: 9rem;
+  margin-top: 0.5rem;
+  padding: 1.25rem;
+  border: 1.5px dashed rgba(184, 134, 11, 0.28) !important;
+  border-radius: 12px;
+  background: #faf8f3 !important;
+  cursor: pointer;
+  text-transform: none !important;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.write-review-modal .wrm-upload:hover {
+  border-color: var(--primary-medium, #c9a961) !important;
+  background: #f5f1e8 !important;
+}
+
+.wrm-upload__icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  color: #444;
+}
+
+.wrm-upload__text {
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.88rem;
+  color: #666;
+}
+
+.wrm-upload__text strong {
+  color: #333;
+}
+
+.wrm-upload__preview {
+  max-width: 100%;
+  max-height: 10rem;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.wrm-upload__filename {
+  margin: 0.65rem 0 0;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.78rem;
+  color: #666;
+  text-align: center;
+}
+
+.wrm-success__text {
+  margin: 0 0 0.85rem;
+  max-width: 22rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: #555;
+}
+
+.wrm-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+  flex-shrink: 0;
+}
+
+.write-review-modal .wrm-nav__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: none;
+  background: none;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-primary, #3d2817) !important;
+  cursor: pointer;
+  text-transform: none !important;
+}
+
+.wrm-nav__back svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.wrm-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 0.65rem 1.75rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: none !important;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.wrm-btn--primary {
+  background: var(--primary-dark, #b8860b);
+  color: #fff;
+}
+
+.wrm-btn--primary:hover {
+  background: var(--accent-blue-hover, #9a7209);
+}
+
+.wrm-btn--close {
+  margin-top: 2rem;
+  min-width: 8rem;
+}
+
+@media (max-width: 540px) {
+  .wrm-body {
+    padding: 2.25rem 1.15rem 1.25rem;
+  }
+
+  .wrm-stars--lg .wrm-stars__btn span {
+    font-size: 2.15rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .write-review-modal .MuiBackdrop-root,
+  .write-review-modal .MuiPaper-elevation {
+    transition: none !important;
+  }
+}

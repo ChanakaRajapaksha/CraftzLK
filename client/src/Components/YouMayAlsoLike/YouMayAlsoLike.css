@@ -1,0 +1,24 @@
+.ymal {
+  margin-top: 2.75rem;
+  margin-inline: calc(-0.5rem - 2.5rem);
+  padding: 2.5rem calc(2.5rem + 0.5rem) 0.5rem;
+  border-top: 1px solid #e0d8cc;
+  background: transparent;
+}
+
+.ymal__inner {
+  width: 100%;
+  max-width: 84rem;
+  margin: 0 auto;
+}
+
+.ymal-grid {
+  scrollbar-width: thin;
+}
+
+@media (max-width: 900px) {
+  .ymal {
+    margin-inline: -1.5rem;
+    padding: 2rem 1.5rem 0.25rem;
+  }
+}

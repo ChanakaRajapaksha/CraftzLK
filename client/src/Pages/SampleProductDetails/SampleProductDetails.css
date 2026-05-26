@@ -1,0 +1,802 @@
+.spd-page {
+  background: #faf8f3;
+  min-height: calc(100vh - 80px);
+  padding: 1.5rem 2.5rem 3.5rem;
+}
+
+.spd-page__inner {
+  width: 100%;
+  max-width: 84rem;
+  margin: 0 auto;
+  padding-inline: 0.5rem;
+}
+
+.spd-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.86rem;
+  color: #777;
+}
+
+.spd-breadcrumb a {
+  color: var(--primary-dark, #b8860b);
+  text-decoration: none;
+}
+
+.spd-breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.spd-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 2rem 2.5rem;
+  align-items: start;
+}
+
+.spd-gallery__layout {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: 0.85rem;
+}
+
+.spd-thumbs {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.spd-thumbs__btn {
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0.2rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.spd-thumbs__btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.spd-thumbs__btn--active {
+  border-color: var(--primary-dark, #b8860b);
+  box-shadow: 0 0 0 1px var(--primary-dark, #b8860b);
+}
+
+.spd-preview {
+  position: relative;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+  min-height: 22rem;
+}
+
+.spd-preview__img {
+  width: 100%;
+  height: 100%;
+  min-height: 22rem;
+  object-fit: contain;
+  background: #fff;
+  padding: 1rem;
+}
+
+.spd-preview__expand {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.spd-trust {
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.spd-trust__item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  background: #f3f0f8;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.spd-trust__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: var(--primary-dark, #b8860b);
+}
+
+.spd-info__title {
+  margin: 0 0 0.85rem;
+  font-family: var(--font-heading, "Bricolage Grotesque", sans-serif);
+  font-size: clamp(1.45rem, 2.5vw, 2rem);
+  font-weight: 700;
+  line-height: 1.25;
+  color: #111;
+}
+
+.spd-info__price {
+  margin: 0 0 0.65rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #111;
+}
+
+.spd-info__cash-pill {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  background: #f5f5f5;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #555;
+}
+
+.spd-info__stock {
+  margin: 0 0 0.85rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: #15803d;
+}
+
+.spd-info__stock--out {
+  color: #b91c1c;
+}
+
+.spd-rating {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+  margin-bottom: 1.15rem;
+}
+
+.spd-rating__stars {
+  display: inline-flex;
+  gap: 0.05rem;
+}
+
+.spd-star {
+  color: #ddd;
+  font-size: 1.08rem;
+}
+
+.spd-star--filled {
+  color: var(--primary-dark, #b8860b);
+}
+
+.spd-rating__value {
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: #111;
+}
+
+.spd-rating__count {
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.86rem;
+  color: #888;
+}
+
+.spd-desc {
+  border-top: 1px solid #ececec;
+  border-bottom: 1px solid #ececec;
+  margin-bottom: 1.15rem;
+}
+
+.spd-desc__toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 0;
+  border: none;
+  background: none;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111;
+  cursor: pointer;
+  text-transform: none !important;
+}
+
+.spd-desc__chevron {
+  font-size: 1.1rem;
+  transform: rotate(90deg);
+  transition: transform 0.2s ease;
+}
+
+.spd-desc__chevron--open {
+  transform: rotate(-90deg);
+}
+
+.spd-desc__body {
+  padding-bottom: 0.85rem;
+}
+
+.spd-desc__body ul {
+  margin: 0 0 0.65rem;
+  padding-left: 1.1rem;
+}
+
+.spd-desc__body li {
+  margin-bottom: 0.35rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #444;
+}
+
+.spd-desc__note {
+  margin: 0;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.72rem;
+  font-style: italic;
+  color: #888;
+}
+
+.spd-colors {
+  margin-bottom: 1.15rem;
+}
+
+.spd-colors__label {
+  margin: 0 0 0.55rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.94rem;
+  color: #333;
+}
+
+.spd-colors__list {
+  display: flex;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.spd-colors__swatch {
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0.15rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.spd-colors__swatch img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.spd-colors__swatch--active {
+  border-color: #111;
+  box-shadow: 0 0 0 1px #111;
+}
+
+.spd-qty {
+  margin-bottom: 1rem;
+}
+
+.spd-qty__label {
+  display: block;
+  margin-bottom: 0.45rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: #111;
+}
+
+.spd-qty__control {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.spd-qty__control button {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: none !important;
+}
+
+.spd-qty__control button:hover:not(:disabled) {
+  background: #faf3e7;
+  color: var(--primary-dark, #b8860b);
+}
+
+.spd-qty__control button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.spd-qty__control span {
+  min-width: 2.75rem;
+  text-align: center;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 1.02rem;
+  font-weight: 600;
+  border-left: 1px solid #eee;
+  border-right: 1px solid #eee;
+  line-height: 2.5rem;
+}
+
+.spd-add-cart {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  width: 100%;
+  max-width: 20rem;
+  min-height: 2.85rem;
+  margin-bottom: 0.85rem;
+  padding: 0 1.25rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary-dark, #b8860b);
+  color: #fff;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: none !important;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.spd-add-cart:hover:not(:disabled) {
+  background: var(--accent-blue-hover, #9a7209);
+}
+
+.spd-add-cart:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.spd-back {
+  display: block;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.9rem;
+  color: var(--primary-dark, #b8860b);
+  cursor: pointer;
+  text-transform: none !important;
+}
+
+.spd-back:hover {
+  text-decoration: underline;
+}
+
+.spd-not-found {
+  max-width: 32rem;
+  margin: 4rem auto;
+  text-align: center;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+}
+
+/* Product details — light grey band */
+.spd-details {
+  margin-top: 2.75rem;
+  margin-inline: calc(-0.5rem - 2.5rem);
+  padding: 2rem calc(2.5rem + 0.5rem) 2.25rem;
+  background: #f3f3f3;
+  border: none;
+  border-radius: 0;
+}
+
+/* Customer reviews — separate section below on page background */
+.spd-reviews {
+  margin-top: 0;
+  margin-inline: calc(-0.5rem - 2.5rem);
+  padding: 2.5rem calc(2.5rem + 0.5rem) 2.75rem;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+.spd-details__title {
+  margin: 0 0 1.35rem;
+  font-family: var(--font-heading, "Bricolage Grotesque", sans-serif);
+  font-size: clamp(1.5rem, 2.8vw, 2rem);
+  font-weight: 700;
+  line-height: 1.2;
+  color: #111;
+}
+
+.spd-details__tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5rem;
+  margin-bottom: 1.35rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.spd-details__tab {
+  display: inline-block;
+  padding-bottom: 0.55rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #666;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.spd-details__tab--active {
+  color: #111;
+  border-bottom-color: #111;
+}
+
+.spd-details__panel {
+  padding-top: 0.15rem;
+}
+
+.spd-details__list {
+  margin: 0;
+  padding-left: 1.15rem;
+  list-style: disc;
+}
+
+.spd-details__list li {
+  margin-bottom: 1.05rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.94rem;
+  line-height: 1.75;
+  color: #333;
+}
+
+.spd-details__list li:last-child {
+  margin-bottom: 0;
+}
+
+.spd-details__list strong {
+  font-weight: 700;
+  color: #111;
+}
+
+.spd-reviews__title {
+  margin: 0 0 1.75rem;
+  font-family: var(--font-heading, "Bricolage Grotesque", sans-serif);
+  font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+  font-weight: 700;
+  text-align: center;
+  color: #111;
+}
+
+.spd-reviews__layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5rem;
+  max-width: 42rem;
+  margin: 0 auto;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.spd-reviews__summary {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.spd-reviews__score-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 0.65rem;
+  margin-bottom: 0.35rem;
+}
+
+.spd-reviews__stars {
+  display: inline-flex;
+  gap: 0.12rem;
+}
+
+.spd-reviews__star-wrap {
+  position: relative;
+  display: inline-block;
+  width: 1.35rem;
+  height: 1.35rem;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.spd-reviews__star {
+  display: block;
+  line-height: 1;
+}
+
+.spd-reviews__star--empty {
+  color: #ddd;
+}
+
+.spd-reviews__star--filled {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  color: var(--primary-dark, #b8860b);
+  white-space: nowrap;
+}
+
+.spd-reviews__score-link {
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--primary-dark, #b8860b);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  text-transform: none !important;
+}
+
+.spd-reviews__score-link:hover {
+  color: var(--accent-blue-hover, #9a7209);
+}
+
+.spd-reviews__count {
+  margin: 0;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.88rem;
+  color: #777;
+}
+
+.spd-reviews__divider {
+  align-self: stretch;
+  width: 1px;
+  min-height: 5.5rem;
+  background: #d8d8d8;
+  flex-shrink: 0;
+}
+
+.spd-reviews__actions {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.spd-reviews__btn {
+  width: 100%;
+  max-width: 11.5rem;
+  min-height: 2.35rem;
+  padding: 0.45rem 1.25rem;
+  border-radius: 999px;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: none !important;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.spd-reviews__btn--primary {
+  border: 1px solid var(--primary-dark, #b8860b);
+  background: var(--primary-dark, #b8860b);
+  color: #fff;
+}
+
+.spd-reviews__btn--primary:hover {
+  background: var(--accent-blue-hover, #9a7209);
+  border-color: var(--accent-blue-hover, #9a7209);
+}
+
+.spd-reviews__btn--outline {
+  border: 1px solid var(--primary-dark, #b8860b);
+  background: #fff;
+  color: var(--primary-dark, #b8860b);
+}
+
+.spd-reviews__btn--outline:hover {
+  background: #faf3e7;
+}
+
+.spd-preview__expand:hover {
+  background: #fff;
+  border-color: var(--primary-medium, #c9a961);
+  color: var(--primary-dark, #b8860b);
+}
+
+/* Fullscreen image lightbox — above header (10001) and MUI dialogs (100000) */
+.spd-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  isolation: isolate;
+}
+
+.spd-lightbox__backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: rgba(10, 10, 10, 0.78);
+  cursor: pointer;
+}
+
+.spd-lightbox__panel {
+  position: relative;
+  z-index: 1;
+  width: min(96vw, 56rem);
+  max-height: 92vh;
+  padding: 0.75rem;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.35);
+}
+
+.spd-lightbox__close {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  background: var(--primary-dark, #b8860b);
+  color: #fff;
+  cursor: pointer;
+  text-transform: none !important;
+  box-shadow: 0 2px 12px rgba(184, 134, 11, 0.4);
+}
+
+.spd-lightbox__close span {
+  font-size: 1.55rem;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+.spd-lightbox__close:hover {
+  background: var(--accent-blue-hover, #9a7209);
+}
+
+.spd-lightbox__img {
+  display: block;
+  width: 100%;
+  max-height: calc(92vh - 2rem);
+  object-fit: contain;
+  border-radius: 10px;
+  background: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spd-lightbox,
+  .spd-lightbox__panel {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .spd-page {
+    padding: 1.25rem 1.5rem 3rem;
+  }
+
+  .spd-page__inner {
+    padding-inline: 0;
+  }
+
+  .spd-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .spd-gallery__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .spd-thumbs {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+  }
+
+  .spd-thumbs__btn {
+    width: 4rem;
+    flex-shrink: 0;
+  }
+
+  .spd-details {
+    margin-inline: -1.5rem;
+    padding: 1.5rem 1.5rem 1.75rem;
+  }
+
+  .spd-reviews {
+    margin-inline: -1.5rem;
+    padding: 1.75rem 1.5rem 2.25rem;
+  }
+
+  .spd-reviews__layout {
+    flex-direction: column;
+    gap: 1.25rem;
+    max-width: none;
+  }
+
+  .spd-reviews__divider {
+    width: 100%;
+    min-height: 1px;
+    height: 1px;
+  }
+
+  .spd-reviews__actions {
+    width: 100%;
+  }
+
+  .spd-reviews__btn {
+    max-width: 14rem;
+  }
+
+  .spd-details__list li {
+    font-size: 0.9rem;
+    line-height: 1.65;
+  }
+}

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useCallback, useId, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { getHomeRailProductId } from "../../data/sampleProductDetails";
 import { HOME_RAIL_SECTION, HOME_SECTION_INNER_DIVIDED } from "../homeRailLayout";
 
 const IMG_BASE = "/images/product_images/tea_powder.png";
@@ -8,6 +9,7 @@ const IMG_ZOOM = "/images/product_images/tea_powder_zoom.png";
 
 const BASE_CARDS = Array.from({ length: 5 }, (_, i) => ({
   id: i,
+  productId: getHomeRailProductId("new-arrivals", 0, i),
   name: "Ranawara Tea Powder",
   price: "1,450",
 }));
@@ -17,6 +19,7 @@ const ROWS = [
   BASE_CARDS.map((c, i) => ({
     ...c,
     id: `na-row2-${i}`,
+    productId: getHomeRailProductId("new-arrivals", 1, i),
   })),
 ];
 
@@ -225,28 +228,39 @@ const NewArrivalsRail = () => {
                     className={`bg-[#FADA5E] flex min-h-0 flex-1 flex-col ${glassInner} cursor-pointer`}
                   >
                     <div className="relative z-0">
-                      <div className={glassImageWell}>
-                        <img
-                          src={IMG_BASE}
-                          alt="Ranawara Tea Powder"
-                          draggable={false}
-                          className="relative z-10 h-full w-full object-cover object-center transition-[opacity,transform] duration-[450ms] ease-out group-hover:scale-105 group-hover:opacity-0 motion-reduce:transition-opacity motion-reduce:duration-200 motion-reduce:group-hover:scale-100 motion-reduce:group-hover:opacity-100"
-                        />
-                        <img
-                          src={IMG_ZOOM}
-                          alt=""
-                          aria-hidden="true"
-                          draggable={false}
-                          className="absolute inset-0 z-20 h-full w-full object-cover object-center opacity-0 scale-110 transition-[opacity,transform] duration-[600ms] ease-[cubic-bezier(0.33,1,0.68,1)] group-hover:scale-100 group-hover:opacity-100 motion-reduce:transition-opacity motion-reduce:duration-200 motion-reduce:group-hover:scale-100 motion-reduce:group-hover:opacity-0"
-                        />
-                      </div>
+                      <Link
+                        to={`/product/${item.productId}`}
+                        className="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vintage-brown"
+                        aria-label={`View details for ${item.name}`}
+                      >
+                        <div className={glassImageWell}>
+                          <img
+                            src={IMG_BASE}
+                            alt={item.name}
+                            draggable={false}
+                            className="relative z-10 h-full w-full object-cover object-center transition-[opacity,transform] duration-[450ms] ease-out group-hover:scale-105 group-hover:opacity-0 motion-reduce:transition-opacity motion-reduce:duration-200 motion-reduce:group-hover:scale-100 motion-reduce:group-hover:opacity-100"
+                          />
+                          <img
+                            src={IMG_ZOOM}
+                            alt=""
+                            aria-hidden="true"
+                            draggable={false}
+                            className="absolute inset-0 z-20 h-full w-full object-cover object-center opacity-0 scale-110 transition-[opacity,transform] duration-[600ms] ease-[cubic-bezier(0.33,1,0.68,1)] group-hover:scale-100 group-hover:opacity-100 motion-reduce:transition-opacity motion-reduce:duration-200 motion-reduce:group-hover:scale-100 motion-reduce:group-hover:opacity-0"
+                          />
+                        </div>
+                      </Link>
                     </div>
 
                     <div
                       className={`relative flex flex-1 flex-col items-center ${glassPanelNoSave}`}
                     >
                       <h3 className="mb-1.5 font-heading text-sm font-semibold leading-snug text-vintage-brown drop-shadow-[0_1px_0_rgba(255,255,255,0.5)] sm:mb-2 sm:text-base">
-                        {item.name}
+                        <Link
+                          to={`/product/${item.productId}`}
+                          className="hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vintage-brown"
+                        >
+                          {item.name}
+                        </Link>
                       </h3>
                       <p className="mb-1 font-sans text-sm leading-snug text-vintage-brown sm:text-[0.9rem]">
                         <span className="font-semibold">Rs {item.price}</span>

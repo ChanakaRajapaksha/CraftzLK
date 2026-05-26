@@ -5,8 +5,9 @@ import "./ChatBox.css";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import HomeGate from "./Pages/Home/HomeGate.jsx";
 import Listing from "./Pages/Listing/index.jsx";
-import ProductDetails from "./Pages/ProductDetails/index.jsx";
+import ProductDetailsRouter from "./Pages/ProductDetailsRouter.jsx";
 import Header from "./Components/Header/index.jsx";
+import HomePageFooter from "./Components/HomePageFooter";
 import { createContext, useEffect, useState } from "react";
 import axios from "axios";
 import ProductModal from "./Components/ProductModal/index.jsx";
@@ -323,7 +324,7 @@ function AppContent() {
         <Route
           exact={true}
           path="/product/:id"
-          element={<ProductDetails />}
+          element={<ProductDetailsRouter />}
         />
         <Route exact={true} path="/cart" element={<Cart />} />
         <Route exact={true} path="/signIn" element={<SignIn />} />
@@ -370,6 +371,9 @@ function AppContent() {
           <Route path="orders" element={<AdminOrders />} />
         </Route>
       </Routes>
+
+      {isHeaderFooterShow === true && <HomePageFooter />}
+
       {isOpenProductModal === true && <ProductModal data={productData} />}
     </MyContext.Provider>
   );

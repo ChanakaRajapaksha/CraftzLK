@@ -5,6 +5,104 @@
   border: none;
 }
 
+.home-customer-block--home {
+  border-top: 1px solid #e0d8cc;
+  background: #faf8f3;
+}
+
+.home-customer-block--home .home-review-summary {
+  padding-top: clamp(2.5rem, 5vw, 3.5rem);
+  padding-bottom: clamp(2rem, 4vw, 2.75rem);
+}
+
+.home-customer-block--home .home-review-summary__inner {
+  max-width: 52rem;
+}
+
+.home-customer-block--home .home-review-summary__title {
+  margin-bottom: 1.25rem;
+}
+
+.home-customer-block--home .home-review-summary__body {
+  margin-bottom: 1.5rem;
+}
+
+.home-customer-block--home .home-review-summary__body p {
+  font-size: clamp(0.9rem, 1.8vw, 1rem);
+  line-height: 1.65;
+  color: #555;
+}
+
+.home-customer-block--home .home-review-summary__tags {
+  margin-bottom: 1.25rem;
+}
+
+.home-customer-block--home .home-review-summary__pill {
+  background: #fff;
+  border-color: rgba(184, 134, 11, 0.28);
+  box-shadow: none;
+}
+
+.home-customer-block--home .home-review-summary__ai-note {
+  margin-bottom: 1.5rem;
+}
+
+.home-customer-block--home .home-review-summary__cta {
+  font-size: 0.84rem;
+  padding: 0.52rem 1.4rem;
+}
+
+/* Product details page — below reviews feed / load more */
+.home-customer-block--product {
+  width: 100%;
+  margin-top: 2.5rem;
+  padding-top: 2.25rem;
+  border-top: 1px solid #e0d8cc;
+  background: transparent;
+}
+
+.home-review-summary--product .home-review-summary__inner {
+  max-width: 52rem;
+  margin-inline: auto;
+  padding-bottom: 0.5rem;
+}
+
+.home-review-summary--product .home-review-summary__title {
+  margin-bottom: 1.1rem;
+  font-size: clamp(1.15rem, 2.4vw, 1.45rem);
+}
+
+.home-review-summary--product .home-review-summary__body {
+  margin-bottom: 1.35rem;
+}
+
+.home-review-summary--product .home-review-summary__body p {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: #555;
+}
+
+.home-review-summary--product .home-review-summary__tags {
+  margin-bottom: 1rem;
+}
+
+.home-review-summary--product .home-review-summary__pill {
+  font-size: 0.76rem;
+  padding: 0.38rem 0.75rem;
+  background: #fff;
+  border-color: rgba(184, 134, 11, 0.28);
+  box-shadow: none;
+}
+
+.home-review-summary--product .home-review-summary__ai-note {
+  margin-bottom: 1.25rem;
+}
+
+.home-review-summary--product .home-review-summary__cta {
+  font-size: 0.84rem;
+  padding: 0.5rem 1.35rem;
+}
+
 .home-customer-block .home-review-summary,
 .home-customer-block .home-value-strip {
   border-top: none;
@@ -173,6 +271,7 @@
   margin: 0;
   background: #e8dfd2;
   border: none;
+  border-top: 1px solid rgba(61, 40, 23, 0.08);
   border-radius: 0;
   padding: clamp(2.25rem, 4.5vw, 3.25rem) clamp(1.25rem, 4vw, 2.5rem);
 }
