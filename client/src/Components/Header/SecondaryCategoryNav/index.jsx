@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
 import { FaAngleDown, FaAngleRight } from "react-icons/fa6";
 import { MyContext } from "../../../App";
-import CountryDropdown from "../../CountryDropdown";
 import { RiLogoutCircleRFill } from "react-icons/ri";
 
 /** Hierarchical browse structure — links resolve to API subcategories when names match. */
@@ -215,23 +214,7 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
       >
         <div className="res-nav-overlay" onClick={closeNav} role="presentation" />
         <div className="res-nav">
-          {context.windowWidth < 992 && (
-            <div className="pl-3">
-              <Link to="/" className="logo" onClick={closeNav}>
-                <img src="/images/craftzlk.png" alt="CraftzLK logo" />
-              </Link>
-            </div>
-          )}
-
           <ul className="list list-inline ml-auto w-100">
-            {context.windowWidth < 992 && (
-              <li className="list-inline-item w-100">
-                <div className="p-3">
-                  {context.countryList.length !== 0 && <CountryDropdown />}
-                </div>
-              </li>
-            )}
-
             <li className="list-inline-item w-100">
               <Link to="/" onClick={closeNav}>
                 <Button>Home</Button>
@@ -244,7 +227,7 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
             </li>
             <li className="list-inline-item w-100 position-relative">
               <Button
-                className="d-flex align-items-center justify-content-between w-100"
+                className="d-flex align-items-center w-100 secondary-category-nav__drawer-categories-btn"
                 onClick={() => setDrawerCategoriesOpen((v) => !v)}
               >
                 Categories

@@ -1223,8 +1223,17 @@ nav .navPart2 ul li:hover .submenu {
   text-transform: uppercase !important;
   font-weight: 600 !important;
   letter-spacing: 0.05em !important;
-  font-size: 0.8125rem !important;
+  font-size: 0.95rem !important;
   color: rgba(61, 40, 23, 0.88) !important;
+  justify-content: flex-start !important;
+}
+
+.secondary-category-nav__drawer .res-nav .secondary-category-nav__drawer-categories-btn {
+  text-align: left !important;
+}
+
+.secondary-category-nav__drawer .res-nav .secondary-category-nav__drawer-categories-btn svg {
+  margin-left: auto !important;
 }
 
 .secondary-category-nav__drawer .res-nav .MuiButton-root:not(.btn-blue) svg {

@@ -14,10 +14,7 @@ import { IoMdMenu } from "react-icons/io";
 import { IoIosSearch, IoMdClose } from "react-icons/io";
 import { FaAngleUp } from "react-icons/fa6";
 import UserAvatarImgComponent from "../userAvatarImg";
-import { IoHomeOutline } from "react-icons/io5";
-import { IoMdHeartEmpty } from "react-icons/io";
 import { FaRegUser } from "react-icons/fa6";
-import { CiFilter } from "react-icons/ci";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import AuthController from "../../controllers/auth.controller";
@@ -110,7 +107,11 @@ const Header = () => {
   }, [isTopStripVisible, context.isLogin]);
 
   const openNav = () => {
-    setIsOpenNav(!isOpenNav);
+    if (isOpenNav) {
+      closeNav();
+      return;
+    }
+    setIsOpenNav(true);
     context.setIsOpenNav(true);
     context.setIsBottomShow(false);
   };
@@ -141,10 +142,6 @@ const Header = () => {
       top: 0,
       behavior: "smooth",
     });
-  };
-
-  const openFilter = () => {
-    context?.setIsOpenFilters(!context?.isOpenFilters);
   };
 
   return (
@@ -281,31 +278,17 @@ const Header = () => {
                   <Button
                     className="circle mr-2 searchTrigger"
                     onClick={openSearch}
+                    style={{ display: context.windowWidth < 992 ? "none" : "inline-flex" }}
                   >
                     <IoIosSearch />
                   </Button>
 
                   {context.windowWidth < 992 && (
-                    <Button className="circle toggleNav" onClick={openNav}>
-                      <IoMdMenu />
+                    <Button className="circle toggleNav" onClick={openNav} aria-label={isOpenNav ? "Close menu" : "Open menu"}>
+                      {isOpenNav ? <IoMdClose /> : <IoMdMenu />}
                     </Button>
                   )}
 
-                  {context.windowWidth < 992 && (
-                    <div className="position-relative cartTab ml-2">
-                      <Link to="/cart" className="ml-auto">
-                        <Button className="circle">
-                          <IoBagOutline />
-                        </Button>
-
-                        <span className="count d-flex align-items-center justify-content-center">
-                          {context.cartData?.length > 0
-                            ? context.cartData?.length
-                            : 0}
-                        </span>
-                      </Link>
-                    </div>
-                  )}
                 </div>
 
                 {/* Center section: logo only - true center because left/right have equal flex */}
@@ -324,6 +307,25 @@ const Header = () => {
                 {/* Right section: sign in or profile (same spot), then cart - equal flex to left */}
                 <div className="header-nav-right part3 d-flex align-items-center justify-content-end">
                   <div className="header-nav-right-group d-flex align-items-center ml-auto">
+                    {context.windowWidth < 992 && (
+                      <div className="header-mobile-actions d-flex align-items-center">
+                        <Button className="searchTrigger mobile-search-trigger" onClick={openSearch}>
+                          <IoIosSearch />
+                        </Button>
+
+                        <div className="position-relative cartTab ml-2">
+                          <Link to="/cart" className="ml-auto">
+                            <Button className="circle">
+                              <IoBagOutline />
+                            </Button>
+                            <span className="count d-flex align-items-center justify-content-center">
+                              {context.cartData?.length > 0 ? context.cartData?.length : 0}
+                            </span>
+                          </Link>
+                        </div>
+                      </div>
+                    )}
+
                     {context.isLogin !== true && context.windowWidth > 992 && (
                       <Link to="/signIn" className="mr-3">
                         <Button className="btn-blue btn-round">Sign In</Button>
@@ -492,67 +494,6 @@ const Header = () => {
           />
         </div>
 
-        {context.windowWidth < 992 && context?.isBottomShow === true && (
-          <div className="fixed-bottom-menu d-flex align-self-center justify-content-between">
-            <Link to="/" onClick={() => setIsOpenSearch(false)}>
-              <Button className="circle">
-                <div className="d-flex align-items-center justify-content-center flex-column">
-                  <IoHomeOutline />
-                  <span className="title">Home</span>
-                </div>
-              </Button>
-            </Link>
-
-            {context.enableFilterTab === true && (
-              <Button
-                className="circle"
-                onClick={() => {
-                  openFilter();
-                  setIsOpenSearch(false);
-                }}
-              >
-                <div className="d-flex align-items-center justify-content-center flex-column">
-                  <CiFilter />
-                  <span className="title">Filters</span>
-                </div>
-              </Button>
-            )}
-
-            <Button className="circle" onClick={openSearch}>
-              <div className="d-flex align-items-center justify-content-center flex-column">
-                <IoIosSearch />
-                <span className="title">Search</span>
-              </div>
-            </Button>
-
-            <Link to="/my-list" onClick={() => setIsOpenSearch(false)}>
-              <Button className="circle">
-                <div className="d-flex align-items-center justify-content-center flex-column">
-                  <IoMdHeartEmpty />
-                  <span className="title">Wishlist</span>
-                </div>
-              </Button>
-            </Link>
-
-            <Link to="/orders" onClick={() => setIsOpenSearch(false)}>
-              <Button className="circle">
-                <div className="d-flex align-items-center justify-content-center flex-column">
-                  <IoBagCheckOutline />
-                  <span className="title">Orders</span>
-                </div>
-              </Button>
-            </Link>
-
-            <Link to="/my-account" onClick={() => setIsOpenSearch(false)}>
-              <Button className="circle">
-                <div className="d-flex align-items-center justify-content-center flex-column">
-                  <FaRegUser />
-                  <span className="title">Account</span>
-                </div>
-              </Button>
-            </Link>
-          </div>
-        )}
       </motion.div>
     </>
   );
