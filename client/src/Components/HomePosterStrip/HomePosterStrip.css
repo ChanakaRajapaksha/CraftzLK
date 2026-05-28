@@ -1,0 +1,35 @@
+.home-poster-strip__swiper {
+  width: 100%;
+  overflow: hidden;
+}
+
+.home-poster-strip__swiper .swiper-slide {
+  height: auto;
+  box-sizing: border-box;
+}
+
+.home-poster-strip__swiper .swiper-pagination {
+  position: relative;
+  bottom: auto;
+  margin-top: 0.75rem;
+  line-height: 0;
+}
+
+.home-poster-strip__swiper .swiper-pagination-bullet {
+  width: 8px;
+  height: 8px;
+  background: rgba(61, 40, 23, 0.28);
+  opacity: 1;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.home-poster-strip__swiper .swiper-pagination-bullet-active {
+  background: var(--accent-blue, #c9a961);
+  transform: scale(1.15);
+}
+
+@media (min-width: 768px) {
+  .home-poster-strip__swiper .swiper-pagination {
+    display: none;
+  }
+}

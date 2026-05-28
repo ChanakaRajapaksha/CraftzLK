@@ -1061,8 +1061,8 @@ nav .navPart2 ul li:hover .submenu {
   right: 0.65rem;
   bottom: 0.1rem;
   height: 2px;
-  background: currentColor;
-  opacity: 0.92;
+  background: var(--accent-blue, #c9a961);
+  opacity: 1;
   transform: scaleX(0);
   transform-origin: center;
   transition: transform 0.22s ease;
@@ -1129,9 +1129,6 @@ nav .navPart2 ul li:hover .submenu {
   transform: rotate(180deg);
 }
 
-.secondary-category-nav__chev-drawer-open {
-  transform: rotate(90deg);
-}
 
 .secondary-category-nav__mega {
   display: none;
@@ -1199,40 +1196,270 @@ nav .navPart2 ul li:hover .submenu {
   color: var(--accent-blue, #c9a961) !important;
 }
 
-.secondary-category-nav__drawer-col-title {
+/* Drill-down category panels (mobile) — shared typography + slide transitions */
+.secondary-category-nav__drawer {
+  --drawer-text-size: 0.95rem;
+  --drawer-text-lh: 1.4;
+  --drawer-text-weight: 600;
+  --drawer-letter-spacing: 0.05em;
+  --drawer-transition-duration: 0.36s;
+  --drawer-transition-ease: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.secondary-category-nav__drawer-viewport {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.secondary-category-nav__drawer-track {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 300%;
+  height: 100%;
+  transition: transform var(--drawer-transition-duration) var(--drawer-transition-ease);
+  will-change: transform;
+}
+
+.secondary-category-nav__drawer-track[data-panel="root"] {
+  transform: translate3d(0, 0, 0);
+}
+
+.secondary-category-nav__drawer-track[data-panel="categories"] {
+  transform: translate3d(-33.333333%, 0, 0);
+}
+
+.secondary-category-nav__drawer-track[data-panel="category-items"] {
+  transform: translate3d(-66.666667%, 0, 0);
+}
+
+.secondary-category-nav__drawer-slide {
+  display: flex;
+  flex-direction: column;
+  width: 33.333333%;
+  flex-shrink: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.secondary-category-nav__drawer-slide-inner {
+  animation: secondary-category-nav-drawer-enter var(--drawer-transition-duration)
+    var(--drawer-transition-ease) both;
+}
+
+.secondary-category-nav__drawer-track[data-panel="categories"]
+  .secondary-category-nav__drawer-slide:nth-child(2)
+  .secondary-category-nav__drawer-slide-inner,
+.secondary-category-nav__drawer-track[data-panel="category-items"]
+  .secondary-category-nav__drawer-slide:nth-child(3)
+  .secondary-category-nav__drawer-slide-inner {
+  animation-name: secondary-category-nav-drawer-enter;
+}
+
+@keyframes secondary-category-nav-drawer-enter {
+  from {
+    opacity: 0.55;
+    transform: translateX(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .secondary-category-nav__drawer-track {
+    transition: none;
+  }
+
+  .secondary-category-nav__drawer-slide-inner {
+    animation: none;
+  }
+}
+
+.secondary-category-nav__drawer-back {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 12px 20px;
+  margin: 0;
+  border: none;
+  background: transparent;
+  font-family: var(--font-bricolage, "Bricolage Grotesque", sans-serif);
+  font-size: var(--drawer-text-size);
+  line-height: var(--drawer-text-lh);
+  font-weight: var(--drawer-text-weight);
+  letter-spacing: var(--drawer-letter-spacing);
+  color: rgba(61, 40, 23, 0.88);
+  text-align: left;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: color 0.2s ease;
+}
+
+.secondary-category-nav__drawer-back svg {
+  font-size: 0.85rem;
+  color: rgba(61, 40, 23, 0.55) !important;
+  flex-shrink: 0;
+}
+
+.secondary-category-nav__drawer-back:hover,
+.secondary-category-nav__drawer-back:focus-visible {
+  color: rgba(61, 40, 23, 0.98);
+}
+
+.secondary-category-nav__drawer-back:focus-visible {
+  outline: 2px solid rgba(61, 40, 23, 0.28);
+  outline-offset: 2px;
+}
+
+.secondary-category-nav__drawer-panel-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.secondary-category-nav__drawer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 12px 20px;
+  margin: 0;
+  border: none;
+  background: transparent !important;
   font-family: var(--font-bricolage, "Bricolage Grotesque", sans-serif) !important;
-  font-size: 0.8125rem !important;
-  font-weight: 600 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.05em !important;
+  font-size: var(--drawer-text-size) !important;
+  line-height: var(--drawer-text-lh) !important;
+  font-weight: var(--drawer-text-weight) !important;
+  letter-spacing: var(--drawer-letter-spacing) !important;
+  text-transform: none !important;
   color: rgba(61, 40, 23, 0.88) !important;
-}
-
-.secondary-category-nav__drawer-sublink {
-  color: rgba(61, 40, 23, 0.78) !important;
+  text-align: left;
   text-decoration: none !important;
+  cursor: pointer;
+  position: relative;
+  -webkit-appearance: none;
+  appearance: none;
+  box-shadow: none !important;
+  transition: color 0.2s ease;
 }
 
-.secondary-category-nav__drawer-sublink:hover {
+.secondary-category-nav__drawer-row span {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.secondary-category-nav__drawer-row::after {
+  content: "";
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 0;
+  height: 1px;
+  background: rgba(201, 169, 97, 0.55);
+  pointer-events: none;
+}
+
+.secondary-category-nav__drawer-row:hover,
+.secondary-category-nav__drawer-row:focus-visible {
+  color: rgba(61, 40, 23, 0.98) !important;
+  background: transparent !important;
+}
+
+.secondary-category-nav__drawer-row:focus-visible {
+  outline: 2px solid rgba(61, 40, 23, 0.28);
+  outline-offset: -2px;
+}
+
+.secondary-category-nav__drawer-row--link:hover {
   color: var(--accent-blue, #c9a961) !important;
 }
 
+.secondary-category-nav__drawer-chev {
+  font-size: 0.75rem;
+  color: rgba(61, 40, 23, 0.45) !important;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* Mobile drawer: menu scrolls; Sign In / Logout pinned to bottom */
+.secondary-category-nav__drawer .res-nav {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--mobile-header-offset));
+  max-height: calc(100vh - var(--mobile-header-offset));
+  overflow: hidden;
+  padding-bottom: 0;
+}
+
+.secondary-category-nav__drawer-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.secondary-category-nav__drawer .res-nav ul {
+  max-height: none !important;
+  overflow: visible;
+}
+
+.secondary-category-nav__drawer-footer {
+  margin-top: auto;
+  flex-shrink: 0;
+  width: 100%;
+}
+
 /* Mobile drawer: MUI Buttons for Home / Shop / Categories — align with desktop strip typography */
+.secondary-category-nav__drawer .res-nav ul > li > a,
+.secondary-category-nav__drawer .res-nav ul > li > button.secondary-category-nav__drawer-categories-btn {
+  position: relative;
+  border-bottom: none !important;
+}
+
+.secondary-category-nav__drawer .res-nav ul > li > a::after,
+.secondary-category-nav__drawer .res-nav ul > li > button.secondary-category-nav__drawer-categories-btn::after {
+  content: "";
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 0;
+  height: 1px;
+  background: rgba(201, 169, 97, 0.55);
+  pointer-events: none;
+}
+
 .secondary-category-nav__drawer .res-nav .MuiButton-root:not(.btn-blue) {
   font-family: var(--font-bricolage, "Bricolage Grotesque", sans-serif) !important;
   text-transform: uppercase !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.05em !important;
-  font-size: 0.95rem !important;
+  font-weight: var(--drawer-text-weight) !important;
+  letter-spacing: var(--drawer-letter-spacing) !important;
+  font-size: var(--drawer-text-size) !important;
+  line-height: var(--drawer-text-lh) !important;
   color: rgba(61, 40, 23, 0.88) !important;
   justify-content: flex-start !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
 }
 
 .secondary-category-nav__drawer .res-nav .secondary-category-nav__drawer-categories-btn {
   text-align: left !important;
 }
 
-.secondary-category-nav__drawer .res-nav .secondary-category-nav__drawer-categories-btn svg {
+.secondary-category-nav__drawer .res-nav .secondary-category-nav__drawer-categories-btn svg,
+.secondary-category-nav__drawer .secondary-category-nav__drawer-chev {
   margin-left: auto !important;
 }
 

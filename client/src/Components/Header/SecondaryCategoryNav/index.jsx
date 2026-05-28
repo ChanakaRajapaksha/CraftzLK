@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
-import { FaAngleDown, FaAngleRight } from "react-icons/fa6";
+import { FaAngleDown, FaAngleLeft, FaAngleRight } from "react-icons/fa6";
 import { MyContext } from "../../../App";
 import { RiLogoutCircleRFill } from "react-icons/ri";
 
@@ -74,7 +74,9 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
   const location = useLocation();
   const history = useNavigate();
   const [megaOpen, setMegaOpen] = useState(false);
-  const [drawerCategoriesOpen, setDrawerCategoriesOpen] = useState(false);
+  /** Mobile drawer: root | categories (column titles) | category-items */
+  const [drawerPanel, setDrawerPanel] = useState("root");
+  const [activeCategoryIndex, setActiveCategoryIndex] = useState(null);
   const wrapRef = useRef(null);
 
   const shopPath =
@@ -125,6 +127,30 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
   useEffect(() => {
     setMegaOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!isOpenNav) {
+      setDrawerPanel("root");
+      setActiveCategoryIndex(null);
+    }
+  }, [isOpenNav]);
+
+  const openCategoriesPanel = () => setDrawerPanel("categories");
+
+  const openCategoryItems = (index) => {
+    setActiveCategoryIndex(index);
+    setDrawerPanel("category-items");
+  };
+
+  const backToCategories = () => {
+    setDrawerPanel("categories");
+    setActiveCategoryIndex(null);
+  };
+
+  const backToRoot = () => setDrawerPanel("root");
+
+  const activeCategory =
+    activeCategoryIndex != null ? MEGA_MENU_COLUMNS[activeCategoryIndex] : null;
 
   return (
     <nav className="secondary-category-nav" aria-label="Main site sections">
@@ -214,78 +240,131 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
       >
         <div className="res-nav-overlay" onClick={closeNav} role="presentation" />
         <div className="res-nav">
-          <ul className="list list-inline ml-auto w-100">
-            <li className="list-inline-item w-100">
-              <Link to="/" onClick={closeNav}>
-                <Button>Home</Button>
-              </Link>
-            </li>
-            <li className="list-inline-item w-100">
-              <Link to={shopPath} onClick={closeNav}>
-                <Button>Shop</Button>
-              </Link>
-            </li>
-            <li className="list-inline-item w-100 position-relative">
-              <Button
-                className="d-flex align-items-center w-100 secondary-category-nav__drawer-categories-btn"
-                onClick={() => setDrawerCategoriesOpen((v) => !v)}
+          <div className="secondary-category-nav__drawer-body">
+            <div className="secondary-category-nav__drawer-viewport">
+              <div
+                className="secondary-category-nav__drawer-track"
+                data-panel={drawerPanel}
               >
-                Categories
-                <FaAngleRight
-                  className={
-                    drawerCategoriesOpen ? "secondary-category-nav__chev-drawer-open" : ""
-                  }
-                />
-              </Button>
-              {drawerCategoriesOpen && (
-                <div className="pl-3 pb-2">
-                  {MEGA_MENU_COLUMNS.map((col) => (
-                    <div key={col.title} className="mb-2">
-                      <p
-                        className="mb-1 font-weight-bold text-left secondary-category-nav__drawer-col-title"
+                <div
+                  className="secondary-category-nav__drawer-slide"
+                  aria-hidden={drawerPanel !== "root"}
+                >
+                  <ul className="list list-inline ml-auto w-100 secondary-category-nav__drawer-root-list">
+                    <li className="list-inline-item w-100">
+                      <Link to="/" onClick={closeNav}>
+                        <Button>Home</Button>
+                      </Link>
+                    </li>
+                    <li className="list-inline-item w-100">
+                      <Link to={shopPath} onClick={closeNav}>
+                        <Button>Shop</Button>
+                      </Link>
+                    </li>
+                    <li className="list-inline-item w-100">
+                      <Button
+                        type="button"
+                        className="d-flex align-items-center w-100 secondary-category-nav__drawer-categories-btn"
+                        onClick={openCategoriesPanel}
                       >
-                        {col.title}
-                      </p>
-                      {col.items.map((item) => (
-                        <Link
-                          key={item}
-                          to={subLink(item)}
-                          onClick={closeNav}
-                          className="d-block py-1 text-left secondary-category-nav__drawer-sublink"
-                        >
-                          {item}
+                        Categories
+                        <FaAngleRight
+                          className="secondary-category-nav__drawer-chev"
+                          aria-hidden
+                        />
+                      </Button>
+                    </li>
+                    {tailLinks.map((link) => (
+                      <li key={link.label} className="list-inline-item w-100">
+                        <Link to={link.to} onClick={closeNav}>
+                          <Button>{link.label}</Button>
                         </Link>
-                      ))}
-                    </div>
-                  ))}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              )}
-            </li>
-            {tailLinks.map((link) => (
-              <li key={link.label} className="list-inline-item w-100">
-                <Link to={link.to} onClick={closeNav}>
-                  <Button>{link.label}</Button>
-                </Link>
-              </li>
-            ))}
-          </ul>
+
+                <div
+                  className="secondary-category-nav__drawer-slide"
+                  role="navigation"
+                  aria-label="Browse categories"
+                  aria-hidden={drawerPanel !== "categories"}
+                >
+                  <div className="secondary-category-nav__drawer-slide-inner">
+                    <button
+                      type="button"
+                      className="secondary-category-nav__drawer-back"
+                      onClick={backToRoot}
+                    >
+                      <FaAngleLeft aria-hidden />
+                      <span>Categories</span>
+                    </button>
+                    <ul className="secondary-category-nav__drawer-panel-list">
+                      {MEGA_MENU_COLUMNS.map((col, index) => (
+                        <li key={col.title}>
+                          <button
+                            type="button"
+                            className="secondary-category-nav__drawer-row"
+                            onClick={() => openCategoryItems(index)}
+                          >
+                            <span>{col.title}</span>
+                            <FaAngleRight
+                              className="secondary-category-nav__drawer-chev"
+                              aria-hidden
+                            />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div
+                  className="secondary-category-nav__drawer-slide"
+                  role="navigation"
+                  aria-label={activeCategory?.title || "Subcategories"}
+                  aria-hidden={drawerPanel !== "category-items"}
+                >
+                  <div className="secondary-category-nav__drawer-slide-inner">
+                    <button
+                      type="button"
+                      className="secondary-category-nav__drawer-back"
+                      onClick={backToCategories}
+                    >
+                      <FaAngleLeft aria-hidden />
+                      <span>{activeCategory?.title}</span>
+                    </button>
+                    <ul className="secondary-category-nav__drawer-panel-list">
+                      {activeCategory?.items.map((item) => (
+                        <li key={item}>
+                          <Link
+                            to={subLink(item)}
+                            className="secondary-category-nav__drawer-row secondary-category-nav__drawer-row--link"
+                            onClick={closeNav}
+                          >
+                            <span>{item}</span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {context.windowWidth < 992 && (
-            <>
+            <div className="secondary-category-nav__drawer-footer pt-3 pl-3 pr-3 pb-3">
               {context?.isLogin === false ? (
-                <div className="pt-3 pl-3 pr-3">
-                  <Link to="/signIn" onClick={closeNav}>
-                    <Button className="btn-blue w-100 btn-big">Sign In</Button>
-                  </Link>
-                </div>
+                <Link to="/signIn" onClick={closeNav}>
+                  <Button className="btn-blue w-100 btn-big">Sign In</Button>
+                </Link>
               ) : (
-                <div className="pt-3 pl-3 pr-3" onClick={logout}>
-                  <Button className="btn-blue w-100 btn-big">
-                    <RiLogoutCircleRFill /> Logout
-                  </Button>
-                </div>
+                <Button className="btn-blue w-100 btn-big" onClick={logout}>
+                  <RiLogoutCircleRFill /> Logout
+                </Button>
               )}
-            </>
+            </div>
           )}
         </div>
       </div>

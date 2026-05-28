@@ -30,9 +30,10 @@
     0 12px 36px rgba(61, 40, 23, 0.1);
 }
 
-@media (max-width: 576px) {
+@media (max-width: 992px) {
   .category-hero-slider__viewport {
-    height: clamp(240px, 58vw, 420px);
+    /* Tall mobile hero (~60–65% viewport), like reference — desktop height unchanged */
+    height: clamp(360px, 62vh, 540px);
     border-radius: 0;
   }
 
@@ -42,6 +43,12 @@
 
   .category-hero-slider__edge--next {
     border-radius: 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .category-hero-slider__viewport {
+    height: clamp(340px, 58vh, 500px);
   }
 }
 
