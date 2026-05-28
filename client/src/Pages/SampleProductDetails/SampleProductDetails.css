@@ -660,6 +660,128 @@
   color: var(--primary-dark, #b8860b);
 }
 
+.spd-review-sticky {
+  position: fixed;
+  right: 1.1rem;
+  bottom: 1rem;
+  z-index: 1100;
+  width: min(25rem, calc(100vw - 1.6rem));
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.16);
+}
+
+.spd-review-sticky__head {
+  display: grid;
+  grid-template-columns: 2.8rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.85rem 0.9rem;
+}
+
+.spd-review-sticky__img {
+  width: 2.8rem;
+  height: 2.8rem;
+  border-radius: 8px;
+  object-fit: contain;
+  background: #f7f7f7;
+  border: 1px solid #ececec;
+}
+
+.spd-review-sticky__meta {
+  min-width: 0;
+}
+
+.spd-review-sticky__name {
+  margin: 0 0 0.22rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #222;
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.spd-review-sticky__price {
+  margin: 0;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #d53636;
+}
+
+.spd-review-sticky__toggle {
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #444;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-transform: none !important;
+  transition: background 0.2s ease, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.spd-review-sticky__toggle:hover {
+  background: #f3f3f3;
+}
+
+.spd-review-sticky--expanded .spd-review-sticky__toggle {
+  transform: rotate(180deg);
+}
+
+.spd-review-sticky__body {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  padding: 0 0.9rem;
+  transition:
+    max-height 0.24s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.18s ease-out,
+    padding 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.spd-review-sticky__body.is-open {
+  max-height: 86px;
+  opacity: 1;
+  padding: 0 0.9rem 0.9rem;
+}
+
+.spd-review-sticky__add-cart {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 2.6rem;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary-dark, #b8860b);
+  color: #fff;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.93rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: none !important;
+}
+
+.spd-review-sticky__add-cart:hover:not(:disabled) {
+  background: var(--accent-blue-hover, #9a7209);
+}
+
+.spd-review-sticky__add-cart:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 /* Fullscreen image lightbox — above header (10001) and MUI dialogs (100000) */
 .spd-lightbox {
   position: fixed;
@@ -798,5 +920,11 @@
   .spd-details__list li {
     font-size: 0.9rem;
     line-height: 1.65;
+  }
+
+  .spd-review-sticky {
+    right: 0.65rem;
+    bottom: 0.65rem;
+    width: min(25rem, calc(100vw - 1.1rem));
   }
 }

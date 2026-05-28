@@ -1,11 +1,11 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { FaMinus, FaPlus } from "react-icons/fa6";
 import { BsCartFill } from "react-icons/bs";
 import { HiOutlineShieldCheck, HiOutlineTruck, HiSparkles } from "react-icons/hi2";
-import { IoExpandOutline } from "react-icons/io5";
+import { IoChevronDown, IoChevronUp, IoExpandOutline } from "react-icons/io5";
 import { getSampleProductById } from "../../data/sampleProductDetails";
 import { MyContext } from "../../App";
 import HomeCustomerReviewSummary from "../../Components/HomeCustomerReviewSummary";
@@ -71,6 +71,9 @@ export default function SampleProductDetails() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [writeReviewOpen, setWriteReviewOpen] = useState(false);
   const [askQuestionOpen, setAskQuestionOpen] = useState(false);
+  const [showReviewStickyCard, setShowReviewStickyCard] = useState(false);
+  const [reviewStickyExpanded, setReviewStickyExpanded] = useState(false);
+  const reviewsSectionRef = useRef(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -99,6 +102,24 @@ export default function SampleProductDetails() {
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [lightboxOpen]);
+
+  useEffect(() => {
+    const section = reviewsSectionRef.current;
+    if (!section) return undefined;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowReviewStickyCard(entry.isIntersecting);
+        if (!entry.isIntersecting) {
+          setReviewStickyExpanded(false);
+        }
+      },
+      { threshold: 0.25 }
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
 
   const inStock = product?.countInStock > 0;
   const images = product?.images ?? [];
@@ -333,7 +354,11 @@ export default function SampleProductDetails() {
           </div>
         </section>
 
-        <section className="spd-reviews" aria-labelledby="spd-reviews-heading">
+        <section
+          ref={reviewsSectionRef}
+          className="spd-reviews"
+          aria-labelledby="spd-reviews-heading"
+        >
           <h2 id="spd-reviews-heading" className="spd-reviews__title">
             Customer Reviews
           </h2>
@@ -396,6 +421,56 @@ export default function SampleProductDetails() {
           });
         }}
       />
+
+      <AnimatePresence>
+        {showReviewStickyCard && (
+          <motion.aside
+            className={`spd-review-sticky${reviewStickyExpanded ? " spd-review-sticky--expanded" : ""}`}
+            initial={{ opacity: 0, y: 36, x: 28, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, x: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 28, x: 22, scale: 0.96 }}
+            transition={{ duration: 0.34, ease: [0.16, 1, 0.3, 1] }}
+            aria-label="Quick product card"
+          >
+            <div className="spd-review-sticky__head">
+              <img
+                src={mainImage}
+                alt={product.name}
+                className="spd-review-sticky__img"
+              />
+              <div className="spd-review-sticky__meta">
+                <p className="spd-review-sticky__name">{product.name}</p>
+                <p className="spd-review-sticky__price">{product.priceDisplay}</p>
+              </div>
+              <button
+                type="button"
+                className="spd-review-sticky__toggle"
+                onClick={() => setReviewStickyExpanded((prev) => !prev)}
+                aria-label={reviewStickyExpanded ? "Collapse quick cart" : "Expand quick cart"}
+                aria-expanded={reviewStickyExpanded}
+              >
+                {reviewStickyExpanded ? <IoChevronUp aria-hidden /> : <IoChevronDown aria-hidden />}
+              </button>
+            </div>
+
+            <div
+              className={`spd-review-sticky__body${reviewStickyExpanded ? " is-open" : ""}`}
+            >
+              <button
+                type="button"
+                className="spd-review-sticky__add-cart"
+                onClick={addToCart}
+                disabled={!inStock}
+                tabIndex={reviewStickyExpanded ? 0 : -1}
+                aria-hidden={!reviewStickyExpanded}
+              >
+                <BsCartFill aria-hidden="true" />
+                Add to cart
+              </button>
+            </div>
+          </motion.aside>
+        )}
+      </AnimatePresence>
 
       {createPortal(
         <AnimatePresence>
