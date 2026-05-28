@@ -10,6 +10,7 @@ import { getSampleProductById } from "../../data/sampleProductDetails";
 import { MyContext } from "../../App";
 import HomeCustomerReviewSummary from "../../Components/HomeCustomerReviewSummary";
 import WriteReviewModal from "../../Components/WriteReviewModal";
+import AskQuestionModal from "../../Components/AskQuestionModal";
 import YouMayAlsoLike from "../../Components/YouMayAlsoLike";
 import ProductReviewsFeed from "./ProductReviewsFeed";
 import "./SampleProductDetails.css";
@@ -69,6 +70,7 @@ export default function SampleProductDetails() {
   const [descOpen, setDescOpen] = useState(true);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [writeReviewOpen, setWriteReviewOpen] = useState(false);
+  const [askQuestionOpen, setAskQuestionOpen] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -150,14 +152,6 @@ export default function SampleProductDetails() {
       productId: product.id,
       countInStock: product.countInStock,
       userId: user?.userId,
-    });
-  };
-
-  const showReviewNotice = (message) => {
-    context.setAlertBox({
-      open: true,
-      error: false,
-      msg: message,
     });
   };
 
@@ -370,7 +364,7 @@ export default function SampleProductDetails() {
               <button
                 type="button"
                 className="spd-reviews__btn spd-reviews__btn--outline"
-                onClick={() => showReviewNotice("Questions feature will be available soon.")}
+                onClick={() => setAskQuestionOpen(true)}
               >
                 Ask a question
               </button>
@@ -389,6 +383,18 @@ export default function SampleProductDetails() {
         open={writeReviewOpen}
         onClose={() => setWriteReviewOpen(false)}
         product={{ name: product.name, image: mainImage }}
+      />
+      <AskQuestionModal
+        open={askQuestionOpen}
+        onClose={() => setAskQuestionOpen(false)}
+        onSubmit={({ displayName }) => {
+          setAskQuestionOpen(false);
+          context.setAlertBox({
+            open: true,
+            error: false,
+            msg: `Thanks${displayName ? `, ${displayName}` : ""}! Your question has been submitted.`,
+          });
+        }}
       />
 
       {createPortal(

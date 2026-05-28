@@ -119,11 +119,9 @@ export default function WriteReviewModal({ open, onClose, product }) {
       if (event.key === "Escape" && step !== "success") onClose();
     };
 
-    document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKeyDown);
 
     return () => {
-      document.body.style.overflow = "";
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [open, onClose, step]);

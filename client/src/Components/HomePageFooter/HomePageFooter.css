@@ -84,7 +84,13 @@ footer.home-page-footer {
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--primary-medium, #c9a961);
+  color: #f3e4c6 !important;
+  line-height: 1.3;
+}
+
+.home-page-footer__newsletter .home-page-footer__col-title {
+  color: #fff7e8 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .home-page-footer__col ul {
