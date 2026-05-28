@@ -53,6 +53,12 @@
   transform: none;
 }
 
+.pcg-card {
+  contain: layout paint;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
 .pcg-card-shade {
   transition: background-color 0.15s ease-out;
 }

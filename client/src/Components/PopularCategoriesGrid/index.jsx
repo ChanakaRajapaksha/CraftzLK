@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useId } from "react";
+import { useEffect, useId } from "react";
 import { IoChevronForward } from "react-icons/io5";
 import { HOME_RAIL_SECTION, HOME_SECTION_INNER_DIVIDED } from "../homeRailLayout";
 import "./PopularCategoriesGrid.css";
@@ -94,7 +94,7 @@ function CategoryPromoCard({ title, image, to, gridArea, minHeightClass }) {
   return (
     <Link
       to={to}
-      className={`pcg-card relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-2xl border border-white/40 shadow-[0_10px_28px_-14px_rgba(0,0,0,0.38)] ring-1 ring-black/[0.05] outline-none ring-offset-0 focus-visible:ring-2 focus-visible:ring-vintage-brown/50 ${minHeightClass}`}
+      className={`pcg-card relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-2xl border border-white/30 shadow-md outline-none ring-offset-0 focus-visible:ring-2 focus-visible:ring-vintage-brown/50 ${minHeightClass}`}
       style={{ gridArea }}
     >
       <div className="pcg-card-media pointer-events-none absolute inset-0 overflow-hidden">
@@ -113,10 +113,10 @@ function CategoryPromoCard({ title, image, to, gridArea, minHeightClass }) {
         aria-hidden="true"
       />
       <div className="relative flex min-h-full flex-1 flex-col items-center justify-center gap-2 px-4 py-8 text-center sm:gap-2.5 sm:px-5 sm:py-10">
-        <h3 className="max-w-[14ch] font-sans text-xl font-bold leading-tight tracking-wide text-white [text-shadow:0_2px_14px_rgba(0,0,0,0.55)] sm:max-w-none sm:text-2xl md:text-3xl">
+        <h3 className="max-w-[14ch] font-sans text-xl font-bold leading-tight tracking-wide text-white sm:max-w-none sm:text-2xl md:text-3xl">
           {title}
         </h3>
-        <span className="pcg-card-cta inline-flex items-center gap-0.5 font-sans text-sm font-medium tracking-wide text-white/95 [text-shadow:0_1px_6px_rgba(0,0,0,0.5)] sm:text-base">
+        <span className="pcg-card-cta inline-flex items-center gap-0.5 font-sans text-sm font-medium tracking-wide text-white/95 sm:text-base">
           Explore
           <IoChevronForward className="h-[1.1em] w-[1.1em]" aria-hidden />
         </span>
@@ -126,6 +126,26 @@ function CategoryPromoCard({ title, image, to, gridArea, minHeightClass }) {
 }
 
 const PopularCategoriesGrid = () => {
+  useEffect(() => {
+    const warmImages = () => {
+      TILES.forEach(({ image }) => {
+        const img = new Image();
+        img.decoding = "async";
+        img.src = image;
+      });
+    };
+
+    if (typeof window === "undefined") return undefined;
+
+    if ("requestIdleCallback" in window) {
+      const idleId = window.requestIdleCallback(warmImages, { timeout: 1200 });
+      return () => window.cancelIdleCallback(idleId);
+    }
+
+    const timeoutId = window.setTimeout(warmImages, 300);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
+
   return (
     <section
       className={HOME_RAIL_SECTION}

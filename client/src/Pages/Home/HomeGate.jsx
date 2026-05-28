@@ -30,31 +30,32 @@ export default function HomeGate() {
   }, [showSplash]);
 
   return (
-    <AnimatePresence
-      mode="wait"
-      onExitComplete={() => {
-        try {
-          if (sessionStorage.getItem(SESSION_KEY) !== "1") {
-            sessionStorage.setItem(SESSION_KEY, "1");
+    <>
+      <motion.div
+        className="home-gate__enter"
+        initial={false}
+        animate={{ opacity: showSplash ? 0 : 1 }}
+        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        aria-hidden={showSplash}
+      >
+        <Home />
+      </motion.div>
+
+      <AnimatePresence
+        onExitComplete={() => {
+          try {
+            if (sessionStorage.getItem(SESSION_KEY) !== "1") {
+              sessionStorage.setItem(SESSION_KEY, "1");
+            }
+          } catch {
+            /* ignore */
           }
-        } catch {
-          /* ignore */
-        }
-      }}
-    >
-      {showSplash ? (
-        <HomeIntroSplash key="craftzlk-intro" onComplete={handleSplashComplete} />
-      ) : (
-        <motion.div
-          key="craftzlk-home"
-          className="home-gate__enter"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <Home />
-        </motion.div>
-      )}
-    </AnimatePresence>
+        }}
+      >
+        {showSplash ? (
+          <HomeIntroSplash key="craftzlk-intro" onComplete={handleSplashComplete} />
+        ) : null}
+      </AnimatePresence>
+    </>
   );
 }
