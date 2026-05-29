@@ -1,0 +1,658 @@
+.collections-page {
+  background: #faf8f3;
+  min-height: calc(100vh - 80px);
+  padding: 1.5rem 2.5rem 3.5rem;
+}
+
+.collections-page__inner {
+  width: 100%;
+  max-width: 96rem;
+  margin: 0 auto;
+  padding-inline: 0.5rem;
+}
+
+.collections-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.86rem;
+  color: #777;
+}
+
+.collections-breadcrumb a {
+  color: var(--primary-dark, #b8860b);
+  text-decoration: none;
+}
+
+.collections-breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.collections-breadcrumb__current {
+  color: #777;
+}
+
+.collections-title {
+  margin: 0 0 1.5rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: #1f1a14;
+}
+
+.collections-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: clamp(0.35rem, 0.9vw, 0.65rem);
+  overflow: visible;
+}
+
+.collections-grid > li {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.collections-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  min-width: 0;
+  padding: 0.2rem 0.55rem 0.2rem 0.2rem;
+  background: #fff;
+  border: 1px solid rgba(201, 169, 97, 0.22);
+  border-radius: 999px;
+  box-shadow: none;
+  color: #2a2118;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: clamp(0.7rem, 1.05vw, 0.875rem);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.collections-pill__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.collections-pill:hover,
+.collections-pill:focus-visible {
+  transform: scale(1.03);
+  box-shadow: none;
+  border-color: var(--primary-medium, #c9a961);
+  color: #2a2118;
+  outline: none;
+}
+
+.collections-pill--active {
+  border-color: var(--primary-dark, #b8860b);
+  background: #fffdf8;
+}
+
+.collections-pill:focus-visible {
+  outline: 2px solid var(--primary-dark, #b8860b);
+  outline-offset: 2px;
+}
+
+.collections-pill__icon {
+  display: block;
+  width: clamp(2rem, 3vw, 2.65rem);
+  height: clamp(2rem, 3vw, 2.65rem);
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  line-height: 0;
+  background: transparent;
+}
+
+.collections-pill__icon img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 50%;
+  object-fit: contain;
+  object-position: center;
+}
+
+/* —— Catalog: filters + grid —— */
+.collections-catalog {
+  display: flex;
+  align-items: flex-start;
+  gap: 2.5rem;
+  margin-top: 2rem;
+}
+
+.collections-filters {
+  flex: 0 0 17rem;
+  width: 17rem;
+  padding: 1.25rem 1rem;
+  background: #fff;
+  border: 1px solid rgba(201, 169, 97, 0.2);
+  border-radius: 14px;
+}
+
+.collections-filters__section + .collections-filters__section {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #eee6da;
+}
+
+.collections-filters__heading {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #1f1a14;
+  cursor: pointer;
+}
+
+.collections-filters__heading svg {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.collections-filters__body {
+  margin-top: 0.85rem;
+}
+
+.collections-filters__toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.88rem;
+  color: #333;
+  cursor: pointer;
+}
+
+.collections-filters__slider {
+  padding: 0.25rem 0.35rem 0.5rem;
+}
+
+.collections-filters__price-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+}
+
+.collections-filters__price-inputs label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.collections-filters__input-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #777;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.collections-filters__price-inputs input {
+  width: 100%;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid #e8dfd0;
+  border-radius: 8px;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.82rem;
+  color: #222;
+  background: #faf8f3;
+}
+
+.collections-filters__price-hint {
+  margin: 0.55rem 0 0;
+  font-size: 0.78rem;
+  color: #777;
+}
+
+.collections-catalog__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.collections-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.collections-toolbar__count {
+  margin: 0;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.88rem;
+  color: #666;
+  white-space: nowrap;
+}
+
+.collections-toolbar__loading {
+  color: var(--primary-dark, #b8860b);
+  font-weight: 600;
+}
+
+.collections-sort {
+  position: relative;
+}
+
+.collections-sort__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid #e8dfd0;
+  border-radius: 10px;
+  background: #fff;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #1f1a14;
+  cursor: pointer;
+}
+
+.collections-sort__trigger:hover {
+  border-color: var(--primary-medium, #c9a961);
+}
+
+.collections-sort__chevron {
+  font-size: 0.85rem;
+  transition: transform 0.15s ease;
+}
+
+.collections-sort__trigger--open .collections-sort__chevron {
+  transform: rotate(180deg);
+}
+
+.collections-sort__panel {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  z-index: 30;
+  min-width: 13.5rem;
+  margin: 0;
+  padding: 0.35rem 0;
+  list-style: none;
+  border: 1px solid #e8dfd0;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+}
+
+.collections-sort__option {
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  border: none;
+  background: none;
+  text-align: left;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+}
+
+.collections-sort__option:hover {
+  background: #faf8f3;
+}
+
+.collections-sort__option--active {
+  font-weight: 700;
+  color: var(--primary-dark, #b8860b);
+  background: #faf3e7;
+}
+
+.collections-product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.collections-loading,
+.collections-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  color: #666;
+}
+
+/* Product card — matches Homepage Featured / Best Sellers rails */
+.collections-card {
+  min-width: 0;
+  height: 100%;
+}
+
+.collections-card__shell {
+  height: 100%;
+  border-radius: 1.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.45),
+    rgba(255, 255, 255, 0.18)
+  );
+  padding: 1px;
+  box-shadow: none;
+  backdrop-filter: blur(24px) saturate(1.5);
+}
+
+.collections-card__inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  border-radius: 1.3rem;
+  overflow: hidden;
+  background: #fada5e;
+  cursor: pointer;
+}
+
+.collections-card__image-wrap {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
+
+.collections-card__image-link {
+  display: block;
+}
+
+.collections-card__image-well {
+  position: relative;
+  aspect-ratio: 1 / 1.05;
+  min-height: 11rem;
+  overflow: hidden;
+  border-radius: 1.28rem 1.28rem 0 0;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.collections-card__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.collections-card__img--primary {
+  z-index: 10;
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+.collections-card__img--hover {
+  z-index: 20;
+  opacity: 0;
+  transform: scale(1.1);
+  transition: opacity 0.6s cubic-bezier(0.33, 1, 0.68, 1), transform 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.collections-card--hovered .collections-card__img--primary,
+.collections-card:hover .collections-card__img--primary {
+  opacity: 0;
+  transform: scale(1.05);
+}
+
+.collections-card--hovered .collections-card__img--hover,
+.collections-card:hover .collections-card__img--hover {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.collections-card__badge {
+  position: absolute;
+  top: 0.55rem;
+  left: 0.55rem;
+  z-index: 30;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: #d32f2f;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.collections-card__panel {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  margin-top: -0.5rem;
+  padding: 1.35rem 0.65rem 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.15);
+  text-align: center;
+  backdrop-filter: blur(16px);
+}
+
+.collections-card__save-pill {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 10;
+  transform: translate(-50%, -50%);
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(22, 101, 52, 0.95);
+  color: #fff;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(22, 101, 52, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* Quick Review — directly below image, visible on card hover */
+.collections-card__quick-review {
+  display: block;
+  width: calc(100% - 1.3rem);
+  margin: -0.35rem auto 0.5rem;
+  padding: 0.6rem 0.75rem;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 6px 18px rgba(42, 33, 24, 0.12);
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #3d2f1f !important;
+  cursor: pointer;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease,
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.collections-card--hovered .collections-card__quick-review,
+.collections-card:hover .collections-card__quick-review {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.collections-card__quick-review:hover {
+  border-color: rgba(0, 0, 0, 0.45);
+  background: #fff;
+  color: #1f1a14 !important;
+}
+
+@media (hover: none) {
+  .collections-card__quick-review {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+}
+
+.collections-card__title {
+  margin: 0.15rem 0 0.4rem;
+  font-family: var(--font-heading, "Playfair Display", serif);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.collections-card__title a {
+  color: #3d2f1f;
+  text-decoration: none;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.collections-card__title a:hover {
+  text-decoration: underline;
+}
+
+.collections-card__price-row {
+  margin: 0 0 0.45rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.85rem;
+  line-height: 1.35;
+  color: #3d2f1f;
+}
+
+.collections-card__price {
+  font-weight: 600;
+}
+
+.collections-card__price-old {
+  margin-right: 0.35rem;
+  color: rgba(185, 28, 28, 0.95);
+  text-decoration: line-through;
+}
+
+.collections-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+}
+
+.collections-card__meta .MuiRating-root {
+  font-size: 0.95rem;
+}
+
+.collections-card__stock {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  color: #888;
+}
+
+.collections-card__stock--in {
+  color: #2e7d32;
+}
+
+.collections-card__stock-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #bbb;
+}
+
+.collections-card__stock--in .collections-card__stock-dot {
+  background: #2e7d32;
+}
+
+@media (max-width: 1100px) {
+  .collections-product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .collections-catalog {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .collections-filters {
+    width: 100%;
+    flex: none;
+  }
+
+  .collections-product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .collections-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .collections-sort__panel {
+    right: auto;
+    left: 0;
+  }
+
+  .collections-product-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .collections-page {
+    padding: 1.25rem 1rem 2.5rem;
+  }
+
+  .collections-page__inner {
+    padding-inline: 0;
+  }
+
+  .collections-grid {
+    gap: 0.35rem;
+  }
+
+  .collections-pill {
+    gap: 0.35rem;
+    padding: 0.15rem 0.4rem 0.15rem 0.15rem;
+    font-size: 0.68rem;
+  }
+
+  .collections-pill__icon {
+    width: 1.85rem;
+    height: 1.85rem;
+  }
+}

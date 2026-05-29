@@ -1,18 +1,32 @@
 import { useContext, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
 import { FaAngleDown, FaAngleLeft, FaAngleRight } from "react-icons/fa6";
+import {
+  IoPersonOutline,
+  IoBagCheckOutline,
+  IoHeartOutline,
+  IoGitCompareOutline,
+  IoGridOutline,
+} from "react-icons/io5";
 import { MyContext } from "../../../App";
 import { RiLogoutCircleRFill } from "react-icons/ri";
+import UserAvatarImgComponent from "../../userAvatarImg";
+
+/** Path the "Shop" header link routes to (Collections / "All" landing page). */
+export const SHOP_PATH = "/collections";
 
 /** Hierarchical browse structure — links resolve to API subcategories when names match. */
 export const MEGA_MENU_COLUMNS = [
   {
     title: "Home & Living",
+    icon: "/icons/home_living.png",
     items: ["Wall Art", "Home Decor", "Candles", "Kitchenware", "Cushions"],
   },
   {
     title: "Fashion & Accessories",
+    icon: "/icons/fashion_accessories.png",
     items: [
       "Women's Clothing",
       "Men's Clothing",
@@ -23,21 +37,30 @@ export const MEGA_MENU_COLUMNS = [
   },
   {
     title: "Handmade Crafts",
+    icon: "/icons/handmade_crafts.png",
     items: ["Wood Crafts", "Clay & Pottery", "Crochet & Knitting", "Resin Art", "Paper Crafts"],
   },
   {
     title: "Kids & Baby",
+    icon: "/icons/kids_baby.png",
     items: ["Toys", "Baby Clothing", "Accessories"],
   },
   {
     title: "Art & Collectibles",
+    icon: "/icons/art_collectibles.png",
     items: ["Paintings", "Sculptures", "Traditional Art"],
   },
   {
     title: "Food & Homemade",
+    icon: "/icons/food_homemade.png",
     items: ["Spices", "Pickles", "Sweets", "Snacks"],
   },
 ];
+
+/** Resolve an API category path by display title; null when no match. */
+export function findCategoryPathByTitle(categoryList, title) {
+  return findCategoryPath(categoryList, title);
+}
 
 function normalizeName(s) {
   return (s || "")
@@ -69,6 +92,19 @@ function findCategoryPath(categoryList, title) {
   return null;
 }
 
+function formatCartTotal(cartData) {
+  const total =
+    cartData?.length !== 0
+      ? cartData
+          ?.map((item) => parseInt(item.price, 10) * item.quantity)
+          .reduce((sum, value) => sum + value, 0)
+      : 0;
+  return (total ?? 0).toLocaleString("en-US", {
+    style: "currency",
+    currency: "LKR",
+  });
+}
+
 const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
   const context = useContext(MyContext);
   const location = useLocation();
@@ -79,8 +115,7 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(null);
   const wrapRef = useRef(null);
 
-  const shopPath =
-    navData?.length > 0 ? `/products/category/${navData[0]._id}` : "/";
+  const shopPath = SHOP_PATH;
 
   const tailLinks = [
     { label: "Gifts", to: findCategoryPath(navData, "Gifts") || "/" },
@@ -90,8 +125,7 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
   ];
 
   const isHomeActive = location.pathname === "/";
-  const isShopActive =
-    shopPath !== "/" && location.pathname === shopPath && !megaOpen;
+  const isShopActive = location.pathname === shopPath && !megaOpen;
 
   const subLink = (name) => {
     const path = findSubCatPath(navData, name);
@@ -151,6 +185,217 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
 
   const activeCategory =
     activeCategoryIndex != null ? MEGA_MENU_COLUMNS[activeCategoryIndex] : null;
+
+  const cartTotalFormatted = formatCartTotal(context.cartData);
+
+  const drawerAccountLinks = [
+    ...(context?.user?.role === "admin"
+      ? [{ label: "Dashboard", to: "/dashboard", icon: IoGridOutline }]
+      : []),
+    { label: "My Account", to: "/my-account", icon: IoPersonOutline },
+    { label: "Orders", to: "/orders", icon: IoBagCheckOutline },
+    { label: "My List", to: "/my-list", icon: IoHeartOutline },
+    { label: "Compare", to: "/compare", icon: IoGitCompareOutline },
+  ];
+
+  const showMobileDrawerUser =
+    context.windowWidth < 992 && context?.isLogin === true;
+
+  const isMobileDrawer = context.windowWidth < 992;
+
+  const mobileDrawer = (
+    <div
+      className={`navPart2 d-flex align-items-center res-nav-wrapper secondary-category-nav__drawer w-100 ${
+        isOpenNav === true ? "open" : "close"
+      }`}
+    >
+      <div className="res-nav-overlay" onClick={closeNav} role="presentation" />
+      <div
+        className={`res-nav${
+          showMobileDrawerUser ? " secondary-category-nav__drawer--signed-in" : ""
+        }`}
+      >
+        <div className="secondary-category-nav__drawer-scroll">
+          {showMobileDrawerUser && (
+            <div className="secondary-category-nav__drawer-user">
+              <div className="secondary-category-nav__drawer-user-info d-flex align-items-center">
+                <UserAvatarImgComponent
+                  lg
+                  img={context?.user?.image}
+                  userName={
+                    context?.user?.name
+                      ? context?.user?.name?.toUpperCase()
+                      : ""
+                  }
+                />
+                <div className="secondary-category-nav__drawer-user-text ml-3">
+                  <p className="secondary-category-nav__drawer-user-name mb-0">
+                    {context?.user?.name}
+                  </p>
+                  <p className="secondary-category-nav__drawer-user-email mb-0">
+                    {context?.user?.email}
+                  </p>
+                </div>
+              </div>
+              <p className="secondary-category-nav__drawer-user-total mb-0">
+                {cartTotalFormatted}
+              </p>
+              <ul className="secondary-category-nav__drawer-account-list">
+                {drawerAccountLinks.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <li key={item.to}>
+                      <Link
+                        to={item.to}
+                        className="secondary-category-nav__drawer-row secondary-category-nav__drawer-row--account"
+                        onClick={closeNav}
+                      >
+                        <Icon
+                          className="secondary-category-nav__drawer-account-icon"
+                          aria-hidden
+                        />
+                        <span>{item.label}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+              <div
+                className="secondary-category-nav__drawer-divider"
+                role="separator"
+                aria-hidden
+              />
+            </div>
+          )}
+
+          <div className="secondary-category-nav__drawer-body">
+          <div className="secondary-category-nav__drawer-viewport">
+            <div
+              className="secondary-category-nav__drawer-track"
+              data-panel={drawerPanel}
+            >
+              <div
+                className="secondary-category-nav__drawer-slide"
+                aria-hidden={drawerPanel !== "root"}
+              >
+                <ul className="list list-inline ml-auto w-100 secondary-category-nav__drawer-root-list">
+                  <li className="list-inline-item w-100">
+                    <Link to="/" onClick={closeNav}>
+                      <Button>Home</Button>
+                    </Link>
+                  </li>
+                  <li className="list-inline-item w-100">
+                    <Link to={shopPath} onClick={closeNav}>
+                      <Button>Shop</Button>
+                    </Link>
+                  </li>
+                  <li className="list-inline-item w-100">
+                    <Button
+                      type="button"
+                      className="d-flex align-items-center w-100 secondary-category-nav__drawer-categories-btn"
+                      onClick={openCategoriesPanel}
+                    >
+                      Categories
+                      <FaAngleRight
+                        className="secondary-category-nav__drawer-chev"
+                        aria-hidden
+                      />
+                    </Button>
+                  </li>
+                  {tailLinks.map((link) => (
+                    <li key={link.label} className="list-inline-item w-100">
+                      <Link to={link.to} onClick={closeNav}>
+                        <Button>{link.label}</Button>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div
+                className="secondary-category-nav__drawer-slide"
+                role="navigation"
+                aria-label="Browse categories"
+                aria-hidden={drawerPanel !== "categories"}
+              >
+                <div className="secondary-category-nav__drawer-slide-inner">
+                  <button
+                    type="button"
+                    className="secondary-category-nav__drawer-back"
+                    onClick={backToRoot}
+                  >
+                    <FaAngleLeft aria-hidden />
+                    <span>Categories</span>
+                  </button>
+                  <ul className="secondary-category-nav__drawer-panel-list">
+                    {MEGA_MENU_COLUMNS.map((col, index) => (
+                      <li key={col.title}>
+                        <button
+                          type="button"
+                          className="secondary-category-nav__drawer-row"
+                          onClick={() => openCategoryItems(index)}
+                        >
+                          <span>{col.title}</span>
+                          <FaAngleRight
+                            className="secondary-category-nav__drawer-chev"
+                            aria-hidden
+                          />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div
+                className="secondary-category-nav__drawer-slide"
+                role="navigation"
+                aria-label={activeCategory?.title || "Subcategories"}
+                aria-hidden={drawerPanel !== "category-items"}
+              >
+                <div className="secondary-category-nav__drawer-slide-inner">
+                  <button
+                    type="button"
+                    className="secondary-category-nav__drawer-back"
+                    onClick={backToCategories}
+                  >
+                    <FaAngleLeft aria-hidden />
+                    <span>{activeCategory?.title}</span>
+                  </button>
+                  <ul className="secondary-category-nav__drawer-panel-list">
+                    {activeCategory?.items.map((item) => (
+                      <li key={item}>
+                        <Link
+                          to={subLink(item)}
+                          className="secondary-category-nav__drawer-row secondary-category-nav__drawer-row--link"
+                          onClick={closeNav}
+                        >
+                          <span>{item}</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+        </div>
+
+        <div className="secondary-category-nav__drawer-footer pt-3 pl-3 pr-3 pb-3">
+          {context?.isLogin === false ? (
+            <Link to="/signIn" onClick={closeNav}>
+              <Button className="btn-blue w-100 btn-big">Sign In</Button>
+            </Link>
+          ) : (
+            <Button className="btn-blue w-100 btn-big" onClick={logout}>
+              <RiLogoutCircleRFill /> Logout
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <nav className="secondary-category-nav" aria-label="Main site sections">
@@ -233,141 +478,7 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
         </div>
       </div>
 
-      <div
-        className={`navPart2 d-flex align-items-center res-nav-wrapper secondary-category-nav__drawer w-100 ${
-          isOpenNav === true ? "open" : "close"
-        }`}
-      >
-        <div className="res-nav-overlay" onClick={closeNav} role="presentation" />
-        <div className="res-nav">
-          <div className="secondary-category-nav__drawer-body">
-            <div className="secondary-category-nav__drawer-viewport">
-              <div
-                className="secondary-category-nav__drawer-track"
-                data-panel={drawerPanel}
-              >
-                <div
-                  className="secondary-category-nav__drawer-slide"
-                  aria-hidden={drawerPanel !== "root"}
-                >
-                  <ul className="list list-inline ml-auto w-100 secondary-category-nav__drawer-root-list">
-                    <li className="list-inline-item w-100">
-                      <Link to="/" onClick={closeNav}>
-                        <Button>Home</Button>
-                      </Link>
-                    </li>
-                    <li className="list-inline-item w-100">
-                      <Link to={shopPath} onClick={closeNav}>
-                        <Button>Shop</Button>
-                      </Link>
-                    </li>
-                    <li className="list-inline-item w-100">
-                      <Button
-                        type="button"
-                        className="d-flex align-items-center w-100 secondary-category-nav__drawer-categories-btn"
-                        onClick={openCategoriesPanel}
-                      >
-                        Categories
-                        <FaAngleRight
-                          className="secondary-category-nav__drawer-chev"
-                          aria-hidden
-                        />
-                      </Button>
-                    </li>
-                    {tailLinks.map((link) => (
-                      <li key={link.label} className="list-inline-item w-100">
-                        <Link to={link.to} onClick={closeNav}>
-                          <Button>{link.label}</Button>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div
-                  className="secondary-category-nav__drawer-slide"
-                  role="navigation"
-                  aria-label="Browse categories"
-                  aria-hidden={drawerPanel !== "categories"}
-                >
-                  <div className="secondary-category-nav__drawer-slide-inner">
-                    <button
-                      type="button"
-                      className="secondary-category-nav__drawer-back"
-                      onClick={backToRoot}
-                    >
-                      <FaAngleLeft aria-hidden />
-                      <span>Categories</span>
-                    </button>
-                    <ul className="secondary-category-nav__drawer-panel-list">
-                      {MEGA_MENU_COLUMNS.map((col, index) => (
-                        <li key={col.title}>
-                          <button
-                            type="button"
-                            className="secondary-category-nav__drawer-row"
-                            onClick={() => openCategoryItems(index)}
-                          >
-                            <span>{col.title}</span>
-                            <FaAngleRight
-                              className="secondary-category-nav__drawer-chev"
-                              aria-hidden
-                            />
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                <div
-                  className="secondary-category-nav__drawer-slide"
-                  role="navigation"
-                  aria-label={activeCategory?.title || "Subcategories"}
-                  aria-hidden={drawerPanel !== "category-items"}
-                >
-                  <div className="secondary-category-nav__drawer-slide-inner">
-                    <button
-                      type="button"
-                      className="secondary-category-nav__drawer-back"
-                      onClick={backToCategories}
-                    >
-                      <FaAngleLeft aria-hidden />
-                      <span>{activeCategory?.title}</span>
-                    </button>
-                    <ul className="secondary-category-nav__drawer-panel-list">
-                      {activeCategory?.items.map((item) => (
-                        <li key={item}>
-                          <Link
-                            to={subLink(item)}
-                            className="secondary-category-nav__drawer-row secondary-category-nav__drawer-row--link"
-                            onClick={closeNav}
-                          >
-                            <span>{item}</span>
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {context.windowWidth < 992 && (
-            <div className="secondary-category-nav__drawer-footer pt-3 pl-3 pr-3 pb-3">
-              {context?.isLogin === false ? (
-                <Link to="/signIn" onClick={closeNav}>
-                  <Button className="btn-blue w-100 btn-big">Sign In</Button>
-                </Link>
-              ) : (
-                <Button className="btn-blue w-100 btn-big" onClick={logout}>
-                  <RiLogoutCircleRFill /> Logout
-                </Button>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
+      {isMobileDrawer && createPortal(mobileDrawer, document.body)}
     </nav>
   );
 };

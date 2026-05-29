@@ -101,6 +101,12 @@
 
   .res-nav ul{max-height: calc(100vh - var(--mobile-header-offset) - 20px); overflow-y: auto; overflow-x: hidden;}
 
+  /* SecondaryCategoryNav drawer scroll is contained in .drawer-slide — avoid nested page scroll */
+  .secondary-category-nav__drawer .res-nav ul{
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
   .res-nav .btn-blue{border-radius: 5px !important; text-align: center !important; justify-content: center !important;}
 
   .logo{margin: auto;}

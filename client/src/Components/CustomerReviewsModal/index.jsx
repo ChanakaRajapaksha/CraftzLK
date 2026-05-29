@@ -1,5 +1,7 @@
-import { forwardRef, useEffect, useMemo, useState } from "react";
+import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import Dialog from "@mui/material/Dialog";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 import Zoom from "@mui/material/Zoom";
 import { HiSparkles } from "react-icons/hi2";
 import { IoIosSearch } from "react-icons/io";
@@ -20,14 +22,23 @@ import {
 } from "./reviewsData";
 import "./CustomerReviewsModal.css";
 
-const CRM_TRANSITION_MS = { enter: 420, exit: 300 };
+const CRM_TRANSITION_MS = { enter: 300, exit: 240 };
+
+/** Warm image cache so first open does not wait on product thumbnails. */
+function preloadReviewImages() {
+  const urls = [...new Set(REVIEWS.map((r) => r.productImg).filter(Boolean))];
+  urls.forEach((src) => {
+    const img = new Image();
+    img.decoding = "async";
+    img.src = src;
+  });
+}
 
 const CrmDialogTransition = forwardRef(function CrmDialogTransition(props, ref) {
   return (
     <Zoom
       ref={ref}
       {...props}
-      appear
       timeout={CRM_TRANSITION_MS}
       easing={{
         enter: "cubic-bezier(0.16, 1, 0.3, 1)",
@@ -135,6 +146,9 @@ function buildPageNumbers(page, totalPages) {
 }
 
 export default function CustomerReviewsModal({ open, onClose }) {
+  const theme = useTheme();
+  const isMobileLayout = useMediaQuery(theme.breakpoints.down("md"));
+
   const [page, setPage] = useState(1);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -142,6 +156,12 @@ export default function CustomerReviewsModal({ open, onClose }) {
   const [sortOpen, setSortOpen] = useState(false);
   const [starFilters, setStarFilters] = useState([]);
   const [sortBy, setSortBy] = useState("recent");
+
+  // One-time invisible warm-up: paints + composites the modal during idle so the
+  // first real open does not pay the mount/paint/layer cost on the click.
+  const [warmOpen, setWarmOpen] = useState(false);
+  const warmedRef = useRef(false);
+  const isWarming = warmOpen && !open;
 
   useEffect(() => {
     if (!open) {
@@ -153,6 +173,68 @@ export default function CustomerReviewsModal({ open, onClose }) {
       setStarFilters([]);
       setSortBy("recent");
     }
+  }, [open]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    if ("requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(() => preloadReviewImages(), {
+        timeout: 2500,
+      });
+      return () => window.cancelIdleCallback(id);
+    }
+    const t = window.setTimeout(preloadReviewImages, 400);
+    return () => window.clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || warmedRef.current) return undefined;
+    let idleId;
+    let timeoutId;
+    const startWarm = () => setWarmOpen(true);
+    if ("requestIdleCallback" in window) {
+      idleId = window.requestIdleCallback(startWarm, { timeout: 1800 });
+    } else {
+      timeoutId = window.setTimeout(startWarm, 400);
+    }
+    return () => {
+      if (idleId && window.cancelIdleCallback) window.cancelIdleCallback(idleId);
+      if (timeoutId) window.clearTimeout(timeoutId);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!warmOpen || open) return undefined;
+    const t = window.setTimeout(() => {
+      warmedRef.current = true;
+      setWarmOpen(false);
+    }, 90);
+    return () => window.clearTimeout(t);
+  }, [warmOpen, open]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    const prev = {
+      bodyOverflow: document.body.style.overflow,
+      htmlOverflow: document.documentElement.style.overflow,
+      bodyPaddingRight: document.body.style.paddingRight,
+    };
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+    document.body.classList.add("customer-reviews-modal-open");
+
+    return () => {
+      document.body.style.overflow = prev.bodyOverflow;
+      document.documentElement.style.overflow = prev.htmlOverflow;
+      document.body.style.paddingRight = prev.bodyPaddingRight;
+      document.body.classList.remove("customer-reviews-modal-open");
+    };
   }, [open]);
 
   useEffect(() => {
@@ -189,17 +271,30 @@ export default function CustomerReviewsModal({ open, onClose }) {
 
   return (
     <Dialog
-      open={open}
+      open={open || warmOpen}
       onClose={onClose}
-      className="customer-reviews-modal"
+      keepMounted
+      className={`customer-reviews-modal${isMobileLayout ? " customer-reviews-modal--mobile" : ""}${isWarming ? " customer-reviews-modal--warming" : ""}`}
       aria-labelledby="crm-title"
+      aria-hidden={isWarming || undefined}
       maxWidth={false}
+      fullScreen={isMobileLayout}
       scroll="paper"
+      hideBackdrop={isWarming}
+      disableScrollLock
+      disableRestoreFocus
+      disableAutoFocus={isWarming}
+      disableEnforceFocus={isWarming}
       TransitionComponent={CrmDialogTransition}
-      TransitionProps={{ timeout: CRM_TRANSITION_MS }}
-      BackdropProps={{ transitionDuration: CRM_TRANSITION_MS }}
+      TransitionProps={{ timeout: isWarming ? 0 : CRM_TRANSITION_MS, appear: false }}
+      BackdropProps={{ transitionDuration: isWarming ? 0 : CRM_TRANSITION_MS }}
     >
-      <button type="button" className="close_" onClick={onClose} aria-label="Close">
+      <button
+        type="button"
+        className="close_"
+        onClick={onClose}
+        aria-label="Close"
+      >
         <span aria-hidden="true">×</span>
       </button>
 

@@ -4,6 +4,7 @@ import "./responsive.css";
 import "./ChatBox.css";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import HomeGate from "./Pages/Home/HomeGate.jsx";
+import Collections from "./Pages/Collections/index.jsx";
 import Listing from "./Pages/Listing/index.jsx";
 import ProductDetailsRouter from "./Pages/ProductDetailsRouter.jsx";
 import Header from "./Components/Header/index.jsx";
@@ -311,6 +312,7 @@ function AppContent() {
 
       <Routes>
         <Route path="/" exact={true} element={<HomeGate />} />
+        <Route path="/collections" exact={true} element={<Collections />} />
         <Route
           path="/products/category/:id"
           exact={true}
