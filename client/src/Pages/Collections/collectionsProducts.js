@@ -1,5 +1,5 @@
 import { SAMPLE_PRODUCT_CATALOG } from "../../data/sampleProductDetails";
-import { COLLECTIONS_PAGE_SIZE } from "./collectionsConstants";
+import { COLLECTIONS_CATALOG_SIZE } from "./collectionsConstants";
 import { fetchDataFromApi } from "../../utils/api";
 
 function extractProducts(res) {
@@ -8,8 +8,8 @@ function extractProducts(res) {
   return [];
 }
 
-/** Same catalog as Homepage rails — guarantees 40 visible cards on first paint */
-export function getSampleCollectionsProducts(count = COLLECTIONS_PAGE_SIZE) {
+/** Same catalog as Homepage rails — fills up to `count` products */
+export function getSampleCollectionsProducts(count = COLLECTIONS_CATALOG_SIZE) {
   const catalog = Object.values(SAMPLE_PRODUCT_CATALOG);
   if (!catalog.length) return [];
 
@@ -17,7 +17,7 @@ export function getSampleCollectionsProducts(count = COLLECTIONS_PAGE_SIZE) {
     const base = catalog[index % catalog.length];
     return {
       ...base,
-      id: base.id,
+      id: `${base.id}-col-${index}`,
       _gridIndex: index,
     };
   });
@@ -33,20 +33,65 @@ function dedupeProducts(list) {
   });
 }
 
-export async function loadCollectionProducts() {
-  try {
-    const res = await fetchDataFromApi("/api/products?page=1&perPage=40");
-    const apiList = dedupeProducts(extractProducts(res));
-    if (apiList.length >= COLLECTIONS_PAGE_SIZE) {
-      return apiList.slice(0, COLLECTIONS_PAGE_SIZE);
-    }
-    if (apiList.length > 0) {
-      const samples = getSampleCollectionsProducts(COLLECTIONS_PAGE_SIZE);
-      return dedupeProducts([...apiList, ...samples]).slice(0, COLLECTIONS_PAGE_SIZE);
-    }
-  } catch {
-    /* fall through to sample catalog */
+function buildProductsUrl(page, perPage, withLocation) {
+  const location = localStorage.getItem("location") || "All";
+  let url = `/api/products?page=${page}&perPage=${perPage}`;
+  if (withLocation && location) {
+    url += `&location=${encodeURIComponent(location)}`;
+  }
+  return url;
+}
+
+async function fetchProductBatch(withLocation) {
+  const merged = [];
+  const perPage = 40;
+  const maxPages = 8;
+
+  for (let page = 1; page <= maxPages && merged.length < COLLECTIONS_CATALOG_SIZE; page += 1) {
+    const res = await fetchDataFromApi(buildProductsUrl(page, perPage, withLocation));
+    const items = extractProducts(res);
+    if (!items.length) break;
+    merged.push(...items);
+    if (items.length < perPage) break;
   }
 
-  return getSampleCollectionsProducts(COLLECTIONS_PAGE_SIZE);
+  return dedupeProducts(merged);
+}
+
+function fillCatalogToSize(list, targetSize) {
+  if (list.length >= targetSize) {
+    return list.slice(0, targetSize);
+  }
+
+  const samples = getSampleCollectionsProducts(targetSize);
+  const merged = dedupeProducts([...list, ...samples]);
+  return merged.slice(0, targetSize);
+}
+
+export async function loadCollectionProducts() {
+  try {
+    let apiList = await fetchProductBatch(true);
+    if (apiList.length < COLLECTIONS_CATALOG_SIZE) {
+      const withoutLoc = await fetchProductBatch(false);
+      apiList = dedupeProducts([...apiList, ...withoutLoc]);
+    }
+
+    if (apiList.length > 0) {
+      return fillCatalogToSize(apiList, COLLECTIONS_CATALOG_SIZE);
+    }
+  } catch {
+    /* fall through */
+  }
+
+  try {
+    const res = await fetchDataFromApi("/api/products");
+    const all = dedupeProducts(extractProducts(res));
+    if (all.length > 0) {
+      return fillCatalogToSize(all, COLLECTIONS_CATALOG_SIZE);
+    }
+  } catch {
+    /* fall through */
+  }
+
+  return getSampleCollectionsProducts(COLLECTIONS_CATALOG_SIZE);
 }

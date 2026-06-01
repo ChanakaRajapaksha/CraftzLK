@@ -1,4 +1,13 @@
-export const COLLECTIONS_PAGE_SIZE = 40;
+/** Products shown per page (4 columns × 10 rows) */
+export const COLLECTIONS_PER_PAGE = 40;
+
+/** Total products in the collections catalog (~140 across all pages) */
+export const COLLECTIONS_CATALOG_SIZE = 140;
+
+/** @deprecated Use COLLECTIONS_PER_PAGE */
+export const COLLECTIONS_PAGE_SIZE = COLLECTIONS_PER_PAGE;
+
+export const COLLECTIONS_ALL_PATH = "/collections/all";
 
 export const COLLECTIONS_SORT_OPTIONS = [
   { value: "featured", label: "Featured" },

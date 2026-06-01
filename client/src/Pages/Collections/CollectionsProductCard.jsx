@@ -1,12 +1,10 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import Rating from "@mui/material/Rating";
-import { formatRs } from "./collectionsUtils";
+import { formatRsLabel, getVariantCount } from "./collectionsUtils";
 
 const IMG_FALLBACK = "/images/product_images/wooden_wine_glass.png";
 
-export default function CollectionsProductCard({ product, onQuickReview }) {
-  const [hovered, setHovered] = useState(false);
+export default function CollectionsProductCard({ product }) {
   const productId = product?.id || product?._id;
   const images = product?.images?.length ? product.images : [IMG_FALLBACK];
   const primaryImage = images[0];
@@ -15,20 +13,11 @@ export default function CollectionsProductCard({ product, onQuickReview }) {
   const price = Number(product?.price);
   const oldPrice = Number(product?.oldPrice);
   const onSale = Number.isFinite(oldPrice) && oldPrice > price;
-  const saveAmount = onSale ? oldPrice - price : 0;
-
-  const openQuickReview = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    onQuickReview?.(productId);
-  };
+  const rating = Number(product?.rating) || 0;
+  const variantCount = getVariantCount(product);
 
   return (
-    <article
-      className={`collections-card${hovered ? " collections-card--hovered" : ""}`}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
+    <article className="collections-card group">
       <div className="collections-card__shell">
         <div className="collections-card__inner">
           <div className="collections-card__image-wrap">
@@ -38,6 +27,13 @@ export default function CollectionsProductCard({ product, onQuickReview }) {
               aria-label={`View ${product?.name}`}
             >
               <div className="collections-card__image-well">
+                {onSale && (
+                  <span className="collections-card__save-badge">
+                    {product?.discount > 0
+                      ? `Save ${product.discount}%`
+                      : `Save ${Math.round(((oldPrice - price) / oldPrice) * 100)}%`}
+                  </span>
+                )}
                 <img
                   src={primaryImage}
                   alt={product?.name || "Product"}
@@ -60,53 +56,52 @@ export default function CollectionsProductCard({ product, onQuickReview }) {
                 )}
               </div>
             </Link>
-
-            {onSale && product?.discount > 0 && (
-              <span className="collections-card__badge">Save {product.discount}%</span>
-            )}
           </div>
 
-          <button
-            type="button"
-            className="collections-card__quick-review"
-            onClick={openQuickReview}
-            aria-label={`Quick review ${product?.name}`}
-          >
-            Quick Review
-          </button>
-
           <div className="collections-card__panel">
-            {onSale && saveAmount > 0 && (
-              <span className="collections-card__save-pill">
-                Save Rs {formatRs(saveAmount)}
-              </span>
-            )}
-
             <h3 className="collections-card__title">
               <Link to={`/product/${productId}`}>{product?.name}</Link>
             </h3>
 
             <p className="collections-card__price-row">
               {onSale && (
-                <span className="collections-card__price-old">Rs {formatRs(oldPrice)}</span>
+                <span className="collections-card__price-old">{formatRsLabel(oldPrice)}</span>
               )}
-              <span className="collections-card__price">Rs {formatRs(price)}</span>
+              <span className="collections-card__price">{formatRsLabel(price)}</span>
             </p>
 
-            <div className="collections-card__meta">
+            {inStock && (
+              <p className="collections-card__variants">
+                Available in {variantCount} item{variantCount === 1 ? "" : "s"}
+              </p>
+            )}
+
+            <div className="collections-card__rating">
               <Rating
-                value={Number(product?.rating) || 0}
+                value={rating}
                 readOnly
                 size="small"
                 precision={0.5}
+                className="collections-card__rating-stars"
+                sx={{
+                  fontSize: "0.8rem",
+                  "& .MuiRating-iconFilled": {
+                    color: "var(--primary-dark, #b8860b)",
+                  },
+                  "& .MuiRating-iconEmpty": {
+                    color: "#ddd",
+                  },
+                }}
               />
-              <span
-                className={`collections-card__stock${inStock ? " collections-card__stock--in" : ""}`}
-              >
-                <span className="collections-card__stock-dot" aria-hidden />
-                {inStock ? "In stock" : "Out of stock"}
-              </span>
+              <span className="collections-card__rating-value">{rating.toFixed(2)}</span>
             </div>
+
+            <p
+              className={`collections-card__stock${inStock ? " collections-card__stock--in" : " collections-card__stock--out"}`}
+            >
+              {inStock && <span className="collections-card__stock-dot" aria-hidden />}
+              {inStock ? "In Stock" : "Out of Stock"}
+            </p>
           </div>
         </div>
       </div>

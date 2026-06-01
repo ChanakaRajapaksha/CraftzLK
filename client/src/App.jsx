@@ -2,7 +2,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 import "./responsive.css";
 import "./ChatBox.css";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import HomeGate from "./Pages/Home/HomeGate.jsx";
 import Collections from "./Pages/Collections/index.jsx";
 import Listing from "./Pages/Listing/index.jsx";
@@ -312,7 +312,8 @@ function AppContent() {
 
       <Routes>
         <Route path="/" exact={true} element={<HomeGate />} />
-        <Route path="/collections" exact={true} element={<Collections />} />
+        <Route path="/collections" element={<Navigate to="/collections/all" replace />} />
+        <Route path="/collections/all" exact={true} element={<Collections />} />
         <Route
           path="/products/category/:id"
           exact={true}

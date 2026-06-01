@@ -110,3 +110,20 @@ export function formatRs(amount) {
     maximumFractionDigits: 2,
   });
 }
+
+export function formatRsLabel(amount) {
+  return `Rs. ${formatRs(amount)}`;
+}
+
+export function getVariantCount(product) {
+  const optionLists = [
+    product?.colors,
+    product?.productRam,
+    product?.size,
+    product?.productWeight,
+  ].filter(Array.isArray);
+
+  const counts = optionLists.map((list) => list.filter(Boolean).length);
+  const max = counts.length ? Math.max(...counts) : 0;
+  return max > 0 ? max : 1;
+}

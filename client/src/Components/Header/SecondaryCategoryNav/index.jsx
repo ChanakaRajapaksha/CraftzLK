@@ -15,7 +15,7 @@ import { RiLogoutCircleRFill } from "react-icons/ri";
 import UserAvatarImgComponent from "../../userAvatarImg";
 
 /** Path the "Shop" header link routes to (Collections / "All" landing page). */
-export const SHOP_PATH = "/collections";
+export const SHOP_PATH = "/collections/all";
 
 /** Hierarchical browse structure — links resolve to API subcategories when names match. */
 export const MEGA_MENU_COLUMNS = [
