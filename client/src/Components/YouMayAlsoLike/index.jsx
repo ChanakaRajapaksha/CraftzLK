@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { useId } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { getYouMayAlsoLikeProducts } from "../../data/sampleProductDetails";
+import HomeRailAddToCartButton from "../HomeRailAddToCartButton";
+import "../HomeRailAddToCartButton/HomeRailAddToCartButton.css";
 import "./YouMayAlsoLike.css";
 
 const GRID_CLASS =
@@ -206,9 +208,7 @@ export default function YouMayAlsoLike({ currentProductId }) {
                       <span className="font-semibold">{item.priceDisplay}</span>
                     </p>
 
-                    <button type="button" className={glassButton}>
-                      ADD TO CART
-                    </button>
+                    <HomeRailAddToCartButton productId={item.id} className={glassButton} />
                   </div>
                 </div>
               </article>

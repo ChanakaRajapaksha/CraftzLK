@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { useCallback, useId, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { getHomeRailProductId } from "../../data/sampleProductDetails";
+import HomeRailAddToCartButton from "../HomeRailAddToCartButton";
+import "../HomeRailAddToCartButton/HomeRailAddToCartButton.css";
 import { HOME_RAIL_SECTION, HOME_SECTION_INNER_DIVIDED } from "../homeRailLayout";
 
 const IMG_BASE = "/images/product_images/tea_powder.png";
@@ -266,9 +268,10 @@ const NewArrivalsRail = () => {
                         <span className="font-semibold">Rs {item.price}</span>
                       </p>
                       
-                      <button type="button" className={glassButton}>
-                        ADD TO CART
-                      </button>
+                      <HomeRailAddToCartButton
+                        productId={item.productId}
+                        className={glassButton}
+                      />
                     </div>
                   </div>
                 </article>

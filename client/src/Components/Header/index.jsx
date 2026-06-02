@@ -344,14 +344,17 @@ const Header = () => {
                         </Button>
 
                         <div className="position-relative cartTab ml-2">
-                          <Link to="/cart" className="ml-auto">
-                            <Button className="circle">
-                              <IoBagOutline />
-                            </Button>
-                            <span className="count d-flex align-items-center justify-content-center">
-                              {context.cartData?.length > 0 ? context.cartData?.length : 0}
-                            </span>
-                          </Link>
+                          <Button
+                            type="button"
+                            className="circle ml-auto"
+                            onClick={() => context.setCartDrawerOpen?.(true)}
+                            aria-label="Open cart"
+                          >
+                            <IoBagOutline />
+                          </Button>
+                          <span className="count d-flex align-items-center justify-content-center">
+                            {context.cartData?.length > 0 ? context.cartData?.length : 0}
+                          </span>
                         </div>
                       </div>
                     )}
@@ -490,16 +493,19 @@ const Header = () => {
                       )}
 
                       <div className="position-relative ml-2 res-hide">
-                        <Link to="/cart">
-                          <Button className="circle">
-                            <IoBagOutline />
-                          </Button>
-                          <span className="count d-flex align-items-center justify-content-center">
-                            {context.cartData?.length > 0
-                              ? context.cartData?.length
-                              : 0}
-                          </span>
-                        </Link>
+                        <Button
+                          type="button"
+                          className="circle"
+                          onClick={() => context.setCartDrawerOpen?.(true)}
+                          aria-label="Open cart"
+                        >
+                          <IoBagOutline />
+                        </Button>
+                        <span className="count d-flex align-items-center justify-content-center">
+                          {context.cartData?.length > 0
+                            ? context.cartData?.length
+                            : 0}
+                        </span>
                       </div>
 
                       {context.windowWidth < 992 && (

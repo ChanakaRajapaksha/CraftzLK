@@ -24,8 +24,19 @@ import VerifyOTP from "./Pages/VerifyOTP/index.jsx";
 import ChangePassword from "./Pages/ChangePassword/index.jsx";
 import ForgotPassword from "./Pages/ForgotPassword/index.jsx";
 import ResetPassword from "./Pages/ResetPassword/index.jsx";
-import { fetchDataFromApi, postData, restoreSession } from "./utils/api";
+import { deleteData, editData, fetchDataFromApi, postData, restoreSession } from "./utils/api";
 import HandcraftAlert from "./Components/HandcraftAlert";
+import CartDrawer from "./Components/CartDrawer";
+import { getSampleProductById } from "./data/sampleProductDetails";
+import {
+  addToLocalCart,
+  buildCartPayloadFromSample,
+  isSampleProductId,
+  loadLocalCart,
+  removeFromLocalCart,
+  saveLocalCart,
+  updateLocalCartQty,
+} from "./utils/cartHelpers";
 import Compare from "./Pages/Compare/index.jsx";
 import { Toaster } from "sonner";
 import AdminGuard from "./Pages/Admin/AdminGuard";
@@ -77,8 +88,10 @@ function AppContent() {
   const [categoryData, setCategoryData] = useState([]);
   const [subCategoryData, setsubCategoryData] = useState([]);
   const [addingInCart, setAddingInCart] = useState(false);
+  const [addingCartProductId, setAddingCartProductId] = useState(null);
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
 
-  const [cartData, setCartData] = useState();
+  const [cartData, setCartData] = useState(() => loadLocalCart());
   const [searchData, setSearchData] = useState([]);
   const [isOpenNav, setIsOpenNav] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -116,12 +129,23 @@ function AppContent() {
           user?.userId !== null
         ) {
           fetchDataFromApi(`/api/cart?userId=${user?.userId}`).then((res) => {
-            setCartData(res);
+            const apiItems = Array.isArray(res) ? res : [];
+            const localItems = loadLocalCart().filter((i) => isSampleProductId(i.productId));
+            const merged = [
+              ...apiItems,
+              ...localItems.filter(
+                (local) => !apiItems.some((api) => api.productId === local.productId)
+              ),
+            ];
+            setCartData(merged);
+            saveLocalCart(localItems);
           });
         }
       } catch (error) {
         console.error("Error parsing user data:", error);
       }
+    } else {
+      setCartData(loadLocalCart());
     }
   }, [isLogin]);
 
@@ -171,12 +195,86 @@ function AppContent() {
         const user = JSON.parse(userStr);
         if (user?.userId) {
           fetchDataFromApi(`/api/cart?userId=${user?.userId}`).then((res) => {
-            setCartData(res);
+            const apiItems = Array.isArray(res) ? res : [];
+            const localItems = loadLocalCart().filter((i) => isSampleProductId(i.productId));
+            const merged = [
+              ...apiItems,
+              ...localItems.filter(
+                (local) => !apiItems.some((api) => api.productId === local.productId)
+              ),
+            ];
+            setCartData(merged);
+            saveLocalCart(localItems);
           });
         }
       } catch (error) {
         console.error("Error parsing user data:", error);
       }
+    } else {
+      setCartData(loadLocalCart());
+    }
+  };
+
+  const syncLocalSampleCart = (sampleItems) => {
+    const sampleOnly = (Array.isArray(sampleItems) ? sampleItems : []).filter((i) =>
+      isSampleProductId(i.productId)
+    );
+    saveLocalCart(sampleOnly);
+    setCartData((prev) => {
+      const apiItems = (Array.isArray(prev) ? prev : []).filter(
+        (i) => !isSampleProductId(i.productId)
+      );
+      return [...apiItems, ...sampleOnly];
+    });
+  };
+
+  const addHomeProductToCart = (productId) => {
+    const product = getSampleProductById(productId);
+    if (!product) return;
+    const payload = buildCartPayloadFromSample(product, 1);
+    addToCart(payload, { openDrawer: true, localOnly: true });
+  };
+
+  const updateCartItemQty = (itemId, quantity) => {
+    const items = Array.isArray(cartData) ? cartData : [];
+    const item = items.find((i) => i.id === itemId || i._id === itemId);
+    if (!item) return;
+
+    if (isSampleProductId(item.productId) || String(itemId).startsWith("local-")) {
+      const next = updateLocalCartQty(items, itemId, quantity);
+      syncLocalSampleCart(next);
+      return;
+    }
+
+    if (isLogin) {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const qty = Math.max(1, quantity);
+      editData(`/api/cart/${item._id || item.id}`, {
+        productTitle: item.productTitle,
+        image: item.image,
+        rating: item.rating,
+        price: item.price,
+        quantity: qty,
+        subTotal: parseInt(item.price, 10) * qty,
+        productId: item.productId,
+        userId: user?.userId,
+      }).then(() => getCartData());
+    }
+  };
+
+  const removeCartItem = (itemId) => {
+    const items = Array.isArray(cartData) ? cartData : [];
+    const item = items.find((i) => i.id === itemId || i._id === itemId);
+    if (!item) return;
+
+    if (isSampleProductId(item.productId) || String(itemId).startsWith("local-")) {
+      const next = removeFromLocalCart(items, itemId);
+      syncLocalSampleCart(next);
+      return;
+    }
+
+    if (isLogin) {
+      deleteData(`/api/cart/${item._id || item.id}`).then(() => getCartData());
     }
   };
 
@@ -226,37 +324,79 @@ function AppContent() {
     });
   };
 
-  const addToCart = (data) => {
+  const addToCart = (data, options = {}) => {
+    const { openDrawer = false, localOnly = false } = options;
+    const productId = data?.productId;
+    setAddingInCart(true);
+    setAddingCartProductId(productId ?? null);
+
+    const finish = () => {
+      setAddingInCart(false);
+      setAddingCartProductId(null);
+    };
+
+    const applyLocal = () => {
+      const current = Array.isArray(cartData) ? cartData : loadLocalCart();
+      const next = addToLocalCart(current, data);
+      syncLocalSampleCart(next);
+      if (openDrawer) setCartDrawerOpen(true);
+      setTimeout(finish, 450);
+    };
+
+    if (localOnly || isSampleProductId(productId)) {
+      applyLocal();
+      return;
+    }
+
     if (isLogin === true) {
-      setAddingInCart(true);
-      postData(`/api/cart/add`, data).then((res) => {
-        if (res.status !== false) {
-          setAlertBox({
-            open: true,
-            error: false,
-            msg: "Item is added in the cart",
-          });
-
-          setTimeout(() => {
-            setAddingInCart(false);
-          }, 1000);
-
-          getCartData();
-        } else {
-          setAlertBox({
-            open: true,
-            error: true,
-            msg: res.msg,
-          });
-          setAddingInCart(false);
+      setCartData((prev) => {
+        const arr = Array.isArray(prev) ? [...prev] : [];
+        const idx = arr.findIndex((i) => i.productId === data.productId);
+        if (idx >= 0) {
+          return arr.map((item, n) =>
+            n === idx
+              ? {
+                  ...item,
+                  quantity: item.quantity + data.quantity,
+                  subTotal: item.price * (item.quantity + data.quantity),
+                }
+              : item
+          );
         }
+        return [
+          ...arr,
+          {
+            ...data,
+            id: data.id || `opt-${Date.now()}`,
+            _id: data._id || `opt-${Date.now()}`,
+          },
+        ];
       });
+
+      postData(`/api/cart/add`, data)
+        .then((res) => {
+          if (res.status !== false) {
+            if (openDrawer) setCartDrawerOpen(true);
+            getCartData();
+          } else {
+            setAlertBox({
+              open: true,
+              error: true,
+              msg: res.msg,
+            });
+            getCartData();
+          }
+        })
+        .finally(finish);
     } else {
-      setAlertBox({
-        open: true,
-        error: true,
-        msg: "Please login first",
-      });
+      applyLocal();
+      if (!localOnly) {
+        setAlertBox({
+          open: true,
+          error: false,
+          msg: "Added to cart",
+        });
+      }
     }
   };
 
@@ -280,11 +420,17 @@ function AppContent() {
     alertBox,
     setAlertBox,
     addToCart,
+    addHomeProductToCart,
     addingInCart,
     setAddingInCart,
+    addingCartProductId,
     cartData,
     setCartData,
     getCartData,
+    cartDrawerOpen,
+    setCartDrawerOpen,
+    updateCartItemQty,
+    removeCartItem,
     searchData,
     setSearchData,
     windowWidth,
@@ -378,6 +524,8 @@ function AppContent() {
       {isHeaderFooterShow === true && <HomePageFooter />}
 
       {isOpenProductModal === true && <ProductModal data={productData} />}
+
+      <CartDrawer />
     </MyContext.Provider>
   );
 }

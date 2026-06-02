@@ -7,6 +7,7 @@ import { BsCartFill } from "react-icons/bs";
 import { HiOutlineShieldCheck, HiOutlineTruck, HiSparkles } from "react-icons/hi2";
 import { IoChevronDown, IoChevronUp, IoExpandOutline } from "react-icons/io5";
 import { getSampleProductById } from "../../data/sampleProductDetails";
+import { isSampleProductId } from "../../utils/cartHelpers";
 import { MyContext } from "../../App";
 import HomeCustomerReviewSummary from "../../Components/HomeCustomerReviewSummary";
 import WriteReviewModal from "../../Components/WriteReviewModal";
@@ -163,17 +164,20 @@ export default function SampleProductDetails() {
 
   const addToCart = () => {
     const user = JSON.parse(localStorage.getItem("user"));
-    context.addToCart({
-      productTitle: product.name,
-      image: mainImage,
-      rating: product.rating,
-      price: product.price,
-      quantity,
-      subTotal: product.price * quantity,
-      productId: product.id,
-      countInStock: product.countInStock,
-      userId: user?.userId,
-    });
+    context.addToCart(
+      {
+        productTitle: product.name,
+        image: mainImage,
+        rating: product.rating,
+        price: product.price,
+        quantity,
+        subTotal: product.price * quantity,
+        productId: product.id,
+        countInStock: product.countInStock,
+        userId: user?.userId,
+      },
+      { openDrawer: true, localOnly: isSampleProductId(product.id) }
+    );
   };
 
   return (
