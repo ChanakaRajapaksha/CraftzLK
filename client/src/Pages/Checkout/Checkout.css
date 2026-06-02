@@ -1,0 +1,301 @@
+.checkout-page {
+  min-height: 60vh;
+  padding: 2rem 0 4rem;
+  background: linear-gradient(180deg, #faf8f3 0%, #f5f1e8 100%);
+}
+
+.checkout-page__container {
+  width: min(100%, 72rem);
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+.checkout-page__title {
+  margin: 0 0 1.75rem;
+  font-family: var(--font-heading, "Playfair Display", serif);
+  font-size: clamp(1.75rem, 4vw, 2.35rem);
+  font-weight: 600;
+  color: #1f1a14;
+  letter-spacing: -0.02em;
+}
+
+/* Loading */
+.checkout-page__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 50vh;
+  color: #5c4d3a;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+}
+
+.checkout-page__loading .MuiCircularProgress-root {
+  color: var(--primary-dark, #b8860b);
+}
+
+/* Layout */
+.checkout-page__layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (min-width: 992px) {
+  .checkout-page__layout {
+    grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.85fr);
+    gap: 2.5rem;
+  }
+}
+
+.checkout-page__section-title {
+  margin: 0 0 1.25rem;
+  font-family: var(--font-heading, "Playfair Display", serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #1f1a14;
+}
+
+/* Billing form */
+.checkout-page__billing {
+  padding: 1.5rem;
+  border-radius: 16px;
+  border: 1px solid rgba(201, 169, 97, 0.28);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(61, 40, 23, 0.06);
+}
+
+.checkout-page__row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 576px) {
+  .checkout-page__row--half {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.checkout-page__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.checkout-page__label {
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #3d2f1f;
+}
+
+.checkout-page__label .required {
+  color: #c0392b;
+}
+
+.checkout-page__input,
+.checkout-page__textarea {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid rgba(201, 169, 97, 0.45);
+  border-radius: 8px;
+  background: #fff;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.92rem;
+  color: #1f1a14;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.checkout-page__input::placeholder,
+.checkout-page__textarea::placeholder {
+  color: #9a8b78;
+}
+
+.checkout-page__input:focus,
+.checkout-page__textarea:focus {
+  outline: none;
+  border-color: var(--primary-dark, #b8860b);
+  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.15);
+}
+
+.checkout-page__textarea {
+  min-height: 5.5rem;
+  resize: vertical;
+}
+
+.checkout-page__fieldset-label {
+  margin: 0.5rem 0 0.65rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #3d2f1f;
+}
+
+.checkout-page__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0.25rem 0 1.25rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.9rem;
+  color: #3d2f1f;
+  cursor: pointer;
+}
+
+.checkout-page__checkbox input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--primary-dark, #b8860b);
+}
+
+/* Order summary */
+.checkout-page__order {
+  padding: 1.5rem;
+  border-radius: 16px;
+  border: 1px solid rgba(201, 169, 97, 0.35);
+  background: rgba(250, 248, 243, 0.95);
+  box-shadow: 0 10px 36px rgba(61, 40, 23, 0.08);
+}
+
+.checkout-page__table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.88rem;
+}
+
+.checkout-page__table th {
+  padding: 0.55rem 0;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.35);
+  font-weight: 700;
+  color: #1f1a14;
+  text-align: left;
+}
+
+.checkout-page__table th:last-child,
+.checkout-page__table td:last-child {
+  text-align: right;
+}
+
+.checkout-page__table td {
+  padding: 0.65rem 0;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.15);
+  color: #3d2f1f;
+  vertical-align: top;
+}
+
+.checkout-page__product-name {
+  display: block;
+  max-width: 14rem;
+  line-height: 1.35;
+}
+
+.checkout-page__totals td {
+  padding: 0.5rem 0;
+  border-bottom: none;
+}
+
+.checkout-page__totals tr:not(:last-child) td {
+  border-bottom: 1px solid rgba(201, 169, 97, 0.12);
+}
+
+.checkout-page__total-row td {
+  padding-top: 0.75rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1f1a14;
+}
+
+/* Payment */
+.checkout-page__payments {
+  margin: 1.25rem 0 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(201, 169, 97, 0.25);
+}
+
+.checkout-page__payment-option {
+  display: block;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+}
+
+.checkout-page__payment-option input {
+  margin: 0 0.5rem 0 0;
+  accent-color: var(--primary-dark, #b8860b);
+  vertical-align: middle;
+}
+
+.checkout-page__payment-label {
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #1f1a14;
+}
+
+.checkout-page__payment-hint {
+  margin: 0.35rem 0 0 1.35rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  background: rgba(201, 169, 97, 0.12);
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: #5c4d3a;
+}
+
+.checkout-page__privacy {
+  margin: 0 0 1.25rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: #6b5d4d;
+}
+
+.checkout-page__privacy a {
+  color: var(--primary-dark, #b8860b);
+  text-decoration: underline;
+}
+
+.checkout-page__submit {
+  display: block;
+  width: 100%;
+  padding: 0.95rem 1.25rem;
+  border: none;
+  border-radius: 10px;
+  background: #1f1a14;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.checkout-page__submit:hover:not(:disabled) {
+  background: var(--primary-dark, #b8860b);
+}
+
+.checkout-page__submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.checkout-page__empty {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  color: #5c4d3a;
+}
+
+.checkout-page__empty a {
+  color: var(--primary-dark, #b8860b);
+  font-weight: 600;
+}

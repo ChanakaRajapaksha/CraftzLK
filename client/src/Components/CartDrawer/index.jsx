@@ -281,6 +281,7 @@ export default function CartDrawer() {
         <footer className="cart-drawer__footer">
           <Link
             to="/checkout"
+            state={{ fromCart: true }}
             className="cart-drawer__checkout"
             onClick={() => context.setCartDrawerOpen?.(false)}
             aria-disabled={items.length === 0}
