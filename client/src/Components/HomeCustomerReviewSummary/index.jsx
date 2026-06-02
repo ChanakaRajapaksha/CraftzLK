@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   HiHandThumbUp,
   HiOutlineHeart,
@@ -58,6 +58,8 @@ const FEATURES = [
 export default function HomeCustomerReviewSummary({ variant = "home" }) {
   const [reviewsOpen, setReviewsOpen] = useState(false);
   const isProduct = variant === "product";
+
+  useEffect(() => () => setReviewsOpen(false), []);
 
   return (
     <div
@@ -137,7 +139,9 @@ export default function HomeCustomerReviewSummary({ variant = "home" }) {
         </section>
       )}
 
-      <CustomerReviewsModal open={reviewsOpen} onClose={() => setReviewsOpen(false)} />
+      {reviewsOpen && (
+        <CustomerReviewsModal open onClose={() => setReviewsOpen(false)} />
+      )}
     </div>
   );
 }

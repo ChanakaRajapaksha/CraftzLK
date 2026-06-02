@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useEffect, useMemo, useState } from "react";
 import Dialog from "@mui/material/Dialog";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
@@ -157,12 +157,6 @@ export default function CustomerReviewsModal({ open, onClose }) {
   const [starFilters, setStarFilters] = useState([]);
   const [sortBy, setSortBy] = useState("recent");
 
-  // One-time invisible warm-up: paints + composites the modal during idle so the
-  // first real open does not pay the mount/paint/layer cost on the click.
-  const [warmOpen, setWarmOpen] = useState(false);
-  const warmedRef = useRef(false);
-  const isWarming = warmOpen && !open;
-
   useEffect(() => {
     if (!open) {
       setPage(1);
@@ -186,31 +180,6 @@ export default function CustomerReviewsModal({ open, onClose }) {
     const t = window.setTimeout(preloadReviewImages, 400);
     return () => window.clearTimeout(t);
   }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || warmedRef.current) return undefined;
-    let idleId;
-    let timeoutId;
-    const startWarm = () => setWarmOpen(true);
-    if ("requestIdleCallback" in window) {
-      idleId = window.requestIdleCallback(startWarm, { timeout: 1800 });
-    } else {
-      timeoutId = window.setTimeout(startWarm, 400);
-    }
-    return () => {
-      if (idleId && window.cancelIdleCallback) window.cancelIdleCallback(idleId);
-      if (timeoutId) window.clearTimeout(timeoutId);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!warmOpen || open) return undefined;
-    const t = window.setTimeout(() => {
-      warmedRef.current = true;
-      setWarmOpen(false);
-    }, 90);
-    return () => window.clearTimeout(t);
-  }, [warmOpen, open]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -271,23 +240,18 @@ export default function CustomerReviewsModal({ open, onClose }) {
 
   return (
     <Dialog
-      open={open || warmOpen}
+      open={open}
       onClose={onClose}
-      keepMounted
-      className={`customer-reviews-modal${isMobileLayout ? " customer-reviews-modal--mobile" : ""}${isWarming ? " customer-reviews-modal--warming" : ""}`}
+      className={`customer-reviews-modal${isMobileLayout ? " customer-reviews-modal--mobile" : ""}`}
       aria-labelledby="crm-title"
-      aria-hidden={isWarming || undefined}
       maxWidth={false}
       fullScreen={isMobileLayout}
       scroll="paper"
-      hideBackdrop={isWarming}
       disableScrollLock
       disableRestoreFocus
-      disableAutoFocus={isWarming}
-      disableEnforceFocus={isWarming}
       TransitionComponent={CrmDialogTransition}
-      TransitionProps={{ timeout: isWarming ? 0 : CRM_TRANSITION_MS, appear: false }}
-      BackdropProps={{ transitionDuration: isWarming ? 0 : CRM_TRANSITION_MS }}
+      TransitionProps={{ timeout: CRM_TRANSITION_MS, appear: false }}
+      BackdropProps={{ transitionDuration: CRM_TRANSITION_MS }}
     >
       <button
         type="button"
