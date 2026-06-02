@@ -19,6 +19,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import AuthController from "../../controllers/auth.controller";
 import SearchBox from "./SearchBox/index.jsx";
+import { getCartItemCount } from "../../utils/cartHelpers";
 
 const TOP_STRIP_CLOSED_KEY = "craftzlk_top_strip_closed";
 const TOP_STRIP_HEIGHT_PX = 42;
@@ -43,6 +44,7 @@ const Header = () => {
   const gotoTop = useRef();
   const lastScrollY = useRef(0);
   const context = useContext(MyContext);
+  const cartBadgeCount = getCartItemCount(context.cartData);
 
   useEffect(() => {
     if (headerRef.current) {
@@ -353,7 +355,7 @@ const Header = () => {
                             <IoBagOutline />
                           </Button>
                           <span className="count d-flex align-items-center justify-content-center">
-                            {context.cartData?.length > 0 ? context.cartData?.length : 0}
+                            {cartBadgeCount}
                           </span>
                         </div>
                       </div>
@@ -502,9 +504,7 @@ const Header = () => {
                           <IoBagOutline />
                         </Button>
                         <span className="count d-flex align-items-center justify-content-center">
-                          {context.cartData?.length > 0
-                            ? context.cartData?.length
-                            : 0}
+                          {cartBadgeCount}
                         </span>
                       </div>
 

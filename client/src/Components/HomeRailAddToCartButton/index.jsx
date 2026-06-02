@@ -1,6 +1,6 @@
 import { useContext } from "react";
-import CircularProgress from "@mui/material/CircularProgress";
 import { MyContext } from "../../App";
+import FixedSizeLoadingButton from "../FixedSizeLoadingButton";
 
 export default function HomeRailAddToCartButton({ productId, className = "" }) {
   const context = useContext(MyContext);
@@ -13,22 +13,12 @@ export default function HomeRailAddToCartButton({ productId, className = "" }) {
   };
 
   return (
-    <button
-      type="button"
+    <FixedSizeLoadingButton
       className={className}
+      isLoading={isLoading}
+      label="ADD TO CART"
       onClick={handleClick}
-      disabled={isLoading}
-      aria-busy={isLoading}
       aria-label={isLoading ? "Adding to cart" : "Add to cart"}
-    >
-      {isLoading ? (
-        <span className="home-rail-atc__loading">
-          <CircularProgress size={14} thickness={5} sx={{ color: "#3d2f1f" }} />
-          <span>Adding…</span>
-        </span>
-      ) : (
-        "ADD TO CART"
-      )}
-    </button>
+    />
   );
 }

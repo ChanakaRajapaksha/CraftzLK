@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import Rating from "@mui/material/Rating";
-import { formatRsLabel, getVariantCount } from "./collectionsUtils";
+import { formatRsLabel, getProductDetailPath, getVariantCount } from "./collectionsUtils";
 
 const IMG_FALLBACK = "/images/product_images/wooden_wine_glass.png";
 
 export default function CollectionsProductCard({ product }) {
-  const productId = product?.id || product?._id;
+  const detailPath = getProductDetailPath(product);
   const images = product?.images?.length ? product.images : [IMG_FALLBACK];
   const primaryImage = images[0];
   const hoverImage = images[1] || primaryImage;
@@ -22,7 +22,7 @@ export default function CollectionsProductCard({ product }) {
         <div className="collections-card__inner">
           <div className="collections-card__image-wrap">
             <Link
-              to={`/product/${productId}`}
+              to={detailPath}
               className="collections-card__image-link"
               aria-label={`View ${product?.name}`}
             >
@@ -60,7 +60,7 @@ export default function CollectionsProductCard({ product }) {
 
           <div className="collections-card__panel">
             <h3 className="collections-card__title">
-              <Link to={`/product/${productId}`}>{product?.name}</Link>
+              <Link to={detailPath}>{product?.name}</Link>
             </h3>
 
             <p className="collections-card__price-row">

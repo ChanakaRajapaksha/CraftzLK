@@ -9,6 +9,7 @@ import { IoChevronDown, IoChevronUp, IoExpandOutline } from "react-icons/io5";
 import { getSampleProductById } from "../../data/sampleProductDetails";
 import { isSampleProductId } from "../../utils/cartHelpers";
 import { MyContext } from "../../App";
+import FixedSizeLoadingButton from "../../Components/FixedSizeLoadingButton";
 import HomeCustomerReviewSummary from "../../Components/HomeCustomerReviewSummary";
 import WriteReviewModal from "../../Components/WriteReviewModal";
 import AskQuestionModal from "../../Components/AskQuestionModal";
@@ -161,6 +162,10 @@ export default function SampleProductDetails() {
       });
     }
   };
+
+  const isAddingToCart =
+    context.addingInCart &&
+    (context.addingCartProductId == null || context.addingCartProductId === product.id);
 
   const addToCart = () => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -320,15 +325,15 @@ export default function SampleProductDetails() {
               </div>
             </div>
 
-            <button
-              type="button"
+            <FixedSizeLoadingButton
               className="spd-add-cart"
+              isLoading={isAddingToCart}
               onClick={addToCart}
               disabled={!inStock}
-            >
-              <BsCartFill aria-hidden="true" />
-              Add to cart
-            </button>
+              leading={<BsCartFill aria-hidden="true" />}
+              label="Add to cart"
+              aria-label={isAddingToCart ? "Adding to cart" : "Add to cart"}
+            />
 
             <button type="button" className="spd-back" onClick={() => navigate(-1)}>
               ← Continue shopping
@@ -460,17 +465,17 @@ export default function SampleProductDetails() {
             <div
               className={`spd-review-sticky__body${reviewStickyExpanded ? " is-open" : ""}`}
             >
-              <button
-                type="button"
+              <FixedSizeLoadingButton
                 className="spd-review-sticky__add-cart"
+                isLoading={isAddingToCart}
                 onClick={addToCart}
                 disabled={!inStock}
                 tabIndex={reviewStickyExpanded ? 0 : -1}
                 aria-hidden={!reviewStickyExpanded}
-              >
-                <BsCartFill aria-hidden="true" />
-                Add to cart
-              </button>
+                leading={<BsCartFill aria-hidden="true" />}
+                label="Add to cart"
+                aria-label={isAddingToCart ? "Adding to cart" : "Add to cart"}
+              />
             </div>
           </motion.aside>
         )}

@@ -13,6 +13,7 @@ import { useParams } from "react-router-dom";
 import { fetchDataFromApi, postData } from "../../utils/api";
 import CircularProgress from "@mui/material/CircularProgress";
 import { MyContext } from "../../App";
+import FixedSizeLoadingButton from "../../Components/FixedSizeLoadingButton";
 import { FaHeart } from "react-icons/fa";
 import { FaCodeCompare } from "react-icons/fa6";
 
@@ -423,15 +424,16 @@ const ProductDetails = () => {
                   />
 
                   <div className="d-flex align-items-center btnActions">
-                    <Button
+                    <FixedSizeLoadingButton
                       className="btn-blue btn-lg btn-big btn-round bg-red"
+                      isLoading={context.addingInCart === true}
                       onClick={() => addtoCart()}
-                    >
-                      <BsCartFill /> &nbsp;
-                      {context.addingInCart === true
-                        ? "adding..."
-                        : " Add to cart"}
-                    </Button>
+                      leading={<BsCartFill aria-hidden="true" />}
+                      label="Add to cart"
+                      aria-label={
+                        context.addingInCart ? "Adding to cart" : "Add to cart"
+                      }
+                    />
 
                     <Tooltip
                       title={`${

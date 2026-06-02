@@ -1,0 +1,43 @@
+.fixed-loading-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fixed-loading-btn__label,
+.fixed-loading-btn__loading,
+.fixed-loading-btn__loading > span {
+  color: inherit;
+}
+
+.fixed-loading-btn__label svg {
+  color: currentColor !important;
+}
+
+.fixed-loading-btn__label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  line-height: 1.25;
+}
+
+.fixed-loading-btn[aria-busy="true"] .fixed-loading-btn__label {
+  visibility: hidden;
+}
+
+.fixed-loading-btn__loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  line-height: 1.25;
+  pointer-events: none;
+}
+
+.fixed-loading-btn__loading .MuiCircularProgress-root {
+  flex-shrink: 0;
+}

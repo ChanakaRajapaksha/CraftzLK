@@ -17,7 +17,6 @@ export function getSampleCollectionsProducts(count = COLLECTIONS_CATALOG_SIZE) {
     const base = catalog[index % catalog.length];
     return {
       ...base,
-      id: `${base.id}-col-${index}`,
       _gridIndex: index,
     };
   });

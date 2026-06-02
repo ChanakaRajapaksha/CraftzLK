@@ -3,7 +3,6 @@ import { useId } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { getYouMayAlsoLikeProducts } from "../../data/sampleProductDetails";
 import HomeRailAddToCartButton from "../HomeRailAddToCartButton";
-import "../HomeRailAddToCartButton/HomeRailAddToCartButton.css";
 import "./YouMayAlsoLike.css";
 
 const GRID_CLASS =

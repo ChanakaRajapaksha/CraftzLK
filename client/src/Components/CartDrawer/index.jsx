@@ -11,6 +11,9 @@ import {
   getMilestoneProgress,
   parsePriceValue,
 } from "../../utils/cartHelpers";
+import FixedSizeLoadingButton from "../FixedSizeLoadingButton";
+import { COLLECTIONS_ALL_PATH } from "../../Pages/Collections/collectionsConstants";
+import EmptyCartIcon from "./EmptyCartIcon";
 import "./CartDrawer.css";
 
 const MILESTONE_ICONS = [HiOutlinePencil, HiOutlineGift, HiOutlineTruck];
@@ -143,7 +146,17 @@ export default function CartDrawer() {
 
         <div className="cart-drawer__body">
           {items.length === 0 ? (
-            <p className="cart-drawer__empty">Your cart is empty. Add a handmade craft to begin.</p>
+            <div className="cart-drawer__empty">
+              <EmptyCartIcon className="cart-drawer__empty-icon" />
+              <p className="cart-drawer__empty-text">Your cart is currently empty.</p>
+              <Link
+                to={COLLECTIONS_ALL_PATH}
+                className="cart-drawer__empty-cta"
+                onClick={() => context.setCartDrawerOpen?.(false)}
+              >
+                Start shopping
+              </Link>
+            </div>
           ) : (
             items.map((item) => {
               const itemKey = item._id || item.id;
@@ -236,13 +249,17 @@ export default function CartDrawer() {
                       <div className="cart-drawer__rec-info">
                         <p className="cart-drawer__rec-name">{product.name}</p>
                         <p className="cart-drawer__rec-price">{product.priceDisplay}</p>
-                        <button
-                          type="button"
+                        <FixedSizeLoadingButton
                           className="cart-drawer__rec-add"
+                          isLoading={context.addingCartProductId === product.id}
                           onClick={() => context.addHomeProductToCart?.(product.id)}
-                        >
-                          Add
-                        </button>
+                          label="Add"
+                          aria-label={
+                            context.addingCartProductId === product.id
+                              ? "Adding to cart"
+                              : `Add ${product.name} to cart`
+                          }
+                        />
                       </div>
                     </article>
                   ))}

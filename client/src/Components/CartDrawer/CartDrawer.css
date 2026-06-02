@@ -53,7 +53,6 @@
   justify-content: space-between;
   padding: 1.35rem 1.25rem 1rem;
   border-bottom: none;
-  background: #201a0f;
   flex-shrink: 0;
 }
 
@@ -78,12 +77,12 @@
   font-size: 1.65rem;
   font-weight: 300;
   line-height: 1;
-  color: #fff;
+  color: rgba(0, 0, 0, 0.75);
   cursor: pointer;
 }
 
 .cart-drawer__close:hover {
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(0, 0, 0, 0.75);
 }
 
 /* Craft workflow milestones */
@@ -172,10 +171,61 @@
 }
 
 .cart-drawer__empty {
-  padding: 2.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: min(50vh, 22rem);
+  padding: 2.5rem 1.5rem 3rem;
   text-align: center;
+}
+
+.cart-drawer__empty-icon {
+  width: 5.75rem;
+  height: auto;
+  margin-bottom: 1.35rem;
+  color: var(--primary-dark, #b8860b);
+}
+
+.cart-drawer__empty-text {
+  margin: 0 0 1.5rem;
+  max-width: 16rem;
   font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
-  color: #666;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.45;
+  color: #1f1a14;
+}
+
+.cart-drawer__empty-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 10.5rem;
+  padding: 0.7rem 1.75rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary-dark, #b8860b);
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #fff;
+  text-decoration: none;
+  text-transform: capitalize;
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+
+.cart-drawer__empty-cta:hover {
+  background: var(--accent-blue-hover, #9a7209);
+  color: #fff;
+  text-decoration: none;
+}
+
+.cart-drawer__empty-cta:focus-visible {
+  outline: 2px solid var(--primary-dark, #b8860b);
+  outline-offset: 2px;
 }
 
 /* Cart line item */
@@ -407,13 +457,12 @@
 }
 
 .cart-drawer__rec-add {
-  display: block;
   width: 100%;
   margin-top: auto;
   padding: 0.55rem 0.75rem;
   border: none;
-  border-radius: 3px;
-  background: #1f1a14;
+  border-radius: 8px;
+  background: var(--primary-dark, #b8860b);
   font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
   font-size: 0.72rem;
   font-weight: 700;
@@ -442,7 +491,7 @@
   width: 100%;
   padding: 1rem 1.25rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: #1f1a14;
   font-family: var(--font-heading, "Playfair Display", serif);
   font-size: 0.88rem;
