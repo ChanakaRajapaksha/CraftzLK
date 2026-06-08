@@ -9,6 +9,28 @@ import "./Checkout.css";
 
 const FLAT_SHIPPING_LKR = 450;
 const MIN_LOADING_MS = 550;
+const EMAIL_PATTERN = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+const PHONE_PATTERN = /^(\+94)?[0-9]{9,10}$/;
+
+function normalizePhone(value) {
+  return String(value ?? "").trim().replace(/[\s-]/g, "");
+}
+
+function getPhoneError(value) {
+  const phone = normalizePhone(value);
+  if (!phone) return "Please enter your phone number.";
+  if (!PHONE_PATTERN.test(phone)) {
+    return "Please enter a valid phone number (e.g., 0712345678 or +94712345678).";
+  }
+  return "";
+}
+
+function getEmailError(value) {
+  const email = String(value ?? "").trim();
+  if (!email) return "Please enter your email address.";
+  if (!EMAIL_PATTERN.test(email)) return "Please enter a valid email address.";
+  return "";
+}
 
 function formatRsDecimal(amount) {
   const n = parsePriceValue(amount);
@@ -49,12 +71,21 @@ const Checkout = () => {
     city: "",
     phoneNumber: "",
     email: "",
+    shipFirstName: "",
+    shipLastName: "",
+    shipStreetAddressLine1: "",
+    shipStreetAddressLine2: "",
+    shipCity: "",
     orderNotes: "",
   });
   const [shipToDifferent, setShipToDifferent] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [isPageReady, setIsPageReady] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({
+    phoneNumber: "",
+    email: "",
+  });
 
   const context = useContext(MyContext);
   const history = useNavigate();
@@ -120,6 +151,44 @@ const Checkout = () => {
   const onChangeInput = (e) => {
     const { name, value } = e.target;
     setFormFields((prev) => ({ ...prev, [name]: value }));
+    if (name === "phoneNumber" || name === "email") {
+      setFieldErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const handleShipToDifferentChange = (checked) => {
+    setShipToDifferent(checked);
+    if (!checked) {
+      setFormFields((prev) => ({
+        ...prev,
+        shipFirstName: "",
+        shipLastName: "",
+        shipStreetAddressLine1: "",
+        shipStreetAddressLine2: "",
+        shipCity: "",
+      }));
+    }
+  };
+
+  const validateField = (name, value) => {
+    if (name === "phoneNumber") {
+      const error = getPhoneError(value);
+      setFieldErrors((prev) => ({ ...prev, phoneNumber: error }));
+      return !error;
+    }
+    if (name === "email") {
+      const error = getEmailError(value);
+      setFieldErrors((prev) => ({ ...prev, email: error }));
+      return !error;
+    }
+    return true;
+  };
+
+  const onBlurField = (e) => {
+    const { name, value } = e.target;
+    if (name === "phoneNumber" || name === "email") {
+      validateField(name, value);
+    }
   };
 
   const validateForm = () => {
@@ -128,8 +197,6 @@ const Checkout = () => {
       ["lastName", "last name"],
       ["streetAddressLine1", "street address"],
       ["city", "town / city"],
-      ["phoneNumber", "phone"],
-      ["email", "email address"],
     ];
 
     for (const [field, label] of required) {
@@ -140,6 +207,34 @@ const Checkout = () => {
           msg: `Please enter your ${label}.`,
         });
         return false;
+      }
+    }
+
+    const phoneError = getPhoneError(formFields.phoneNumber);
+    const emailError = getEmailError(formFields.email);
+    setFieldErrors({ phoneNumber: phoneError, email: emailError });
+
+    if (phoneError || emailError) {
+      return false;
+    }
+
+    if (shipToDifferent) {
+      const shippingRequired = [
+        ["shipFirstName", "shipping first name"],
+        ["shipLastName", "shipping last name"],
+        ["shipStreetAddressLine1", "shipping street address"],
+        ["shipCity", "shipping town / city"],
+      ];
+
+      for (const [field, label] of shippingRequired) {
+        if (!String(formFields[field] ?? "").trim()) {
+          context.setAlertBox?.({
+            open: true,
+            error: true,
+            msg: `Please enter your ${label}.`,
+          });
+          return false;
+        }
       }
     }
 
@@ -162,6 +257,16 @@ const Checkout = () => {
       .filter(Boolean)
       .join(", ");
 
+    const shippingAddress = shipToDifferent
+      ? {
+          firstName: formFields.shipFirstName.trim(),
+          lastName: formFields.shipLastName.trim(),
+          streetAddressLine1: formFields.shipStreetAddressLine1.trim(),
+          streetAddressLine2: formFields.shipStreetAddressLine2.trim(),
+          city: formFields.shipCity.trim(),
+        }
+      : null;
+
     const payLoad = {
       name: fullName,
       phoneNumber: formFields.phoneNumber,
@@ -175,6 +280,7 @@ const Checkout = () => {
       paymentMethod,
       orderNotes: formFields.orderNotes,
       shipToDifferent,
+      shippingAddress,
       date: new Date().toLocaleString("en-US", {
         month: "short",
         day: "2-digit",
@@ -252,15 +358,23 @@ const Checkout = () => {
       address: formFields.streetAddressLine1,
       city: formFields.city,
       country: "Sri Lanka",
-      delivery_address: addressLine(),
-      delivery_city: formFields.city,
+      delivery_address: deliveryAddressLine(),
+      delivery_city: shipToDifferent ? formFields.shipCity : formFields.city,
       delivery_country: "Sri Lanka",
       custom_1: user?.userId,
     };
 
     window.payhere.startPayment(payment);
 
-    function addressLine() {
+    function deliveryAddressLine() {
+      if (shipToDifferent) {
+        return [
+          formFields.shipStreetAddressLine1,
+          formFields.shipStreetAddressLine2,
+        ]
+          .filter(Boolean)
+          .join(", ");
+      }
       return [formFields.streetAddressLine1, formFields.streetAddressLine2]
         .filter(Boolean)
         .join(", ");
@@ -349,7 +463,7 @@ const Checkout = () => {
       <div className="checkout-page__container">
         <h1 className="checkout-page__title">Checkout</h1>
 
-        <form className="checkout-page__layout" onSubmit={handlePlaceOrder}>
+        <form className="checkout-page__layout" onSubmit={handlePlaceOrder} noValidate>
           <section className="checkout-page__billing" aria-labelledby="checkout-billing-heading">
             <h2 id="checkout-billing-heading" className="checkout-page__section-title">
               Billing details
@@ -444,12 +558,24 @@ const Checkout = () => {
                   id="phoneNumber"
                   name="phoneNumber"
                   type="tel"
-                  className="checkout-page__input"
+                  className={
+                    fieldErrors.phoneNumber
+                      ? "checkout-page__input checkout-page__input--error"
+                      : "checkout-page__input"
+                  }
                   autoComplete="tel"
+                  placeholder="0712345678"
                   value={formFields.phoneNumber}
                   onChange={onChangeInput}
-                  required
+                  onBlur={onBlurField}
+                  aria-invalid={fieldErrors.phoneNumber ? "true" : "false"}
+                  aria-describedby={fieldErrors.phoneNumber ? "phoneNumber-error" : undefined}
                 />
+                {fieldErrors.phoneNumber && (
+                  <p id="phoneNumber-error" className="checkout-page__field-error" role="alert">
+                    {fieldErrors.phoneNumber}
+                  </p>
+                )}
               </div>
               <div className="checkout-page__field">
                 <label className="checkout-page__label" htmlFor="email">
@@ -459,12 +585,24 @@ const Checkout = () => {
                   id="email"
                   name="email"
                   type="email"
-                  className="checkout-page__input"
+                  className={
+                    fieldErrors.email
+                      ? "checkout-page__input checkout-page__input--error"
+                      : "checkout-page__input"
+                  }
                   autoComplete="email"
+                  placeholder="you@example.com"
                   value={formFields.email}
                   onChange={onChangeInput}
-                  required
+                  onBlur={onBlurField}
+                  aria-invalid={fieldErrors.email ? "true" : "false"}
+                  aria-describedby={fieldErrors.email ? "email-error" : undefined}
                 />
+                {fieldErrors.email && (
+                  <p id="email-error" className="checkout-page__field-error" role="alert">
+                    {fieldErrors.email}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -472,10 +610,103 @@ const Checkout = () => {
               <input
                 type="checkbox"
                 checked={shipToDifferent}
-                onChange={(e) => setShipToDifferent(e.target.checked)}
+                onChange={(e) => handleShipToDifferentChange(e.target.checked)}
+                aria-expanded={shipToDifferent}
+                aria-controls="checkout-shipping-fields"
               />
               Ship to a different address?
             </label>
+
+            <div
+              id="checkout-shipping-fields"
+              className={`checkout-page__shipping-panel${
+                shipToDifferent ? " checkout-page__shipping-panel--open" : ""
+              }`}
+              aria-hidden={!shipToDifferent}
+            >
+              <div className="checkout-page__shipping-panel-inner">
+                <div className="checkout-page__row checkout-page__row--half checkout-page__shipping-row">
+                  <div className="checkout-page__field">
+                    <label className="checkout-page__label" htmlFor="shipFirstName">
+                      First name <span className="required">*</span>
+                    </label>
+                    <input
+                      id="shipFirstName"
+                      name="shipFirstName"
+                      type="text"
+                      className="checkout-page__input"
+                      autoComplete="shipping given-name"
+                      value={formFields.shipFirstName}
+                      onChange={onChangeInput}
+                      tabIndex={shipToDifferent ? 0 : -1}
+                    />
+                  </div>
+                  <div className="checkout-page__field">
+                    <label className="checkout-page__label" htmlFor="shipLastName">
+                      Last name <span className="required">*</span>
+                    </label>
+                    <input
+                      id="shipLastName"
+                      name="shipLastName"
+                      type="text"
+                      className="checkout-page__input"
+                      autoComplete="shipping family-name"
+                      value={formFields.shipLastName}
+                      onChange={onChangeInput}
+                      tabIndex={shipToDifferent ? 0 : -1}
+                    />
+                  </div>
+                </div>
+
+                <p className="checkout-page__fieldset-label checkout-page__shipping-row">
+                  Street address <span className="required">*</span>
+                </p>
+                <div className="checkout-page__row checkout-page__shipping-row">
+                  <div className="checkout-page__field">
+                    <input
+                      name="shipStreetAddressLine1"
+                      type="text"
+                      className="checkout-page__input"
+                      placeholder="House number and street name"
+                      autoComplete="shipping address-line1"
+                      value={formFields.shipStreetAddressLine1}
+                      onChange={onChangeInput}
+                      tabIndex={shipToDifferent ? 0 : -1}
+                    />
+                  </div>
+                  <div className="checkout-page__field">
+                    <input
+                      name="shipStreetAddressLine2"
+                      type="text"
+                      className="checkout-page__input"
+                      placeholder="Apartment, suite, unit, etc. (optional)"
+                      autoComplete="shipping address-line2"
+                      value={formFields.shipStreetAddressLine2}
+                      onChange={onChangeInput}
+                      tabIndex={shipToDifferent ? 0 : -1}
+                    />
+                  </div>
+                </div>
+
+                <div className="checkout-page__row checkout-page__shipping-row">
+                  <div className="checkout-page__field">
+                    <label className="checkout-page__label" htmlFor="shipCity">
+                      Town / City <span className="required">*</span>
+                    </label>
+                    <input
+                      id="shipCity"
+                      name="shipCity"
+                      type="text"
+                      className="checkout-page__input"
+                      autoComplete="shipping address-level2"
+                      value={formFields.shipCity}
+                      onChange={onChangeInput}
+                      tabIndex={shipToDifferent ? 0 : -1}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <div className="checkout-page__field">
               <label className="checkout-page__label" htmlFor="orderNotes">
@@ -553,21 +784,49 @@ const Checkout = () => {
                 )}
               </label>
 
-              <label className="checkout-page__payment-option">
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="bank_transfer"
-                  checked={paymentMethod === "bank_transfer"}
-                  onChange={() => setPaymentMethod("bank_transfer")}
-                />
-                <span className="checkout-page__payment-label">Direct bank transfer</span>
-                {paymentMethod === "bank_transfer" && (
-                  <p className="checkout-page__payment-hint">
-                    You will be redirected to complete payment securely.
-                  </p>
-                )}
-              </label>
+              <div className="checkout-page__payment-item">
+                <label className="checkout-page__payment-option">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="bank_transfer"
+                    checked={paymentMethod === "bank_transfer"}
+                    onChange={() => setPaymentMethod("bank_transfer")}
+                  />
+                  <span className="checkout-page__payment-label">Direct bank transfer</span>
+                </label>
+                <div
+                  className={`checkout-page__payment-detail${
+                    paymentMethod === "bank_transfer"
+                      ? " checkout-page__payment-detail--open"
+                      : ""
+                  }`}
+                  aria-hidden={paymentMethod !== "bank_transfer"}
+                >
+                  <div className="checkout-page__payment-detail-inner">
+                    <div className="checkout-page__payment-detail-box">
+                      <p>
+                        Make your payment directly into our bank account (via online or bank
+                        deposit). Please use your Order ID as the payment reference and send your
+                        slip to our WhatsApp number{" "}
+                        <a href="https://wa.me/94788600019" target="_blank" rel="noreferrer">
+                          0788600019
+                        </a>
+                        . Your order will not be shipped until the funds have cleared in our
+                        account.
+                      </p>
+                      <p className="checkout-page__payment-detail-si">
+                        ඔබගේ order එක සඳහා ගෙවිය යුතු මුළු මුදල Online Transfer එකකින් හෝ Bank
+                        Deposit එකකින් තැන්පත් කර, එයට අදාළ Payment Slip එක ඔබගේ order අංකයත්
+                        සමග අපට WhatsApp කරන්න:{" "}
+                        <a href="https://wa.me/94788600019" target="_blank" rel="noreferrer">
+                          0788600019
+                        </a>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <p className="checkout-page__privacy">
