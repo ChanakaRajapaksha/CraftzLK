@@ -3,34 +3,12 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MyContext } from "../../App";
 import { COLLECTIONS_ALL_PATH } from "../Collections/collectionsConstants";
-import { fetchDataFromApi, postData, deleteData } from "../../utils/api";
-import { getCartSubtotal, parsePriceValue } from "../../utils/cartHelpers";
+import { getCartSubtotal, parsePriceValue, saveLocalCart } from "../../utils/cartHelpers";
+import { addLocalOrder } from "../../utils/orderHelpers";
 import "./Checkout.css";
 
 const FLAT_SHIPPING_LKR = 450;
 const MIN_LOADING_MS = 550;
-const EMAIL_PATTERN = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-const PHONE_PATTERN = /^(\+94)?[0-9]{9,10}$/;
-
-function normalizePhone(value) {
-  return String(value ?? "").trim().replace(/[\s-]/g, "");
-}
-
-function getPhoneError(value) {
-  const phone = normalizePhone(value);
-  if (!phone) return "Please enter your phone number.";
-  if (!PHONE_PATTERN.test(phone)) {
-    return "Please enter a valid phone number";
-  }
-  return "";
-}
-
-function getEmailError(value) {
-  const email = String(value ?? "").trim();
-  if (!email) return "Please enter your email address.";
-  if (!EMAIL_PATTERN.test(email)) return "Please enter a valid email address.";
-  return "";
-}
 
 function formatRsDecimal(amount) {
   const n = parsePriceValue(amount);
@@ -58,10 +36,6 @@ const Checkout = () => {
   const [isPageReady, setIsPageReady] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState({
-    phoneNumber: "",
-    email: "",
-  });
 
   const context = useContext(MyContext);
   const history = useNavigate();
@@ -107,9 +81,6 @@ const Checkout = () => {
   const onChangeInput = (e) => {
     const { name, value } = e.target;
     setFormFields((prev) => ({ ...prev, [name]: value }));
-    if (name === "phoneNumber" || name === "email") {
-      setFieldErrors((prev) => ({ ...prev, [name]: "" }));
-    }
   };
 
   const handleShipToDifferentChange = (checked) => {
@@ -126,134 +97,24 @@ const Checkout = () => {
     }
   };
 
-  const validateField = (name, value) => {
-    if (name === "phoneNumber") {
-      const error = getPhoneError(value);
-      setFieldErrors((prev) => ({ ...prev, phoneNumber: error }));
-      return !error;
-    }
-    if (name === "email") {
-      const error = getEmailError(value);
-      setFieldErrors((prev) => ({ ...prev, email: error }));
-      return !error;
-    }
-    return true;
-  };
-
-  const onBlurField = (e) => {
-    const { name, value } = e.target;
-    if (name === "phoneNumber" || name === "email") {
-      validateField(name, value);
-    }
-  };
-
-  const validateForm = () => {
-    const required = [
-      ["firstName", "first name"],
-      ["lastName", "last name"],
-      ["streetAddressLine1", "street address"],
-      ["city", "town / city"],
-    ];
-
-    for (const [field, label] of required) {
-      if (!String(formFields[field] ?? "").trim()) {
-        context.setAlertBox?.({
-          open: true,
-          error: true,
-          msg: `Please enter your ${label}.`,
-        });
-        return false;
-      }
-    }
-
-    const phoneError = getPhoneError(formFields.phoneNumber);
-    const emailError = getEmailError(formFields.email);
-    setFieldErrors({ phoneNumber: phoneError, email: emailError });
-
-    if (phoneError || emailError) {
-      return false;
-    }
-
-    if (shipToDifferent) {
-      const shippingRequired = [
-        ["shipFirstName", "shipping first name"],
-        ["shipLastName", "shipping last name"],
-        ["shipStreetAddressLine1", "shipping street address"],
-        ["shipCity", "shipping town / city"],
-      ];
-
-      for (const [field, label] of shippingRequired) {
-        if (!String(formFields[field] ?? "").trim()) {
-          context.setAlertBox?.({
-            open: true,
-            error: true,
-            msg: `Please enter your ${label}.`,
-          });
-          return false;
-        }
-      }
-    }
-
-    if (cartItems.length === 0) {
-      context.setAlertBox?.({
-        open: true,
-        error: true,
-        msg: "Your cart is empty.",
-      });
-      return false;
-    }
-
-    return true;
-  };
-
-  const submitOrder = async (orderId) => {
-    const user = JSON.parse(localStorage.getItem("user") || "null");
+  const submitOrder = (orderId) => {
     const fullName = `${formFields.firstName.trim()} ${formFields.lastName.trim()}`.trim();
-    const address = [formFields.streetAddressLine1, formFields.streetAddressLine2]
-      .filter(Boolean)
-      .join(", ");
-
-    const shippingAddress = shipToDifferent
-      ? {
-          firstName: formFields.shipFirstName.trim(),
-          lastName: formFields.shipLastName.trim(),
-          streetAddressLine1: formFields.shipStreetAddressLine1.trim(),
-          streetAddressLine2: formFields.shipStreetAddressLine2.trim(),
-          city: formFields.shipCity.trim(),
-        }
-      : null;
-
-    const payLoad = {
-      name: fullName,
-      phoneNumber: formFields.phoneNumber,
-      address,
-      pincode: "N/A",
-      amount: Math.round(orderTotal),
-      paymentId: orderId,
-      email: formFields.email || user?.email,
-      userid: user?.userId,
-      products: cartItems,
-      paymentMethod,
-      orderNotes: formFields.orderNotes,
-      shipToDifferent,
-      shippingAddress,
-      date: new Date().toLocaleString("en-US", {
-        month: "short",
-        day: "2-digit",
-        year: "numeric",
-      }),
-    };
+    const orderDate = new Date().toLocaleString("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    });
 
     const orderDetails = {
       orderId,
       firstName: formFields.firstName.trim(),
       name: fullName,
-      email: payLoad.email,
+      email: formFields.email,
       paymentMethod,
       subtotal,
       shipping,
       total: orderTotal,
-      date: payLoad.date,
+      date: orderDate,
       items: cartItems.map((item) => ({
         id: item._id || item.id || item.productId,
         title: item.productTitle,
@@ -263,78 +124,31 @@ const Checkout = () => {
       })),
     };
 
+    setOrderPlaced(true);
+    addLocalOrder(orderDetails);
+    saveLocalCart([]);
+    context.setCartData?.([]);
+
     try {
-      await postData(`/api/orders/create`, payLoad);
-
-      setOrderPlaced(true);
-
-      if (user?.userId) {
-        try {
-          const res = await fetchDataFromApi(`/api/cart?userId=${user.userId}`);
-          if (res?.length) {
-            for (const item of res) {
-              await deleteData(`/api/cart/${item?.id}`);
-            }
-          }
-        } catch {
-          /* cart clear optional */
-        }
-      }
-
-      context.getCartData?.();
-      setTimeout(() => context.getCartData?.(), 800);
-
-      try {
-        sessionStorage.setItem("lastOrder", JSON.stringify(orderDetails));
-      } catch {
-        /* storage optional */
-      }
-
-      setTimeout(() => {
-        history("/thank-you", { state: { order: orderDetails } });
-      }, 1600);
-    } catch (error) {
-      console.error("Error processing order:", error);
-      context.setAlertBox?.({
-        open: true,
-        error: true,
-        msg: "Error processing order",
-      });
-      setIsSubmitting(false);
+      sessionStorage.setItem("lastOrder", JSON.stringify(orderDetails));
+    } catch {
+      /* storage optional */
     }
+
+    setTimeout(() => {
+      history("/thank-you", { state: { order: orderDetails } });
+    }, 1600);
   };
 
-  const handlePlaceOrder = async (e) => {
+  const handlePlaceOrder = (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
-
-    const token = localStorage.getItem("token");
-    const user = JSON.parse(localStorage.getItem("user") || "null");
-    if (!token || !user?.userId) {
-      context.setAlertBox?.({
-        open: true,
-        error: true,
-        msg: "Please sign in to place your order.",
-      });
-      history("/signIn");
-      return;
-    }
-
     setIsSubmitting(true);
 
-    try {
-      const orderPrefix = paymentMethod === "cod" ? "COD" : "BANK";
-      const orderId = `${orderPrefix}_${Date.now()}_${user.userId}`;
-      await submitOrder(orderId);
-    } catch (error) {
-      console.error("Error placing order:", error);
-      context.setAlertBox?.({
-        open: true,
-        error: true,
-        msg: "Error placing order",
-      });
-      setIsSubmitting(false);
-    }
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+    const orderPrefix = paymentMethod === "cod" ? "COD" : "BANK";
+    const userSuffix = user?.userId || "guest";
+    const orderId = `${orderPrefix}_${Date.now()}_${userSuffix}`;
+    submitOrder(orderId);
   };
 
   if (orderPlaced) {
@@ -407,7 +221,7 @@ const Checkout = () => {
             <div className="checkout-page__row checkout-page__row--half">
               <div className="checkout-page__field">
                 <label className="checkout-page__label" htmlFor="firstName">
-                  First name <span className="required">*</span>
+                  First name
                 </label>
                 <input
                   id="firstName"
@@ -417,12 +231,11 @@ const Checkout = () => {
                   autoComplete="given-name"
                   value={formFields.firstName}
                   onChange={onChangeInput}
-                  required
                 />
               </div>
               <div className="checkout-page__field">
                 <label className="checkout-page__label" htmlFor="lastName">
-                  Last name <span className="required">*</span>
+                  Last name
                 </label>
                 <input
                   id="lastName"
@@ -432,14 +245,11 @@ const Checkout = () => {
                   autoComplete="family-name"
                   value={formFields.lastName}
                   onChange={onChangeInput}
-                  required
                 />
               </div>
             </div>
 
-            <p className="checkout-page__fieldset-label">
-              Street address <span className="required">*</span>
-            </p>
+            <p className="checkout-page__fieldset-label">Street address</p>
             <div className="checkout-page__row">
               <div className="checkout-page__field">
                 <input
@@ -450,7 +260,6 @@ const Checkout = () => {
                   autoComplete="address-line1"
                   value={formFields.streetAddressLine1}
                   onChange={onChangeInput}
-                  required
                 />
               </div>
               <div className="checkout-page__field">
@@ -469,7 +278,7 @@ const Checkout = () => {
             <div className="checkout-page__row">
               <div className="checkout-page__field">
                 <label className="checkout-page__label" htmlFor="city">
-                  Town / City <span className="required">*</span>
+                  Town / City
                 </label>
                 <input
                   id="city"
@@ -479,7 +288,6 @@ const Checkout = () => {
                   autoComplete="address-level2"
                   value={formFields.city}
                   onChange={onChangeInput}
-                  required
                 />
               </div>
             </div>
@@ -487,57 +295,33 @@ const Checkout = () => {
             <div className="checkout-page__row checkout-page__row--half">
               <div className="checkout-page__field">
                 <label className="checkout-page__label" htmlFor="phoneNumber">
-                  Phone <span className="required">*</span>
+                  Phone
                 </label>
                 <input
                   id="phoneNumber"
                   name="phoneNumber"
                   type="tel"
-                  className={
-                    fieldErrors.phoneNumber
-                      ? "checkout-page__input checkout-page__input--error"
-                      : "checkout-page__input"
-                  }
+                  className="checkout-page__input"
                   autoComplete="tel"
                   placeholder="0712345678"
                   value={formFields.phoneNumber}
                   onChange={onChangeInput}
-                  onBlur={onBlurField}
-                  aria-invalid={fieldErrors.phoneNumber ? "true" : "false"}
-                  aria-describedby={fieldErrors.phoneNumber ? "phoneNumber-error" : undefined}
                 />
-                {fieldErrors.phoneNumber && (
-                  <p id="phoneNumber-error" className="checkout-page__field-error" role="alert">
-                    {fieldErrors.phoneNumber}
-                  </p>
-                )}
               </div>
               <div className="checkout-page__field">
                 <label className="checkout-page__label" htmlFor="email">
-                  Email address <span className="required">*</span>
+                  Email address
                 </label>
                 <input
                   id="email"
                   name="email"
                   type="email"
-                  className={
-                    fieldErrors.email
-                      ? "checkout-page__input checkout-page__input--error"
-                      : "checkout-page__input"
-                  }
+                  className="checkout-page__input"
                   autoComplete="email"
                   placeholder="you@example.com"
                   value={formFields.email}
                   onChange={onChangeInput}
-                  onBlur={onBlurField}
-                  aria-invalid={fieldErrors.email ? "true" : "false"}
-                  aria-describedby={fieldErrors.email ? "email-error" : undefined}
                 />
-                {fieldErrors.email && (
-                  <p id="email-error" className="checkout-page__field-error" role="alert">
-                    {fieldErrors.email}
-                  </p>
-                )}
               </div>
             </div>
 
@@ -563,7 +347,7 @@ const Checkout = () => {
                 <div className="checkout-page__row checkout-page__row--half checkout-page__shipping-row">
                   <div className="checkout-page__field">
                     <label className="checkout-page__label" htmlFor="shipFirstName">
-                      First name <span className="required">*</span>
+                      First name
                     </label>
                     <input
                       id="shipFirstName"
@@ -578,7 +362,7 @@ const Checkout = () => {
                   </div>
                   <div className="checkout-page__field">
                     <label className="checkout-page__label" htmlFor="shipLastName">
-                      Last name <span className="required">*</span>
+                      Last name
                     </label>
                     <input
                       id="shipLastName"
@@ -594,7 +378,7 @@ const Checkout = () => {
                 </div>
 
                 <p className="checkout-page__fieldset-label checkout-page__shipping-row">
-                  Street address <span className="required">*</span>
+                  Street address
                 </p>
                 <div className="checkout-page__row checkout-page__shipping-row">
                   <div className="checkout-page__field">
@@ -626,7 +410,7 @@ const Checkout = () => {
                 <div className="checkout-page__row checkout-page__shipping-row">
                   <div className="checkout-page__field">
                     <label className="checkout-page__label" htmlFor="shipCity">
-                      Town / City <span className="required">*</span>
+                      Town / City
                     </label>
                     <input
                       id="shipCity"
