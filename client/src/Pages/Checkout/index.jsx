@@ -20,7 +20,7 @@ function getPhoneError(value) {
   const phone = normalizePhone(value);
   if (!phone) return "Please enter your phone number.";
   if (!PHONE_PATTERN.test(phone)) {
-    return "Please enter a valid phone number (e.g., 0712345678 or +94712345678).";
+    return "Please enter a valid phone number";
   }
   return "";
 }
@@ -36,31 +36,6 @@ function formatRsDecimal(amount) {
   const n = parsePriceValue(amount);
   return `Rs ${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
-
-const PayhereScript = ({ onPaymentSuccess }) => {
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://www.payhere.lk/lib/payhere.js";
-    script.async = true;
-    script.onload = () => {
-      if (!window.payhere) return;
-      window.payhere.onCompleted = function onCompleted(orderId) {
-        onPaymentSuccess(orderId);
-      };
-      window.payhere.onDismissed = function onDismissed() {
-        console.log("Payment dismissed");
-      };
-      window.payhere.onError = function onError(error) {
-        console.log("Error:", error);
-      };
-    };
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, [onPaymentSuccess]);
-  return null;
-};
 
 const Checkout = () => {
   const [formFields, setFormFields] = useState({
@@ -82,6 +57,7 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [isPageReady, setIsPageReady] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderPlaced, setOrderPlaced] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({
     phoneNumber: "",
     email: "",
@@ -120,26 +96,6 @@ const Checkout = () => {
         setTimeout(finish, MIN_LOADING_MS - elapsed);
       }
     }, 80);
-
-    if (window.payhere) {
-      window.payhere.onCompleted = function onCompleted(orderId) {
-        processSuccessfulPayment(orderId);
-      };
-      window.payhere.onDismissed = function onDismissed() {
-        context.setAlertBox?.({
-          open: true,
-          error: true,
-          msg: "Payment was cancelled",
-        });
-      };
-      window.payhere.onError = function onError() {
-        context.setAlertBox?.({
-          open: true,
-          error: true,
-          msg: "Payment error occurred",
-        });
-      };
-    }
 
     return () => {
       cancelled = true;
@@ -250,7 +206,7 @@ const Checkout = () => {
     return true;
   };
 
-  const processSuccessfulPayment = async (orderId) => {
+  const submitOrder = async (orderId) => {
     const user = JSON.parse(localStorage.getItem("user") || "null");
     const fullName = `${formFields.firstName.trim()} ${formFields.lastName.trim()}`.trim();
     const address = [formFields.streetAddressLine1, formFields.streetAddressLine2]
@@ -288,8 +244,29 @@ const Checkout = () => {
       }),
     };
 
+    const orderDetails = {
+      orderId,
+      firstName: formFields.firstName.trim(),
+      name: fullName,
+      email: payLoad.email,
+      paymentMethod,
+      subtotal,
+      shipping,
+      total: orderTotal,
+      date: payLoad.date,
+      items: cartItems.map((item) => ({
+        id: item._id || item.id || item.productId,
+        title: item.productTitle,
+        quantity: item.quantity || 1,
+        lineTotal:
+          item.subTotal ?? parsePriceValue(item.price) * (item.quantity || 1),
+      })),
+    };
+
     try {
       await postData(`/api/orders/create`, payLoad);
+
+      setOrderPlaced(true);
 
       if (user?.userId) {
         try {
@@ -306,7 +283,16 @@ const Checkout = () => {
 
       context.getCartData?.();
       setTimeout(() => context.getCartData?.(), 800);
-      history("/orders");
+
+      try {
+        sessionStorage.setItem("lastOrder", JSON.stringify(orderDetails));
+      } catch {
+        /* storage optional */
+      }
+
+      setTimeout(() => {
+        history("/thank-you", { state: { order: orderDetails } });
+      }, 1600);
     } catch (error) {
       console.error("Error processing order:", error);
       context.setAlertBox?.({
@@ -314,70 +300,7 @@ const Checkout = () => {
         error: true,
         msg: "Error processing order",
       });
-    } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const initiateBankPayment = async () => {
-    const user = JSON.parse(localStorage.getItem("user") || "null");
-    const orderId = `ORDER_${Date.now()}_${user?.userId ?? "guest"}`;
-    const fullName = `${formFields.firstName.trim()} ${formFields.lastName.trim()}`.trim();
-
-    const hashResponse = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/payment/get-hash`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          merchantId: import.meta.env.VITE_PAYHERE_MERCHANT_ID,
-          orderId,
-          amount: orderTotal,
-          currency: "LKR",
-        }),
-      }
-    );
-
-    const { hash } = await hashResponse.json();
-
-    const payment = {
-      sandbox: true,
-      merchant_id: import.meta.env.VITE_PAYHERE_MERCHANT_ID,
-      return_url: undefined,
-      cancel_url: undefined,
-      notify_url: `${import.meta.env.VITE_API_URL}/api/payment/notify`,
-      order_id: orderId,
-      items: cartItems.map((item) => item.productTitle).join(", "),
-      amount: orderTotal.toFixed(2),
-      currency: "LKR",
-      hash,
-      first_name: formFields.firstName,
-      last_name: formFields.lastName,
-      email: formFields.email,
-      phone: formFields.phoneNumber,
-      address: formFields.streetAddressLine1,
-      city: formFields.city,
-      country: "Sri Lanka",
-      delivery_address: deliveryAddressLine(),
-      delivery_city: shipToDifferent ? formFields.shipCity : formFields.city,
-      delivery_country: "Sri Lanka",
-      custom_1: user?.userId,
-    };
-
-    window.payhere.startPayment(payment);
-
-    function deliveryAddressLine() {
-      if (shipToDifferent) {
-        return [
-          formFields.shipStreetAddressLine1,
-          formFields.shipStreetAddressLine2,
-        ]
-          .filter(Boolean)
-          .join(", ");
-      }
-      return [formFields.streetAddressLine1, formFields.streetAddressLine2]
-        .filter(Boolean)
-        .join(", ");
     }
   };
 
@@ -400,23 +323,9 @@ const Checkout = () => {
     setIsSubmitting(true);
 
     try {
-      if (paymentMethod === "cod") {
-        const orderId = `COD_${Date.now()}_${user.userId}`;
-        await processSuccessfulPayment(orderId);
-        return;
-      }
-
-      if (!window.payhere) {
-        context.setAlertBox?.({
-          open: true,
-          error: true,
-          msg: "Payment system is loading. Please try again.",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      await initiateBankPayment();
+      const orderPrefix = paymentMethod === "cod" ? "COD" : "BANK";
+      const orderId = `${orderPrefix}_${Date.now()}_${user.userId}`;
+      await submitOrder(orderId);
     } catch (error) {
       console.error("Error placing order:", error);
       context.setAlertBox?.({
@@ -427,6 +336,33 @@ const Checkout = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (orderPlaced) {
+    return (
+      <div className="checkout-page">
+        <div className="checkout-page__container">
+          <div className="checkout-page__success" role="status" aria-live="polite">
+            <span className="checkout-page__success-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M5 12.5 10 17.5 19 7"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+            <h2 className="checkout-page__success-title">Order placed successfully!</h2>
+            <p className="checkout-page__success-text">
+              Taking you to your order confirmation…
+            </p>
+            <CircularProgress size={28} thickness={4} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!isPageReady) {
     return (
@@ -459,7 +395,6 @@ const Checkout = () => {
 
   return (
     <div className="checkout-page">
-      <PayhereScript onPaymentSuccess={processSuccessfulPayment} />
       <div className="checkout-page__container">
         <h1 className="checkout-page__title">Checkout</h1>
 
@@ -809,8 +744,8 @@ const Checkout = () => {
                         Make your payment directly into our bank account (via online or bank
                         deposit). Please use your Order ID as the payment reference and send your
                         slip to our WhatsApp number{" "}
-                        <a href="https://wa.me/94788600019" target="_blank" rel="noreferrer">
-                          0788600019
+                        <a href="https://wa.me/94715264449" target="_blank" rel="noreferrer">
+                          0715264449
                         </a>
                         . Your order will not be shipped until the funds have cleared in our
                         account.
@@ -819,8 +754,8 @@ const Checkout = () => {
                         ඔබගේ order එක සඳහා ගෙවිය යුතු මුළු මුදල Online Transfer එකකින් හෝ Bank
                         Deposit එකකින් තැන්පත් කර, එයට අදාළ Payment Slip එක ඔබගේ order අංකයත්
                         සමග අපට WhatsApp කරන්න:{" "}
-                        <a href="https://wa.me/94788600019" target="_blank" rel="noreferrer">
-                          0788600019
+                        <a href="https://wa.me/94715264449" target="_blank" rel="noreferrer">
+                          0715264449
                         </a>
                       </p>
                     </div>

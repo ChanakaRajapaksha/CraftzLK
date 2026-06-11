@@ -17,6 +17,7 @@ import SignIn from "./Pages/SignIn/index.jsx";
 import SignUp from "./Pages/SignUp/index.jsx";
 import MyList from "./Pages/MyList/index.jsx";
 import Checkout from "./Pages/Checkout/index.jsx";
+import ThankYou from "./Pages/ThankYou/index.jsx";
 import Orders from "./Pages/Orders/index.jsx";
 import MyAccount from "./Pages/MyAccount/index.jsx";
 import SearchPage from "./Pages/Search/index.jsx";
@@ -483,6 +484,7 @@ function AppContent() {
         <Route exact={true} path="/my-list" element={<MyList />} />
         <Route exact={true} path="/compare" element={<Compare />} />
         <Route exact={true} path="/checkout" element={<Checkout />} />
+        <Route exact={true} path="/thank-you" element={<ThankYou />} />
         <Route exact={true} path="/orders" element={<Orders />} />
         <Route exact={true} path="/my-account" element={<MyAccount />} />
         <Route exact={true} path="/search" element={<SearchPage />} />

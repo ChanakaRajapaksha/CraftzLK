@@ -1,0 +1,388 @@
+.thank-you {
+  position: relative;
+  min-height: 80vh;
+  padding: 3.5rem 0 5rem;
+  background: linear-gradient(180deg, #faf8f3 0%, #f5f1e8 100%);
+  overflow: hidden;
+}
+
+.thank-you__container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 0 clamp(1.25rem, 2.5vw, 2rem);
+  text-align: center;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+}
+
+/* ---------- Confetti ---------- */
+.thank-you__confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.thank-you__confetti-piece {
+  position: absolute;
+  top: -3rem;
+  width: 0.6rem;
+  height: 0.95rem;
+  background: var(--confetti-color, #c9a961);
+  opacity: 0;
+  animation-name: ty-confetti-fall;
+  animation-timing-function: ease-in;
+  animation-iteration-count: infinite;
+}
+
+.thank-you__confetti-piece--shape0 {
+  border-radius: 999px;
+  width: 0.5rem;
+  height: 0.5rem;
+}
+
+.thank-you__confetti-piece--shape1 {
+  border-radius: 2px;
+  transform: rotate(15deg);
+}
+
+.thank-you__confetti-piece--shape2 {
+  width: 0;
+  height: 0;
+  background: transparent;
+  border-left: 0.4rem solid transparent;
+  border-right: 0.4rem solid transparent;
+  border-bottom: 0.7rem solid var(--confetti-color, #c9a961);
+}
+
+@keyframes ty-confetti-fall {
+  0% {
+    opacity: 0;
+    transform: translateY(0) translateX(0) rotate(0deg);
+  }
+  8% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(95vh) translateX(calc(var(--confetti-drift, 1) * 6rem))
+      rotate(calc(var(--confetti-drift, 1) * 540deg));
+  }
+}
+
+/* ---------- Success badge ---------- */
+.thank-you__badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 7.5rem;
+  height: 7.5rem;
+  margin-bottom: 1.5rem;
+  animation: ty-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.thank-you__badge-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(184, 134, 11, 0.4);
+  animation: ty-ring 2.6s ease-out infinite;
+}
+
+.thank-you__badge-ring--delay {
+  animation-delay: 1.3s;
+}
+
+@keyframes ty-ring {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+}
+
+@keyframes ty-pop {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.thank-you__check {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  filter: drop-shadow(0 10px 22px rgba(184, 134, 11, 0.3));
+}
+
+.thank-you__check-circle {
+  stroke: var(--primary-dark, #b8860b);
+  stroke-width: 2.5;
+  fill: #fffdf7;
+  stroke-dasharray: 183;
+  stroke-dashoffset: 183;
+  transform-origin: center;
+  transform: rotate(-90deg);
+  animation: ty-draw 0.9s ease-out 0.25s forwards;
+}
+
+.thank-you__check-mark {
+  stroke: var(--primary-dark, #b8860b);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+  animation: ty-draw 0.45s ease-out 1s forwards;
+}
+
+@keyframes ty-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ---------- Headings ---------- */
+.thank-you__title {
+  margin: 0 0 0.6rem;
+  font-family: var(--font-heading, "Playfair Display", serif);
+  font-size: clamp(1.9rem, 4.5vw, 2.6rem);
+  font-weight: 600;
+  color: #1f1a14;
+  letter-spacing: -0.02em;
+  animation: ty-rise 0.6s ease-out 0.35s both;
+}
+
+.thank-you__subtitle {
+  margin: 0 0 2rem;
+  font-size: 1.05rem;
+  color: #5c4d3a;
+  animation: ty-rise 0.6s ease-out 0.5s both;
+}
+
+@keyframes ty-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- Order meta strip ---------- */
+.thank-you__meta {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  margin-bottom: 1.5rem;
+  border: 1px dashed rgba(184, 134, 11, 0.45);
+  border-radius: 14px;
+  background: rgba(184, 134, 11, 0.18);
+  overflow: hidden;
+  animation: ty-rise 0.6s ease-out 0.65s both;
+}
+
+@media (min-width: 640px) {
+  .thank-you__meta {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.thank-you__meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1rem 0.85rem;
+  background: #fffdf7;
+}
+
+.thank-you__meta-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9a8b78;
+}
+
+.thank-you__meta-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1f1a14;
+  word-break: break-all;
+}
+
+.thank-you__meta-value--accent {
+  color: var(--primary-dark, #b8860b);
+}
+
+/* ---------- Bank note ---------- */
+.thank-you__bank-note {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+  border-left: 3px solid var(--primary-dark, #b8860b);
+  border-radius: 10px;
+  background: rgba(201, 169, 97, 0.14);
+  text-align: left;
+  animation: ty-rise 0.6s ease-out 0.75s both;
+}
+
+.thank-you__bank-note p {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: #3d2f1f;
+}
+
+.thank-you__bank-note a {
+  color: var(--primary-dark, #b8860b);
+  font-weight: 600;
+}
+
+/* ---------- Order summary card ---------- */
+.thank-you__card {
+  margin-bottom: 1.5rem;
+  padding: 1.5rem clamp(1.15rem, 3vw, 1.85rem);
+  border: 1px solid rgba(201, 169, 97, 0.4);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 14px 34px rgba(92, 77, 58, 0.09);
+  text-align: left;
+  animation: ty-rise 0.6s ease-out 0.85s both;
+}
+
+.thank-you__card-title {
+  margin: 0 0 1rem;
+  font-family: var(--font-heading, "Playfair Display", serif);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1f1a14;
+}
+
+.thank-you__items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.thank-you__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px dashed rgba(201, 169, 97, 0.4);
+  font-size: 0.95rem;
+  color: #3d2f1f;
+  animation: ty-rise 0.5s ease-out both;
+  animation-delay: calc(1s + var(--item-index, 0) * 0.12s);
+}
+
+.thank-you__item-qty {
+  color: #9a8b78;
+  font-size: 0.88rem;
+}
+
+.thank-you__item-price {
+  white-space: nowrap;
+  font-weight: 600;
+  color: #1f1a14;
+}
+
+.thank-you__totals {
+  margin-top: 0.85rem;
+}
+
+.thank-you__totals-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.3rem 0;
+  font-size: 0.95rem;
+  color: #5c4d3a;
+}
+
+.thank-you__totals-row--total {
+  margin-top: 0.4rem;
+  padding-top: 0.7rem;
+  border-top: 2px solid rgba(184, 134, 11, 0.5);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1f1a14;
+}
+
+/* ---------- Footer notes & actions ---------- */
+.thank-you__email-note {
+  margin: 0 0 2rem;
+  font-size: 0.92rem;
+  color: #5c4d3a;
+  animation: ty-rise 0.6s ease-out 1s both;
+}
+
+.thank-you__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.85rem;
+  animation: ty-rise 0.6s ease-out 1.1s both;
+}
+
+.thank-you__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.8rem 1.9rem;
+  border-radius: 999px;
+  font-size: 0.98rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.thank-you__btn--primary {
+  background: var(--primary-dark, #b8860b);
+  color: #fffdf7;
+  box-shadow: 0 8px 20px rgba(184, 134, 11, 0.32);
+}
+
+.thank-you__btn--primary:hover {
+  background: #9a7009;
+  color: #fffdf7;
+  transform: translateY(-2px);
+}
+
+.thank-you__btn--ghost {
+  border: 1.5px solid rgba(184, 134, 11, 0.55);
+  color: var(--primary-dark, #b8860b);
+  background: transparent;
+}
+
+.thank-you__btn--ghost:hover {
+  background: rgba(201, 169, 97, 0.14);
+  color: var(--primary-dark, #b8860b);
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thank-you__confetti {
+    display: none;
+  }
+
+  .thank-you *,
+  .thank-you *::before,
+  .thank-you *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
