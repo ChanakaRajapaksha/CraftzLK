@@ -1,6 +1,25 @@
 import { SAMPLE_PRODUCT_CATALOG } from "../../data/sampleProductDetails";
+import { MEGA_MENU_COLUMNS } from "../../data/megaMenuCategories";
 import { COLLECTIONS_CATALOG_SIZE } from "./collectionsConstants";
 import { fetchDataFromApi } from "../../utils/api";
+
+const CATEGORY_TITLES = MEGA_MENU_COLUMNS.map((col) => col.title);
+
+function normalizeName(s) {
+  return (s || "")
+    .trim()
+    .toLowerCase()
+    .replace(/['’]/g, "'")
+    .replace(/\s+/g, " ");
+}
+
+function resolveCategoryColumn(catName, index) {
+  const needle = normalizeName(catName);
+  return (
+    MEGA_MENU_COLUMNS.find((col) => normalizeName(col.title) === needle) ??
+    MEGA_MENU_COLUMNS[index % MEGA_MENU_COLUMNS.length]
+  );
+}
 
 function extractProducts(res) {
   if (Array.isArray(res?.products)) return res.products;
@@ -15,9 +34,12 @@ export function getSampleCollectionsProducts(count = COLLECTIONS_CATALOG_SIZE) {
 
   return Array.from({ length: count }, (_, index) => {
     const base = catalog[index % catalog.length];
+    const column = MEGA_MENU_COLUMNS[index % MEGA_MENU_COLUMNS.length];
     return {
       ...base,
       _gridIndex: index,
+      catName: column.title,
+      subCatName: column.items[index % column.items.length],
     };
   });
 }
@@ -57,14 +79,32 @@ async function fetchProductBatch(withLocation) {
   return dedupeProducts(merged);
 }
 
+function assignCategoryLabels(list) {
+  return (list || []).map((product, index) => {
+    const catName =
+      product?.catName || product?.category?.name || CATEGORY_TITLES[index % CATEGORY_TITLES.length];
+    const column = resolveCategoryColumn(catName, index);
+    const subCatName =
+      product?.subCatName ||
+      product?.subcategory?.name ||
+      column.items[index % column.items.length];
+
+    return {
+      ...product,
+      catName: column.title,
+      subCatName,
+    };
+  });
+}
+
 function fillCatalogToSize(list, targetSize) {
   if (list.length >= targetSize) {
-    return list.slice(0, targetSize);
+    return assignCategoryLabels(list.slice(0, targetSize));
   }
 
   const samples = getSampleCollectionsProducts(targetSize);
   const merged = dedupeProducts([...list, ...samples]);
-  return merged.slice(0, targetSize);
+  return assignCategoryLabels(merged.slice(0, targetSize));
 }
 
 export async function loadCollectionProducts() {

@@ -19,6 +19,9 @@ import MyList from "./Pages/MyList/index.jsx";
 import Checkout from "./Pages/Checkout/index.jsx";
 import ThankYou from "./Pages/ThankYou/index.jsx";
 import Orders from "./Pages/Orders/index.jsx";
+import Gifts from "./Pages/Gifts/index.jsx";
+import Eco from "./Pages/Eco/index.jsx";
+import About from "./Pages/About/index.jsx";
 import MyAccount from "./Pages/MyAccount/index.jsx";
 import SearchPage from "./Pages/Search/index.jsx";
 import VerifyOTP from "./Pages/VerifyOTP/index.jsx";
@@ -461,6 +464,8 @@ function AppContent() {
         <Route path="/" exact={true} element={<HomeGate />} />
         <Route path="/collections" element={<Navigate to="/collections/all" replace />} />
         <Route path="/collections/all" exact={true} element={<Collections />} />
+        <Route path="/collections/:categorySlug/:subcategorySlug" element={<Collections />} />
+        <Route path="/collections/:categorySlug" element={<Collections />} />
         <Route
           path="/products/category/:id"
           exact={true}
@@ -486,6 +491,9 @@ function AppContent() {
         <Route exact={true} path="/checkout" element={<Checkout />} />
         <Route exact={true} path="/thank-you" element={<ThankYou />} />
         <Route exact={true} path="/orders" element={<Orders />} />
+        <Route exact={true} path="/gifts" element={<Gifts />} />
+        <Route exact={true} path="/eco" element={<Eco />} />
+        <Route exact={true} path="/about" element={<About />} />
         <Route exact={true} path="/my-account" element={<MyAccount />} />
         <Route exact={true} path="/search" element={<SearchPage />} />
         <Route exact={true} path="/verifyOTP" element={<VerifyOTP />} />

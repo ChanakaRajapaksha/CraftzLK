@@ -1173,6 +1173,16 @@ nav .navPart2 ul li:hover .submenu {
   color: rgba(61, 40, 23, 0.88);
 }
 
+.secondary-category-nav__mega-heading-link {
+  display: inline-block;
+  text-decoration: none !important;
+  transition: color 0.15s ease;
+}
+
+.secondary-category-nav__mega-heading-link:hover {
+  color: var(--accent-blue, #c9a961) !important;
+}
+
 .secondary-category-nav__mega-list {
   list-style: none;
   margin: 0;
@@ -1391,6 +1401,59 @@ nav .navPart2 ul li:hover .submenu {
 
 .secondary-category-nav__drawer-row--link:hover {
   color: var(--accent-blue, #c9a961) !important;
+}
+
+.secondary-category-nav__drawer-category-item {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  position: relative;
+}
+
+.secondary-category-nav__drawer-category-item::after {
+  content: "";
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 0;
+  height: 1px;
+  background: rgba(201, 169, 97, 0.55);
+  pointer-events: none;
+}
+
+.secondary-category-nav__drawer-row--category {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.secondary-category-nav__drawer-row--category::after {
+  display: none;
+}
+
+.secondary-category-nav__drawer-row-chev-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2.75rem;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent !important;
+  color: rgba(61, 40, 23, 0.45) !important;
+  cursor: pointer;
+  box-shadow: none !important;
+}
+
+.secondary-category-nav__drawer-row-chev-btn:hover,
+.secondary-category-nav__drawer-row-chev-btn:focus-visible {
+  color: var(--accent-blue, #c9a961) !important;
+  background: transparent !important;
+}
+
+.secondary-category-nav__drawer-row-chev-btn:focus-visible {
+  outline: 2px solid rgba(61, 40, 23, 0.28);
+  outline-offset: -2px;
 }
 
 .secondary-category-nav__drawer-chev {

@@ -6,56 +6,21 @@ import { FaAngleDown, FaAngleLeft, FaAngleRight } from "react-icons/fa6";
 import {
   IoPersonOutline,
   IoBagCheckOutline,
-  IoHeartOutline,
-  IoGitCompareOutline,
   IoGridOutline,
 } from "react-icons/io5";
 import { MyContext } from "../../../App";
 import { RiLogoutCircleRFill } from "react-icons/ri";
 import UserAvatarImgComponent from "../../userAvatarImg";
+import { MEGA_MENU_COLUMNS } from "../../../data/megaMenuCategories";
+import {
+  getCategoryCollectionsPath,
+  getSubcategoryCollectionsPath,
+} from "../../../Pages/Collections/collectionsConstants";
 
 /** Path the "Shop" header link routes to (Collections / "All" landing page). */
 export const SHOP_PATH = "/collections/all";
 
-/** Hierarchical browse structure — links resolve to API subcategories when names match. */
-export const MEGA_MENU_COLUMNS = [
-  {
-    title: "Home & Living",
-    icon: "/icons/home_living.png",
-    items: ["Wall Art", "Home Decor", "Candles", "Kitchenware", "Cushions"],
-  },
-  {
-    title: "Fashion & Accessories",
-    icon: "/icons/fashion_accessories.png",
-    items: [
-      "Women's Clothing",
-      "Men's Clothing",
-      "Jewelry",
-      "Bags",
-      "Hair Accessories",
-    ],
-  },
-  {
-    title: "Handmade Crafts",
-    icon: "/icons/handmade_crafts.png",
-    items: ["Wood Crafts", "Clay & Pottery", "Crochet & Knitting", "Resin Art", "Paper Crafts"],
-  },
-  {
-    title: "Kids & Baby",
-    icon: "/icons/kids_baby.png",
-    items: ["Toys", "Baby Clothing", "Accessories"],
-  },
-  {
-    title: "Art & Collectibles",
-    icon: "/icons/art_collectibles.png",
-    items: ["Paintings", "Sculptures", "Traditional Art"],
-  },
-  {
-    title: "Food & Homemade",
-    icon: "/icons/food_homemade.png",
-    items: ["Spices", "Pickles", "Sweets", "Snacks"],
-  },
-];
+export { MEGA_MENU_COLUMNS };
 
 /** Resolve an API category path by display title; null when no match. */
 export function findCategoryPathByTitle(categoryList, title) {
@@ -118,18 +83,19 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
   const shopPath = SHOP_PATH;
 
   const tailLinks = [
-    { label: "Gifts", to: findCategoryPath(navData, "Gifts") || "/" },
-    { label: "Eco", to: findCategoryPath(navData, "Eco") || "/" },
-    { label: "Custom", to: findCategoryPath(navData, "Custom") || "/" },
-    { label: "About", to: "/" },
+    { label: "Gifts", to: "/gifts" },
+    { label: "Eco", to: "/eco" },
+    { label: "About", to: "/about" },
   ];
 
   const isHomeActive = location.pathname === "/";
   const isShopActive = location.pathname === shopPath && !megaOpen;
 
-  const subLink = (name) => {
-    const path = findSubCatPath(navData, name);
-    return path || `/search`;
+  const mainCategoryLink = (title) => getCategoryCollectionsPath(title);
+
+  const subCategoryLink = (parentTitle, subName) => {
+    const apiPath = findSubCatPath(navData, subName);
+    return apiPath || getSubcategoryCollectionsPath(parentTitle, subName);
   };
 
   const logout = () => {
@@ -194,8 +160,6 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
       : []),
     { label: "My Account", to: "/my-account", icon: IoPersonOutline },
     { label: "Orders", to: "/orders", icon: IoBagCheckOutline },
-    { label: "My List", to: "/my-list", icon: IoHeartOutline },
-    { label: "Compare", to: "/compare", icon: IoGitCompareOutline },
   ];
 
   const showMobileDrawerUser =
@@ -329,13 +293,20 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
                   </button>
                   <ul className="secondary-category-nav__drawer-panel-list">
                     {MEGA_MENU_COLUMNS.map((col, index) => (
-                      <li key={col.title}>
-                        <button
-                          type="button"
-                          className="secondary-category-nav__drawer-row"
-                          onClick={() => openCategoryItems(index)}
+                      <li key={col.title} className="secondary-category-nav__drawer-category-item">
+                        <Link
+                          to={mainCategoryLink(col.title)}
+                          className="secondary-category-nav__drawer-row secondary-category-nav__drawer-row--link secondary-category-nav__drawer-row--category"
+                          onClick={closeNav}
                         >
                           <span>{col.title}</span>
+                        </Link>
+                        <button
+                          type="button"
+                          className="secondary-category-nav__drawer-row-chev-btn"
+                          onClick={() => openCategoryItems(index)}
+                          aria-label={`Browse ${col.title} subcategories`}
+                        >
                           <FaAngleRight
                             className="secondary-category-nav__drawer-chev"
                             aria-hidden
@@ -366,7 +337,7 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
                     {activeCategory?.items.map((item) => (
                       <li key={item}>
                         <Link
-                          to={subLink(item)}
+                          to={subCategoryLink(activeCategory.title, item)}
                           className="secondary-category-nav__drawer-row secondary-category-nav__drawer-row--link"
                           onClick={closeNav}
                         >
@@ -432,9 +403,7 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
             </div>
 
             {tailLinks.map((link) => {
-              const tailActive =
-                link.to.startsWith("/products/") &&
-                location.pathname === link.to;
+              const tailActive = location.pathname === link.to;
               return (
                 <Link
                   key={link.label}
@@ -457,12 +426,18 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
             <div className="secondary-category-nav__mega-grid">
               {MEGA_MENU_COLUMNS.map((col) => (
                 <div key={col.title} className="secondary-category-nav__mega-col">
-                  <h3 className="secondary-category-nav__mega-heading">{col.title}</h3>
+                  <Link
+                    to={mainCategoryLink(col.title)}
+                    onClick={() => setMegaOpen(false)}
+                    className="secondary-category-nav__mega-heading secondary-category-nav__mega-heading-link"
+                  >
+                    {col.title}
+                  </Link>
                   <ul className="secondary-category-nav__mega-list">
                     {col.items.map((item) => (
                       <li key={item}>
                         <Link
-                          to={subLink(item)}
+                          to={subCategoryLink(col.title, item)}
                           onClick={() => setMegaOpen(false)}
                           className="secondary-category-nav__mega-sublink"
                         >

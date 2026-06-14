@@ -39,6 +39,17 @@ export function productMatchesCategory(product, categoryTitle) {
   );
 }
 
+export function productMatchesSubcategory(product, subcategoryTitle) {
+  if (!subcategoryTitle) return true;
+  const needle = normalizeName(subcategoryTitle);
+  const haystack = [product?.subCatName, product?.subcategory?.name]
+    .filter(Boolean)
+    .map(normalizeName);
+  return haystack.some(
+    (name) => name === needle || name.includes(needle) || needle.includes(name)
+  );
+}
+
 export function getPriceBounds(products) {
   const prices = (products || [])
     .map((p) => Number(p?.price))
@@ -99,11 +110,18 @@ export function sortProducts(products, sortBy) {
   return list;
 }
 
-export function applyProductFilters(products, { categoryTitle, inStockOnly, priceRange }) {
+export function applyProductFilters(
+  products,
+  { categoryTitle, subcategoryTitle, inStockOnly, priceRange }
+) {
   let list = [...(products || [])];
 
   if (categoryTitle) {
     list = list.filter((p) => productMatchesCategory(p, categoryTitle));
+  }
+
+  if (subcategoryTitle) {
+    list = list.filter((p) => productMatchesSubcategory(p, subcategoryTitle));
   }
 
   if (inStockOnly) {

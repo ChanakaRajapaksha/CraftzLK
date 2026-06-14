@@ -1,17 +1,24 @@
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import { HiOutlineAdjustmentsHorizontal } from "react-icons/hi2";
 import { MyContext } from "../../App";
-import { MEGA_MENU_COLUMNS } from "../../Components/Header/SecondaryCategoryNav";
 import CollectionsFilters from "./CollectionsFilters";
 import CollectionsFilterSortDrawer from "./CollectionsFilterSortDrawer";
 import CollectionsSortDropdown from "./CollectionsSortDropdown";
 import CollectionsProductCard from "./CollectionsProductCard";
 import CollectionsPagination from "./CollectionsPagination.jsx";
-import { COLLECTIONS_ALL_PATH, COLLECTIONS_PER_PAGE } from "./collectionsConstants";
+import {
+  COLLECTIONS_ALL_PATH,
+  COLLECTIONS_ALL_SLUG,
+  COLLECTIONS_CATEGORIES,
+  COLLECTIONS_PER_PAGE,
+  getCategoryCollectionsPath,
+  resolveCategoryTitleFromSlug,
+  resolveSubcategoryTitleFromSlug,
+} from "./collectionsConstants";
 import { getSampleCollectionsProducts, loadCollectionProducts } from "./collectionsProducts";
 import {
   applyProductFilters,
@@ -37,17 +44,30 @@ const gridTransition = {
 };
 
 const Collections = () => {
+  const { categorySlug, subcategorySlug } = useParams();
+  const navigate = useNavigate();
   const context = useContext(MyContext);
   const theme = useTheme();
   const isMobileCatalog = useMediaQuery(theme.breakpoints.down("md"));
   const catalogViewRef = useRef(null);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
 
+  const activeCategoryTitle = useMemo(
+    () => resolveCategoryTitleFromSlug(categorySlug),
+    [categorySlug]
+  );
+
+  const activeSubcategoryTitle = useMemo(
+    () => resolveSubcategoryTitleFromSlug(activeCategoryTitle, subcategorySlug),
+    [activeCategoryTitle, subcategorySlug]
+  );
+
+  const pageHeading = activeSubcategoryTitle || activeCategoryTitle || "All";
+
   const [products, setProducts] = useState(() => getSampleCollectionsProducts());
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [filtersActive, setFiltersActive] = useState(false);
-  const [activeCategory, setActiveCategory] = useState(null);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [sortBy, setSortBy] = useState("featured");
   const [priceBounds, setPriceBounds] = useState(() => getPriceBounds(getSampleCollectionsProducts()));
@@ -60,6 +80,23 @@ const Collections = () => {
     window.scrollTo(0, 0);
     context?.setisHeaderFooterShow?.(true);
   }, [context]);
+
+  useEffect(() => {
+    if (!categorySlug) return;
+    if (categorySlug !== COLLECTIONS_ALL_SLUG && !activeCategoryTitle) {
+      navigate(COLLECTIONS_ALL_PATH, { replace: true });
+      return;
+    }
+    if (subcategorySlug && !activeSubcategoryTitle && activeCategoryTitle) {
+      navigate(getCategoryCollectionsPath(activeCategoryTitle), { replace: true });
+    }
+  }, [
+    categorySlug,
+    subcategorySlug,
+    activeCategoryTitle,
+    activeSubcategoryTitle,
+    navigate,
+  ]);
 
   useEffect(() => {
     let cancelled = false;
@@ -80,17 +117,37 @@ const Collections = () => {
     };
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+    setFiltersActive(false);
+    setInStockOnly(false);
+  }, [categorySlug, subcategorySlug]);
+
+  useEffect(() => {
+    const bounds = getPriceBounds(products);
+    setPriceBounds(bounds);
+    setPriceRange([bounds.min, bounds.max]);
+  }, [products]);
+
   const filteredProducts = useMemo(() => {
     let list = sortProducts(products, sortBy);
-    if (filtersActive) {
-      list = applyProductFilters(list, {
-        categoryTitle: activeCategory,
-        inStockOnly,
-        priceRange,
-      });
-    }
+    list = applyProductFilters(list, {
+      categoryTitle: activeCategoryTitle,
+      subcategoryTitle: activeSubcategoryTitle,
+      inStockOnly: filtersActive ? inStockOnly : false,
+      priceRange: filtersActive ? priceRange : [priceBounds.min, priceBounds.max],
+    });
     return list;
-  }, [products, sortBy, filtersActive, activeCategory, inStockOnly, priceRange]);
+  }, [
+    products,
+    sortBy,
+    filtersActive,
+    activeCategoryTitle,
+    activeSubcategoryTitle,
+    inStockOnly,
+    priceRange,
+    priceBounds,
+  ]);
 
   const totalCount = filteredProducts.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / COLLECTIONS_PER_PAGE));
@@ -103,7 +160,7 @@ const Collections = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [sortBy, filtersActive, activeCategory, inStockOnly, priceRange]);
+  }, [sortBy, filtersActive, inStockOnly, priceRange]);
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -122,11 +179,6 @@ const Collections = () => {
     requestAnimationFrame(scrollToCatalogTop);
   };
 
-  const collections = MEGA_MENU_COLUMNS.map((col) => ({
-    title: col.title,
-    icon: col.icon,
-  }));
-
   const activateFilters = () => {
     if (!filtersActive) {
       const bounds = getPriceBounds(products);
@@ -134,11 +186,6 @@ const Collections = () => {
       setPriceRange([bounds.min, bounds.max]);
       setFiltersActive(true);
     }
-  };
-
-  const handleCategorySelect = (title) => {
-    activateFilters();
-    setActiveCategory((current) => (current === title ? null : title));
   };
 
   const handleInStockChange = (value) => {
@@ -153,6 +200,13 @@ const Collections = () => {
     setPriceRange([min, max]);
   };
 
+  if (
+    (categorySlug && categorySlug !== COLLECTIONS_ALL_SLUG && !activeCategoryTitle) ||
+    (subcategorySlug && activeCategoryTitle && !activeSubcategoryTitle)
+  ) {
+    return null;
+  }
+
   return (
     <div className="collections-page">
       <div className="collections-page__inner">
@@ -161,32 +215,48 @@ const Collections = () => {
           <span aria-hidden="true">/</span>
           <Link to={COLLECTIONS_ALL_PATH}>Shop</Link>
           <span aria-hidden="true">/</span>
-          <Link to={COLLECTIONS_ALL_PATH} className="collections-breadcrumb__current">
-            All
-          </Link>
+          {activeSubcategoryTitle ? (
+            <>
+              <Link to={getCategoryCollectionsPath(activeCategoryTitle)}>
+                {activeCategoryTitle}
+              </Link>
+              <span aria-hidden="true">/</span>
+              <span className="collections-breadcrumb__current">
+                {activeSubcategoryTitle}
+              </span>
+            </>
+          ) : activeCategoryTitle ? (
+            <span className="collections-breadcrumb__current">{activeCategoryTitle}</span>
+          ) : (
+            <span className="collections-breadcrumb__current">All</span>
+          )}
         </nav>
 
         <h1 className="collections-title">
-          <Link to={COLLECTIONS_ALL_PATH}>All</Link>
+          {activeCategoryTitle || activeSubcategoryTitle ? (
+            pageHeading
+          ) : (
+            <Link to={COLLECTIONS_ALL_PATH}>All</Link>
+          )}
         </h1>
 
         <div className="collections-categories-wrap">
           <ul className="collections-grid" aria-label="Shop by category">
-            {collections.map((collection) => {
-              const isActive = filtersActive && activeCategory === collection.title;
+            {COLLECTIONS_CATEGORIES.map((collection) => {
+              const isActive =
+                categorySlug === collection.slug && !activeSubcategoryTitle;
               return (
                 <li key={collection.title}>
-                  <button
-                    type="button"
+                  <Link
+                    to={collection.path}
                     className={`collections-pill${isActive ? " collections-pill--active" : ""}`}
-                    onClick={() => handleCategorySelect(collection.title)}
-                    aria-pressed={isActive}
+                    aria-current={isActive ? "page" : undefined}
                   >
                     <span className="collections-pill__icon">
                       <img src={collection.icon} alt="" loading="eager" decoding="async" />
                     </span>
                     <span className="collections-pill__label">{collection.title}</span>
-                  </button>
+                  </Link>
                 </li>
               );
             })}
@@ -256,7 +326,7 @@ const Collections = () => {
 
             <AnimatePresence mode="wait">
               <motion.div
-                key={safePage}
+                key={`${categorySlug || COLLECTIONS_ALL_SLUG}-${subcategorySlug || "all"}-${safePage}`}
                 className="collections-product-grid"
                 role="list"
                 aria-label={`Products page ${safePage}`}

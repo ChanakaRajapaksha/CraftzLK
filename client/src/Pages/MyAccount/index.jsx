@@ -1,485 +1,363 @@
-import React, { useContext, useEffect, useState } from "react";
-import PropTypes from "prop-types";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
-import { IoMdCloudUpload } from "react-icons/io";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import { useNavigate } from "react-router-dom";
-import {
-  deleteData,
-  deleteImages,
-  editData,
-  fetchDataFromApi,
-  postData,
-  uploadImage,
-} from "../../utils/api";
-
+import { useContext, useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { MyContext } from "../../App";
+import UserAvatarImgComponent from "../../Components/userAvatarImg";
+import { COLLECTIONS_ALL_PATH } from "../Collections/collectionsConstants";
+import { getCartItemCount, parsePriceValue } from "../../utils/cartHelpers";
+import {
+  addLocalOrder,
+  getOrderItemCount,
+  loadLocalOrders,
+} from "../../utils/orderHelpers";
+import { fetchDataFromApi } from "../../utils/api";
+import "./MyAccount.css";
 
-import NoUserImg from "../../assets/images/no-user.jpg";
-import CircularProgress from "@mui/material/CircularProgress";
-
-function CustomTabPanel(props) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          <Typography>{children}</Typography>
-        </Box>
-      )}
-    </div>
-  );
-}
-
-CustomTabPanel.propTypes = {
-  children: PropTypes.node,
-  index: PropTypes.number.isRequired,
-  value: PropTypes.number.isRequired,
+const PAYMENT_LABELS = {
+  cod: "Cash on Delivery",
+  bank_transfer: "Bank Transfer",
 };
 
-function a11yProps(index) {
-  return {
-    id: `simple-tab-${index}`,
-    "aria-controls": `simple-tabpanel-${index}`,
-  };
+function formatRs(amount) {
+  const n = parsePriceValue(amount);
+  return `Rs ${n.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+function getStoredUser() {
+  try {
+    return JSON.parse(localStorage.getItem("user") || "null");
+  } catch {
+    return null;
+  }
+}
+
+function getItemPreview(order) {
+  const items = Array.isArray(order?.items) ? order.items : [];
+  if (items.length === 0) return "No items listed";
+  const first = items[0].title;
+  const extra = items.length - 1;
+  return extra > 0 ? `${first} + ${extra} more` : first;
 }
 
 const MyAccount = () => {
-  const [isLogin, setIsLogin] = useState(false);
-
-  const [value, setValue] = React.useState(0);
-
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
-  };
-
-  const history = useNavigate();
-
   const context = useContext(MyContext);
+  const navigate = useNavigate();
+  const [phone, setPhone] = useState("");
+  const [orders, setOrders] = useState([]);
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
-
-  const [previews, setPreviews] = useState([]);
-  const [userData, setUserData] = useState([]);
-
-  const formdata = new FormData();
-
-  const [formFields, setFormFields] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    images: [],
-    isAdmin: false,
-    password: "",
-  });
-
-  const [fields, setFields] = useState({
-    oldPassword: "",
-    password: "",
-    confirmPassword: "",
-  });
+  const storedUser = useMemo(() => getStoredUser(), []);
+  const user = context?.user?.userId ? context.user : storedUser;
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    context?.setEnableFilterTab?.(false);
+    context?.setisHeaderFooterShow?.(true);
 
     const token = localStorage.getItem("token");
-    if (token !== "" && token !== undefined && token !== null) {
-      setIsLogin(true);
-    } else {
-      history("/signIn");
+    const localUser = getStoredUser();
+    if (!token && !localUser?.userId) {
+      navigate("/signIn");
+      return;
     }
 
-    deleteData("/api/imageUpload/deleteAllImages");
-    const user = JSON.parse(localStorage.getItem("user"));
-
-    fetchDataFromApi(`/api/user/${user?.userId}`).then((res) => {
-      setUserData(res);
-      setPreviews(res.images);
-
-      setFormFields({
-        name: res.name,
-        email: res.email,
-        phone: res.phone,
-      });
-    });
-
-    
-    context.setEnableFilterTab(false);
-  }, []);
-
-  const changeInput = (e) => {
-    setFormFields(() => ({
-      ...formFields,
-      [e.target.name]: e.target.value,
-    }));
-  };
-
-  const changeInput2 = (e) => {
-    setFields(() => ({
-      ...fields,
-      [e.target.name]: e.target.value,
-    }));
-  };
-
-  let img_arr = [];
-  let uniqueArray = [];
-  let selectedImages = [];
-
-  const onChangeFile = async (e, apiEndPoint) => {
     try {
-      setPreviews([]);
-
-      const files = e.target.files;
-
-      setUploading(true);
-
-      //const fd = new FormData();
-      for (var i = 0; i < files.length; i++) {
-        // Validate file type
-        if (
-          files[i] &&
-          (files[i].type === "image/jpeg" ||
-            files[i].type === "image/jpg" ||
-            files[i].type === "image/png" ||
-            files[i].type === "image/webp")
-        ) {
-          const file = files[i];
-          selectedImages.push(file);
-          formdata.append(`images`, file);
-        } else {
-          context.setAlertBox({
-            open: true,
-            error: true,
-            msg: "Please select a valid JPG or PNG image file.",
-          });
-
-          return false;
-        }
-      }
-
-      formFields.images = selectedImages;
-      selectedImages.push(selectedImages);
-    } catch (error) {
-      console.log(error);
+      const lastOrder = JSON.parse(sessionStorage.getItem("lastOrder") || "null");
+      if (lastOrder?.orderId) addLocalOrder(lastOrder);
+    } catch {
+      /* ignore */
     }
+    setOrders(loadLocalOrders());
 
-    uploadImage(apiEndPoint, formdata).then((res) => {
-      fetchDataFromApi("/api/imageUpload").then((response) => {
-        if (
-          response !== undefined &&
-          response !== null &&
-          response !== "" &&
-          response.length !== 0
-        ) {
-          response.length !== 0 &&
-            response.map((item) => {
-              item?.images.length !== 0 &&
-                item?.images?.map((img) => {
-                  img_arr.push(img);
-                  //console.log(img)
-                });
-            });
-
-          uniqueArray = img_arr.filter(
-            (item, index) => img_arr.indexOf(item) === index
-          );
-
-          setPreviews([]);
-
-          const appendedArray = [...previews, ...uniqueArray];
-
-          setPreviews(uniqueArray);
-
-          const user = JSON.parse(localStorage.getItem("user"));
-
-          fetchDataFromApi(`/api/user/${user?.userId}`).then((res) => {
-            const data = {
-              name: res?.name,
-              email: res?.email,
-              phone: res?.phone,
-              images: uniqueArray,
-              isAdmin: res?.isAdmin
-            };
-
-            editData(`/api/user/${user?.userId}`, data).then((res) => {
-              setTimeout(() => {
-                setUploading(false);
-                img_arr = [];
-                context.setAlertBox({
-                  open: true,
-                  error: false,
-                  msg: "Images Uploaded!",
-                });
-                setUploading(false);
-              }, 200);
-            });
-          });
-        }
-      });
-    });
-  };
-
-  const edituser = (e) => {
-    e.preventDefault();
-
-    const appendedArray = [...previews, ...uniqueArray];
-
-    img_arr = [];
-    formdata.append("name", formFields.name);
-    formdata.append("email", formFields.email);
-    formdata.append("phone", formFields.phone);
-
-    formdata.append("images", appendedArray);
-
-    formFields.images = appendedArray;
-
-    if (
-      formFields.name !== "" &&
-      formFields.email !== "" &&
-      formFields.phone !== "" &&
-      previews.length !== 0
-    ) {
-      setIsLoading(true);
-      const user = JSON.parse(localStorage.getItem("user"));
-
-      editData(`/api/user/${user?.userId}`, formFields).then((res) => {
-        // console.log(res);
-        setIsLoading(false);
-
-        deleteData("/api/imageUpload/deleteAllImages");
-
-        context.setAlertBox({
-          open: true,
-          error: false,
-          msg: "user updated",
+    if (localUser?.userId) {
+      fetchDataFromApi(`/api/user/${localUser.userId}`)
+        .then((res) => {
+          if (res?.phone) setPhone(res.phone);
+        })
+        .catch(() => {
+          /* demo UI — local data only */
         });
-      });
-    } else {
-      context.setAlertBox({
-        open: true,
-        error: true,
-        msg: "Please fill all the details",
-      });
-      return false;
     }
-  };
+  }, [context, navigate]);
 
-  const changePassword = (e) => {
-    e.preventDefault();
-    formdata.append("password", fields.password);
+  const cartItems = Array.isArray(context?.cartData) ? context.cartData : [];
+  const cartCount = getCartItemCount(cartItems);
+  const cartSubtotal = cartItems.reduce(
+    (sum, item) => sum + parsePriceValue(item.price) * (item.quantity || 1),
+    0
+  );
 
-    if (
-      fields.oldPassword !== "" &&
-      fields.password !== "" &&
-      fields.confirmPassword !== ""
-    ) {
-      if (fields.password !== fields.confirmPassword) {
-        context.setAlertBox({
-          open: true,
-          error: true,
-          msg: "Password and confirm password not match",
-        });
-      } else {
-        const user = JSON.parse(localStorage.getItem("user"));
+  const orderStats = useMemo(() => {
+    const totalSpent = orders.reduce(
+      (sum, order) => sum + parsePriceValue(order.total),
+      0
+    );
+    const totalItems = orders.reduce(
+      (sum, order) => sum + getOrderItemCount(order),
+      0
+    );
+    return { totalSpent, totalItems };
+  }, [orders]);
 
-        const data = {
-          name: user?.name,
-          email: user?.email,
-          password: fields.oldPassword,
-          newPass: fields.password,
-          phone: formFields.phone,
-          images: formFields.images,
-        };
-
-        editData(`/api/user/changePassword/${user.userId}`, data).then(
-          (res) => {
-          
-          }
-        );
-      }
-    } else {
-      context.setAlertBox({
-        open: true,
-        error: true,
-        msg: "Please fill all the details",
-      });
-      return false;
-    }
-  };
+  const recentOrders = orders.slice(0, 3);
+  const cartPreview = cartItems.slice(0, 4);
+  const displayName = user?.name || "Guest";
+  const isAdmin = user?.role === "admin";
 
   return (
-    <section className="section myAccountPage">
-      <div className="container">
-        <h2 className="hd">My Account</h2>
+    <div className="my-account">
+      <div className="my-account__container">
+        <div className="my-account__header">
+          <p className="my-account__eyebrow">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.75" />
+              <path
+                d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+              />
+            </svg>
+            Account overview
+          </p>
+          <h1 className="my-account__title">My account</h1>
+          <p className="my-account__subtitle">
+            Welcome back, {displayName.split(" ")[0] || "friend"}. Here is a snapshot of
+            your profile, orders, and activity.
+          </p>
+        </div>
 
-        <Box sx={{ width: "100%" }} className="myAccBox card border-0">
-          <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-            <Tabs
-              value={value}
-              onChange={handleChange}
-              aria-label="basic tabs example"
-            >
-              <Tab label="Edit Profile" {...a11yProps(0)} />
-              <Tab label="Change Password" {...a11yProps(1)} />
-            </Tabs>
-          </Box>
-          <CustomTabPanel value={value} index={0}>
-            <form onSubmit={edituser}>
-              <div className="row">
-                <div className="col-md-4">
-                  <div className="userImage d-flex align-items-center justify-content-center">
-                    {uploading === true ? (
-                      <CircularProgress />
-                    ) : (
-                      <>
-                        {previews?.length !== 0 ? (
-                          previews?.map((img, index) => {
-                            return <img src={img} key={index} />;
-                          })
-                        ) : (
-                          <img src={NoUserImg} />
-                        )}
-                        <div className="overlay d-flex align-items-center justify-content-center">
-                          <IoMdCloudUpload />
-                          <input
-                            type="file"
-                            multiple
-                            onChange={(e) =>
-                              onChangeFile(e, "/api/user/upload")
-                            }
-                            name="images"
-                          />
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                <div className="col-md-8">
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <TextField
-                          label="Name"
-                          variant="outlined"
-                          className="w-100"
-                          name="name"
-                          onChange={changeInput}
-                          value={formFields.name}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <TextField
-                          label="Email"
-                          disabled
-                          variant="outlined"
-                          className="w-100"
-                          name="email"
-                          onChange={changeInput}
-                          value={formFields.email}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <TextField
-                          label="Phone"
-                          variant="outlined"
-                          className="w-100"
-                          name="phone"
-                          onChange={changeInput}
-                          value={formFields.phone}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="form-group">
-                    <Button
-                      type="submit"
-                      className="btn-blue bg-red btn-lg btn-big"
-                    >
-                      {isLoading === true ? <CircularProgress /> : "Save"}
-                    </Button>
-                  </div>
-                </div>
+        <div className="my-account__layout">
+          <aside className="my-account__sidebar">
+            <div className="my-account__profile-card">
+              <div className="my-account__avatar-wrap">
+                <UserAvatarImgComponent
+                  lg
+                  img={user?.image}
+                  userName={displayName.toUpperCase()}
+                />
               </div>
-            </form>
-          </CustomTabPanel>
-          <CustomTabPanel value={value} index={1}>
-            <form onSubmit={changePassword}>
-              <div className="row">
-                <div className="col-md-12">
-                  <div className="row">
-                    <div className="col-md-4">
-                      <div className="form-group">
-                        <TextField
-                          label="Old Password"
-                          variant="outlined"
-                          className="w-100"
-                          name="oldPassword"
-                          onChange={changeInput2}
-                        />
-                      </div>
-                    </div>
+              <h2 className="my-account__profile-name">{displayName}</h2>
+              <p className="my-account__profile-email">{user?.email || "—"}</p>
+              <span
+                className={`my-account__badge${isAdmin ? " my-account__badge--admin" : ""}`}
+              >
+                {isAdmin ? "Admin account" : "CraftzLK member"}
+              </span>
+            </div>
 
-                    <div className="col-md-4">
-                      <div className="form-group">
-                        <TextField
-                          label="New password"
-                          variant="outlined"
-                          className="w-100"
-                          name="password"
-                          onChange={changeInput2}
-                        />
-                      </div>
-                    </div>
+            <ul className="my-account__quick-links">
+              <li>
+                <Link to="/orders" className="my-account__quick-link">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path
+                      d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"
+                      stroke="currentColor"
+                      strokeWidth="1.75"
+                      strokeLinecap="round"
+                    />
+                    <rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" strokeWidth="1.75" />
+                  </svg>
+                  View all orders
+                </Link>
+              </li>
+              <li>
+                <Link to={COLLECTIONS_ALL_PATH} className="my-account__quick-link">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path
+                      d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"
+                      stroke="currentColor"
+                      strokeWidth="1.75"
+                      strokeLinejoin="round"
+                    />
+                    <path d="M3 6h18" stroke="currentColor" strokeWidth="1.75" />
+                  </svg>
+                  Continue shopping
+                </Link>
+              </li>
+              <li>
+                <Link to="/cart" className="my-account__quick-link">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path
+                      d="M6 6h15l-1.5 9h-12L6 6Z"
+                      stroke="currentColor"
+                      strokeWidth="1.75"
+                      strokeLinejoin="round"
+                    />
+                    <path d="M6 6 5 3H2" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+                    <circle cx="9" cy="20" r="1.5" fill="currentColor" />
+                    <circle cx="18" cy="20" r="1.5" fill="currentColor" />
+                  </svg>
+                  View cart
+                </Link>
+              </li>
+              {isAdmin && (
+                <li>
+                  <Link to="/dashboard" className="my-account__quick-link">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.75" />
+                      <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.75" />
+                      <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.75" />
+                      <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.75" />
+                    </svg>
+                    Admin dashboard
+                  </Link>
+                </li>
+              )}
+            </ul>
+          </aside>
 
-                    <div className="col-md-4">
-                      <div className="form-group">
-                        <TextField
-                          label="Confirm Password"
-                          variant="outlined"
-                          className="w-100"
-                          name="confirmPassword"
-                          onChange={changeInput2}
-                        />
-                      </div>
-                    </div>
-                  </div>
+          <div className="my-account__main">
+            <div className="my-account__stats">
+              <div className="my-account__stat">
+                <span className="my-account__stat-value my-account__stat-value--accent">
+                  {orders.length}
+                </span>
+                <span className="my-account__stat-label">Orders</span>
+              </div>
+              <div className="my-account__stat">
+                <span className="my-account__stat-value">
+                  {formatRs(orderStats.totalSpent)}
+                </span>
+                <span className="my-account__stat-label">Total spent</span>
+              </div>
+              <div className="my-account__stat">
+                <span className="my-account__stat-value">{cartCount}</span>
+                <span className="my-account__stat-label">Items in cart</span>
+              </div>
+              <div className="my-account__stat">
+                <span className="my-account__stat-value">{orderStats.totalItems}</span>
+                <span className="my-account__stat-label">Items purchased</span>
+              </div>
+            </div>
 
-                  <div className="form-group">
-                    <Button
-                      type="submit"
-                      className="btn-blue bg-red btn-lg btn-big"
-                    >
-                      {" "}
-                      Save
-                    </Button>
+            <section className="my-account__panel" aria-labelledby="account-details-heading">
+              <div className="my-account__panel-head">
+                <h2 id="account-details-heading" className="my-account__panel-title">
+                  Account details
+                </h2>
+              </div>
+              <dl className="my-account__details">
+                <div className="my-account__detail">
+                  <dt className="my-account__detail-label">Full name</dt>
+                  <dd className="my-account__detail-value">{displayName}</dd>
+                </div>
+                <div className="my-account__detail">
+                  <dt className="my-account__detail-label">Email address</dt>
+                  <dd className="my-account__detail-value">{user?.email || "—"}</dd>
+                </div>
+                <div className="my-account__detail">
+                  <dt className="my-account__detail-label">Phone number</dt>
+                  <dd className="my-account__detail-value">{phone || "Not provided"}</dd>
+                </div>
+                <div className="my-account__detail">
+                  <dt className="my-account__detail-label">Account ID</dt>
+                  <dd className="my-account__detail-value">{user?.userId || "—"}</dd>
+                </div>
+              </dl>
+            </section>
+
+            <section className="my-account__panel" aria-labelledby="recent-orders-heading">
+              <div className="my-account__panel-head">
+                <h2 id="recent-orders-heading" className="my-account__panel-title">
+                  Recent orders
+                </h2>
+                {orders.length > 0 && (
+                  <Link to="/orders" className="my-account__panel-link">
+                    View all →
+                  </Link>
+                )}
+              </div>
+
+              {recentOrders.length > 0 ? (
+                <ul className="my-account__orders">
+                  {recentOrders.map((order) => (
+                    <li key={order.orderId} className="my-account__order">
+                      <div>
+                        <span className="my-account__order-id">{order.orderId}</span>
+                        <p className="my-account__order-meta">
+                          {order.date} · {getItemPreview(order)} ·{" "}
+                          {PAYMENT_LABELS[order.paymentMethod] || order.paymentMethod}
+                        </p>
+                      </div>
+                      <div className="my-account__order-right">
+                        <span className="my-account__order-total">
+                          {formatRs(order.total)}
+                        </span>
+                        <span className="my-account__order-status">
+                          {order.status || "Confirmed"}
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="my-account__empty">
+                  <h3 className="my-account__empty-title">No orders yet</h3>
+                  <p className="my-account__empty-text">
+                    When you place an order, it will appear here for quick reference.
+                  </p>
+                  <Link to={COLLECTIONS_ALL_PATH} className="my-account__btn">
+                    Start shopping
+                  </Link>
+                </div>
+              )}
+            </section>
+
+            <section className="my-account__panel" aria-labelledby="cart-preview-heading">
+              <div className="my-account__panel-head">
+                <h2 id="cart-preview-heading" className="my-account__panel-title">
+                  Cart preview
+                </h2>
+                {cartCount > 0 && (
+                  <Link to="/cart" className="my-account__panel-link">
+                    Go to cart →
+                  </Link>
+                )}
+              </div>
+
+              {cartPreview.length > 0 ? (
+                <div className="my-account__cart-preview">
+                  {cartPreview.map((item) => {
+                    const key = item._id || item.id || item.productId;
+                    const lineTotal =
+                      item.subTotal ??
+                      parsePriceValue(item.price) * (item.quantity || 1);
+                    return (
+                      <div key={key} className="my-account__cart-item">
+                        <span>
+                          {item.productTitle}
+                          <span className="my-account__cart-qty">
+                            {" "}
+                            × {item.quantity || 1}
+                          </span>
+                        </span>
+                        <span>{formatRs(lineTotal)}</span>
+                      </div>
+                    );
+                  })}
+                  <div className="my-account__cart-item">
+                    <strong>Cart subtotal</strong>
+                    <strong>{formatRs(cartSubtotal)}</strong>
                   </div>
                 </div>
-              </div>
-            </form>
-          </CustomTabPanel>
-        </Box>
+              ) : (
+                <div className="my-account__empty">
+                  <h3 className="my-account__empty-title">Your cart is empty</h3>
+                  <p className="my-account__empty-text">
+                    Browse our handcrafted collections and add something you love.
+                  </p>
+                  <Link to={COLLECTIONS_ALL_PATH} className="my-account__btn">
+                    Browse collections
+                  </Link>
+                </div>
+              )}
+            </section>
+          </div>
+        </div>
       </div>
-    </section>
+    </div>
   );
 };
 

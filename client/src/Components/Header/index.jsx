@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
 import CountryDropdown from "../CountryDropdown/index.jsx";
 import { FiUser } from "react-icons/fi";
-import { IoBagOutline, IoPersonOutline, IoBagCheckOutline, IoHeartOutline, IoLogOutOutline, IoGitCompareOutline, IoGridOutline } from "react-icons/io5";
+import { IoBagOutline, IoPersonOutline, IoBagCheckOutline, IoLogOutOutline, IoGridOutline } from "react-icons/io5";
 import SecondaryCategoryNav from "./SecondaryCategoryNav/index.jsx";
 import { useContext } from "react";
 import { MyContext } from "../../App";
@@ -450,28 +450,12 @@ const Header = () => {
                               Orders
                             </MenuItem>
                           </Link>
-                          <Link to="/my-list">
-                            <MenuItem onClick={handleClose}>
-                              <ListItemIcon>
-                                <IoHeartOutline />
-                              </ListItemIcon>
-                              My List
-                            </MenuItem>
-                          </Link>
                           <MenuItem onClick={logout}>
                             <ListItemIcon>
                               <IoLogOutOutline />
                             </ListItemIcon>
                             Logout
                           </MenuItem>
-                          <Link to="/compare">
-                            <MenuItem onClick={handleClose}>
-                              <ListItemIcon>
-                                <IoGitCompareOutline />
-                              </ListItemIcon>
-                              Compare
-                            </MenuItem>
-                          </Link>
                         </Menu>
                       </div>
                     )}

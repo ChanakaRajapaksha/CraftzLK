@@ -1,0 +1,480 @@
+.my-account {
+  position: relative;
+  min-height: 70vh;
+  padding: 2.5rem clamp(2.5rem, 6vw, 5rem) 5rem;
+  background-color: transparent;
+  background-image:
+    radial-gradient(38rem 24rem at 110% -5%, rgba(201, 169, 97, 0.16), transparent 65%),
+    radial-gradient(30rem 22rem at -10% 35%, rgba(184, 134, 11, 0.1), transparent 60%),
+    radial-gradient(34rem 26rem at 105% 95%, rgba(232, 213, 163, 0.22), transparent 62%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23b8860b' stroke-width='1'%3E%3Cpath d='M28 2 54 28 28 54 2 28Z' opacity='0.10'/%3E%3Cpath d='M28 12 44 28 28 44 12 28Z' opacity='0.07'/%3E%3Ccircle cx='28' cy='28' r='2.2' opacity='0.10'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat;
+  background-size: auto, auto, auto, 56px 56px;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  overflow: hidden;
+}
+
+.my-account::before,
+.my-account::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(60px);
+  z-index: 0;
+}
+
+.my-account::before {
+  top: -6rem;
+  right: -7rem;
+  width: 22rem;
+  height: 22rem;
+  background: radial-gradient(circle, rgba(201, 169, 97, 0.28) 0%, transparent 70%);
+}
+
+.my-account::after {
+  bottom: -8rem;
+  left: -8rem;
+  width: 26rem;
+  height: 26rem;
+  background: radial-gradient(circle, rgba(184, 134, 11, 0.18) 0%, transparent 70%);
+}
+
+.my-account__container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 96rem;
+  margin: 0 auto;
+}
+
+.my-account__header {
+  margin-bottom: 2rem;
+  animation: ma-rise 0.55s ease-out both;
+}
+
+.my-account__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0 0 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--primary-dark, #b8860b);
+}
+
+.my-account__eyebrow svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.my-account__title {
+  margin: 0 0 0.45rem;
+  font-family: var(--font-heading, "Playfair Display", serif);
+  font-size: clamp(1.85rem, 4.5vw, 2.5rem);
+  font-weight: 600;
+  color: #1f1a14;
+  letter-spacing: -0.02em;
+}
+
+.my-account__subtitle {
+  margin: 0;
+  font-size: 1.02rem;
+  color: #5c4d3a;
+}
+
+.my-account__layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (min-width: 992px) {
+  .my-account__layout {
+    grid-template-columns: minmax(17rem, 22rem) 1fr;
+  }
+}
+
+.my-account__sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  animation: ma-rise 0.55s ease-out 0.1s both;
+}
+
+.my-account__profile-card {
+  padding: 1.5rem;
+  border: 1px solid rgba(201, 169, 97, 0.4);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 28px rgba(92, 77, 58, 0.07);
+  text-align: center;
+}
+
+.my-account__avatar-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.my-account__avatar-wrap .userImg.lg .rounded-circle {
+  width: 5.5rem;
+  height: 5.5rem;
+  font-size: 1.75rem;
+}
+
+.my-account__profile-name {
+  margin: 0 0 0.25rem;
+  font-family: var(--font-heading, "Playfair Display", serif);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #1f1a14;
+}
+
+.my-account__profile-email {
+  margin: 0 0 0.85rem;
+  font-size: 0.9rem;
+  color: #5c4d3a;
+  word-break: break-all;
+}
+
+.my-account__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(184, 134, 11, 0.12);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--primary-dark, #b8860b);
+}
+
+.my-account__badge--admin {
+  background: rgba(34, 139, 34, 0.12);
+  color: #2d6a2d;
+}
+
+.my-account__quick-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 1.15rem;
+  border: 1px solid rgba(201, 169, 97, 0.4);
+  border-radius: 16px;
+  background: rgba(255, 253, 247, 0.82);
+  backdrop-filter: blur(6px);
+  list-style: none;
+  margin: 0;
+}
+
+.my-account__quick-link {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #3d2f1f;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.my-account__quick-link:hover {
+  background: rgba(201, 169, 97, 0.14);
+  color: var(--primary-dark, #b8860b);
+}
+
+.my-account__quick-link svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  flex-shrink: 0;
+  color: var(--primary-dark, #b8860b);
+}
+
+.my-account__main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: ma-rise 0.55s ease-out 0.18s both;
+}
+
+.my-account__stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  border: 1px dashed rgba(184, 134, 11, 0.45);
+  border-radius: 14px;
+  background: rgba(184, 134, 11, 0.18);
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .my-account__stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.my-account__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1.1rem 1rem;
+  background: rgba(255, 253, 247, 0.82);
+  backdrop-filter: blur(6px);
+}
+
+.my-account__stat-value {
+  font-family: var(--font-heading, "Playfair Display", serif);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #1f1a14;
+}
+
+.my-account__stat-value--accent {
+  color: var(--primary-dark, #b8860b);
+}
+
+.my-account__stat-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9a8b78;
+}
+
+.my-account__panel {
+  padding: 1.45rem clamp(1.15rem, 3vw, 1.65rem);
+  border: 1px solid rgba(201, 169, 97, 0.4);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 28px rgba(92, 77, 58, 0.07);
+}
+
+.my-account__panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.15rem;
+}
+
+.my-account__panel-title {
+  margin: 0;
+  font-family: var(--font-heading, "Playfair Display", serif);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1f1a14;
+}
+
+.my-account__panel-link {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--primary-dark, #b8860b);
+  text-decoration: none;
+}
+
+.my-account__panel-link:hover {
+  text-decoration: underline;
+}
+
+.my-account__details {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.85rem;
+  margin: 0;
+}
+
+@media (min-width: 640px) {
+  .my-account__details {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.my-account__detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: rgba(245, 241, 232, 0.65);
+}
+
+.my-account__detail-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9a8b78;
+}
+
+.my-account__detail-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1f1a14;
+  word-break: break-word;
+}
+
+.my-account__orders {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.my-account__order {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px dashed rgba(201, 169, 97, 0.45);
+  border-radius: 12px;
+  background: rgba(255, 253, 247, 0.7);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.my-account__order:hover {
+  border-color: rgba(184, 134, 11, 0.55);
+  background: rgba(255, 253, 247, 0.95);
+}
+
+.my-account__order-id {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--primary-dark, #b8860b);
+}
+
+.my-account__order-meta {
+  margin: 0.2rem 0 0;
+  font-size: 0.84rem;
+  color: #5c4d3a;
+}
+
+.my-account__order-right {
+  text-align: right;
+}
+
+.my-account__order-total {
+  display: block;
+  font-family: var(--font-heading, "Playfair Display", serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1f1a14;
+}
+
+.my-account__order-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.25rem;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(34, 139, 34, 0.12);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #2d6a2d;
+}
+
+.my-account__empty {
+  padding: 2rem 1.25rem;
+  border: 1px dashed rgba(184, 134, 11, 0.45);
+  border-radius: 12px;
+  background: rgba(255, 253, 247, 0.7);
+  text-align: center;
+}
+
+.my-account__empty-title {
+  margin: 0 0 0.45rem;
+  font-family: var(--font-heading, "Playfair Display", serif);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1f1a14;
+}
+
+.my-account__empty-text {
+  margin: 0 0 1rem;
+  font-size: 0.92rem;
+  color: #5c4d3a;
+}
+
+.my-account__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.6rem;
+  border-radius: 999px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+  background: var(--primary-dark, #b8860b);
+  color: #fffdf7;
+  box-shadow: 0 8px 20px rgba(184, 134, 11, 0.32);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.my-account__btn:hover {
+  background: #9a7009;
+  color: #fffdf7;
+  transform: translateY(-2px);
+}
+
+.my-account__cart-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.my-account__cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px dashed rgba(201, 169, 97, 0.35);
+  font-size: 0.9rem;
+  color: #3d2f1f;
+}
+
+.my-account__cart-item:last-child {
+  border-bottom: none;
+}
+
+.my-account__cart-qty {
+  color: #9a8b78;
+  font-size: 0.85rem;
+}
+
+@keyframes ma-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .my-account *,
+  .my-account *::before,
+  .my-account *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+  }
+}
