@@ -43,25 +43,31 @@ import {
 } from "./utils/cartHelpers";
 import Compare from "./Pages/Compare/index.jsx";
 import { Toaster } from "sonner";
-import AdminGuard from "./Pages/Admin/AdminGuard";
-import AdminLayout from "./Pages/Admin/AdminLayout";
-import AdminDashboard from "./Pages/Admin/Dashboard/index.jsx";
-import AdminPlaceholder from "./Pages/Admin/AdminPlaceholder";
-import CategoryList from "./Pages/Admin/Category/CategoryList";
-import AddCategory from "./Pages/Admin/Category/AddCategory";
-import SubCategoryList from "./Pages/Admin/Category/SubCategoryList";
-import AddSubCategory from "./Pages/Admin/Category/AddSubCategory";
-import EditCategory from "./Pages/Admin/Category/EditCategory";
-import EditSubCategory from "./Pages/Admin/Category/EditSubCategory";
-import ProductList from "./Pages/Admin/Products/ProductList";
-import AddProductRAMS from "./Pages/Admin/Products/AddProductRAMS";
-import AddProductWeight from "./Pages/Admin/Products/AddProductWeight";
-import AddProductSize from "./Pages/Admin/Products/AddProductSize";
-import AdminOrders from "./Pages/Admin/Orders/index.jsx";
-import HomeMainBannerList from "./Pages/Admin/Banners/HomeMainBannerList";
-import BannersList from "./Pages/Admin/Banners/BannersList";
-import HomeSideBannersList from "./Pages/Admin/Banners/HomeSideBannersList";
-import HomeBottomBannersList from "./Pages/Admin/Banners/HomeBottomBannersList";
+import AdminGuard from "./Components/AdminDashboard/AdminGuard";
+import AdminLayout from "./Components/AdminDashboard/AdminLayout";
+import AdminDashboardHome from "./Pages/AdminDashboard/Dashboard/index.jsx";
+import CategoryList from "./Pages/AdminDashboard/Categories/CategoryList";
+import AddCategory from "./Pages/AdminDashboard/Categories/AddCategory";
+import EditCategory from "./Pages/AdminDashboard/Categories/EditCategory";
+import SubCategoryList from "./Pages/AdminDashboard/Categories/SubCategoryList";
+import AddSubCategory from "./Pages/AdminDashboard/Categories/AddSubCategory";
+import EditSubCategory from "./Pages/AdminDashboard/Categories/EditSubCategory";
+import ProductList from "./Pages/AdminDashboard/Products/ProductList";
+import ProductUpload from "./Pages/AdminDashboard/Products/ProductUpload";
+import ProductDetails from "./Pages/AdminDashboard/Products/ProductDetails";
+import ProductEdit from "./Pages/AdminDashboard/Products/ProductEdit";
+import AddProductRAMS from "./Pages/AdminDashboard/Products/AddProductRAMS";
+import AddProductWeight from "./Pages/AdminDashboard/Products/AddProductWeight";
+import AddProductSize from "./Pages/AdminDashboard/Products/AddProductSize";
+import HomeMainBannerList from "./Pages/AdminDashboard/Banners/HomeMainBannerList";
+import HomeMainBannerForm from "./Pages/AdminDashboard/Banners/HomeMainBannerForm";
+import BannersList from "./Pages/AdminDashboard/Banners/BannersList";
+import SlideBannerForm from "./Pages/AdminDashboard/Banners/SlideBannerForm";
+import HomeSideBannersList from "./Pages/AdminDashboard/Banners/HomeSideBannersList";
+import SideBannerForm from "./Pages/AdminDashboard/Banners/SideBannerForm";
+import HomeBottomBannersList from "./Pages/AdminDashboard/Banners/HomeBottomBannersList";
+import BottomBannerForm from "./Pages/AdminDashboard/Banners/BottomBannerForm";
+import AdminOrders from "./Pages/AdminDashboard/Orders/index.jsx";
 
 // Default context value so consumers never get undefined (e.g. before Provider mounts or in edge cases)
 const defaultContextValue = {
@@ -499,9 +505,9 @@ function AppContent() {
         <Route exact={true} path="/verifyOTP" element={<VerifyOTP />} />
         <Route exact={true} path="/changePassword" element={<ChangePassword />} />
 
-        {/* Admin dashboard (role=admin only, same port; no separate admin app) */}
+        {/* Admin dashboard (admin role only) */}
         <Route path="/dashboard" element={<AdminGuard><AdminLayout /></AdminGuard>}>
-          <Route index element={<AdminDashboard />} />
+          <Route index element={<AdminDashboardHome />} />
           <Route path="category" element={<CategoryList />} />
           <Route path="category/add" element={<AddCategory />} />
           <Route path="category/edit/:id" element={<EditCategory />} />
@@ -509,24 +515,24 @@ function AppContent() {
           <Route path="subCategory/add" element={<AddSubCategory />} />
           <Route path="subCategory/edit/:id" element={<EditSubCategory />} />
           <Route path="products" element={<ProductList />} />
-          <Route path="product/upload" element={<AdminPlaceholder title="Product Upload" />} />
-          <Route path="product/details/:id" element={<AdminPlaceholder title="Product Details" />} />
-          <Route path="product/edit/:id" element={<AdminPlaceholder title="Edit Product" />} />
+          <Route path="product/upload" element={<ProductUpload />} />
+          <Route path="product/details/:id" element={<ProductDetails />} />
+          <Route path="product/edit/:id" element={<ProductEdit />} />
           <Route path="productRAMS/add" element={<AddProductRAMS />} />
           <Route path="productWEIGHT/add" element={<AddProductWeight />} />
           <Route path="productSIZE/add" element={<AddProductSize />} />
           <Route path="homeBannerSlide/list" element={<HomeMainBannerList />} />
-          <Route path="homeBannerSlide/add" element={<AdminPlaceholder title="Add Home Banner" />} />
-          <Route path="homeBannerSlide/edit/:id" element={<AdminPlaceholder title="Edit Home Banner" />} />
+          <Route path="homeBannerSlide/add" element={<HomeMainBannerForm />} />
+          <Route path="homeBannerSlide/edit/:id" element={<HomeMainBannerForm />} />
           <Route path="banners" element={<BannersList />} />
-          <Route path="banners/add" element={<AdminPlaceholder title="Add Banner" />} />
-          <Route path="banners/edit/:id" element={<AdminPlaceholder title="Edit Banner" />} />
+          <Route path="banners/add" element={<SlideBannerForm />} />
+          <Route path="banners/edit/:id" element={<SlideBannerForm />} />
           <Route path="homeSideBanners" element={<HomeSideBannersList />} />
-          <Route path="homeSideBanners/add" element={<AdminPlaceholder title="Add Home Side Banner" />} />
-          <Route path="homeSideBanners/edit/:id" element={<AdminPlaceholder title="Edit Home Side Banner" />} />
+          <Route path="homeSideBanners/add" element={<SideBannerForm />} />
+          <Route path="homeSideBanners/edit/:id" element={<SideBannerForm />} />
           <Route path="homeBottomBanners" element={<HomeBottomBannersList />} />
-          <Route path="homeBottomBanners/add" element={<AdminPlaceholder title="Add Home Bottom Banner" />} />
-          <Route path="homeBottomBanners/edit/:id" element={<AdminPlaceholder title="Edit Home Bottom Banner" />} />
+          <Route path="homeBottomBanners/add" element={<BottomBannerForm />} />
+          <Route path="homeBottomBanners/edit/:id" element={<BottomBannerForm />} />
           <Route path="orders" element={<AdminOrders />} />
         </Route>
       </Routes>

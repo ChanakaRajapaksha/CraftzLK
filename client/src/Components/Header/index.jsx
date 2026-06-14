@@ -46,6 +46,17 @@ const Header = () => {
   const context = useContext(MyContext);
   const cartBadgeCount = getCartItemCount(context.cartData);
 
+  const getUserRole = () => {
+    if (context?.user?.role) return context.user.role;
+    try {
+      const stored = localStorage.getItem("user");
+      return stored ? JSON.parse(stored)?.role : null;
+    } catch {
+      return null;
+    }
+  };
+  const isAdmin = getUserRole() === "admin";
+
   useEffect(() => {
     if (headerRef.current) {
       const resizeObserver = new ResizeObserver((entries) => {
@@ -424,16 +435,6 @@ const Header = () => {
                             </div>
                           </div>
 
-                          {context?.user?.role === "admin" && (
-                            <Link to="/dashboard">
-                              <MenuItem onClick={handleClose}>
-                                <ListItemIcon>
-                                  <IoGridOutline />
-                                </ListItemIcon>
-                                Dashboard
-                              </MenuItem>
-                            </Link>
-                          )}
                           <Link to="/my-account">
                             <MenuItem onClick={handleClose}>
                               <ListItemIcon>
@@ -450,6 +451,16 @@ const Header = () => {
                               Orders
                             </MenuItem>
                           </Link>
+                          {isAdmin && (
+                            <Link to="/dashboard">
+                              <MenuItem onClick={handleClose}>
+                                <ListItemIcon>
+                                  <IoGridOutline />
+                                </ListItemIcon>
+                                Dashboard
+                              </MenuItem>
+                            </Link>
+                          )}
                           <MenuItem onClick={logout}>
                             <ListItemIcon>
                               <IoLogOutOutline />

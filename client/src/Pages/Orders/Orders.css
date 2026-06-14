@@ -5,14 +5,10 @@
   /* Transparent base — the site's cream gradient shows through; pattern layered on top */
   background-color: transparent;
   background-image:
-    /* soft gold glows */
     radial-gradient(38rem 24rem at 110% -5%, rgba(201, 169, 97, 0.16), transparent 65%),
     radial-gradient(30rem 22rem at -10% 35%, rgba(184, 134, 11, 0.1), transparent 60%),
-    radial-gradient(34rem 26rem at 105% 95%, rgba(232, 213, 163, 0.22), transparent 62%),
-    /* handcrafted diamond-lattice weave */
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23b8860b' stroke-width='1'%3E%3Cpath d='M28 2 54 28 28 54 2 28Z' opacity='0.10'/%3E%3Cpath d='M28 12 44 28 28 44 12 28Z' opacity='0.07'/%3E%3Ccircle cx='28' cy='28' r='2.2' opacity='0.10'/%3E%3Ccircle cx='0' cy='0' r='1.4' opacity='0.08'/%3E%3Ccircle cx='56' cy='0' r='1.4' opacity='0.08'/%3E%3Ccircle cx='0' cy='56' r='1.4' opacity='0.08'/%3E%3Ccircle cx='56' cy='56' r='1.4' opacity='0.08'/%3E%3C/g%3E%3C/svg%3E");
-  background-repeat: no-repeat, no-repeat, no-repeat, repeat;
-  background-size: auto, auto, auto, 56px 56px;
+    radial-gradient(34rem 26rem at 105% 95%, rgba(232, 213, 163, 0.22), transparent 62%);
+  background-repeat: no-repeat, no-repeat, no-repeat;
   font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
   overflow: hidden;
 }

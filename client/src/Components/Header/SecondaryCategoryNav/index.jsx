@@ -154,12 +154,22 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
 
   const cartTotalFormatted = formatCartTotal(context.cartData);
 
+  const getUserRole = () => {
+    if (context?.user?.role) return context.user.role;
+    try {
+      const stored = localStorage.getItem("user");
+      return stored ? JSON.parse(stored)?.role : null;
+    } catch {
+      return null;
+    }
+  };
+
   const drawerAccountLinks = [
-    ...(context?.user?.role === "admin"
-      ? [{ label: "Dashboard", to: "/dashboard", icon: IoGridOutline }]
-      : []),
     { label: "My Account", to: "/my-account", icon: IoPersonOutline },
     { label: "Orders", to: "/orders", icon: IoBagCheckOutline },
+    ...(getUserRole() === "admin"
+      ? [{ label: "Dashboard", to: "/dashboard", icon: IoGridOutline }]
+      : []),
   ];
 
   const showMobileDrawerUser =
