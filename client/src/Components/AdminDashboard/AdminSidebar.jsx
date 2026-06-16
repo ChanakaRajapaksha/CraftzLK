@@ -85,7 +85,7 @@ export default function AdminSidebar() {
                   <ul className="admin-dash__subnav">
                     {item.children.map((child) => (
                       <li key={child.path}>
-                        <NavLink to={child.path} end={child.path === `${ADMIN_BASE}/category` || child.path === `${ADMIN_BASE}/products` || child.path === `${ADMIN_BASE}/banners` || child.path === `${ADMIN_BASE}/homeSideBanners` || child.path === `${ADMIN_BASE}/homeBottomBanners`}>
+                        <NavLink to={child.path} end={child.path === ADMIN_BASE || child.path === `${ADMIN_BASE}/category` || child.path === `${ADMIN_BASE}/products` || child.path === `${ADMIN_BASE}/banners` || child.path === `${ADMIN_BASE}/homeSideBanners` || child.path === `${ADMIN_BASE}/homeBottomBanners`}>
                           {child.label}
                         </NavLink>
                       </li>

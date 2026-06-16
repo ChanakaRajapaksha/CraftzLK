@@ -1,7 +1,15 @@
 export const ADMIN_BASE = "/dashboard";
 
 export const adminNavItems = [
-  { key: "dashboard", label: "Dashboard", path: ADMIN_BASE, end: true },
+  {
+    key: "dashboard",
+    label: "Dashboard",
+    children: [
+      { label: "Dashboard Home", path: ADMIN_BASE },
+      { label: "Sales Analytics", path: `${ADMIN_BASE}?tab=sales` },
+      { label: "Store Performance", path: `${ADMIN_BASE}?tab=performance` },
+    ],
+  },
   {
     key: "category",
     label: "Category",
