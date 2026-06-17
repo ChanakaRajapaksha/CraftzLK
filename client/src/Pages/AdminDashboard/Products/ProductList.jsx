@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useOutletContext } from "react-router-dom";
-import { FaEye, FaPencilAlt } from "react-icons/fa";
+import { FaEye, FaFileExport, FaPencilAlt } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
+import AdminConfirmDialog from "../../../Components/AdminDashboard/AdminConfirmDialog";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
 import { MdShoppingBag, MdCategory } from "react-icons/md";
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
 import { deleteData, fetchDataFromApi, postData } from "../../../utils/api";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import { getProductListSampleData, isSampleProductId } from "./productListSampleData";
+import PriceRangeFilter, { getProductPriceBounds } from "../../../Components/AdminDashboard/PriceRangeFilter";
 
 function formatDate(value) {
   if (!value) return "—";
@@ -46,13 +48,13 @@ export default function ProductList() {
   const [selected, setSelected] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [categoryVal, setCategoryVal] = useState("all");
-  const [priceMin, setPriceMin] = useState("");
-  const [priceMax, setPriceMax] = useState("");
+  const [priceRange, setPriceRange] = useState(null);
   const [stockFilter, setStockFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [usingSampleData, setUsingSampleData] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const applySampleProducts = () => {
     setProducts(getProductListSampleData());
@@ -87,6 +89,8 @@ export default function ProductList() {
     fetchDataFromApi("/api/category/subCat/get/count").then((res) => setTotalSubCategory(res?.categoryCount ?? 0));
   }, []);
 
+  const priceBounds = useMemo(() => getProductPriceBounds(products), [products]);
+
   const filtered = useMemo(() => {
     let list = [...products];
 
@@ -104,8 +108,11 @@ export default function ProductList() {
       );
     }
 
-    if (priceMin !== "") list = list.filter((p) => Number(p.price) >= Number(priceMin));
-    if (priceMax !== "") list = list.filter((p) => Number(p.price) <= Number(priceMax));
+    if (priceRange) {
+      list = list.filter(
+        (p) => Number(p.price) >= priceRange[0] && Number(p.price) <= priceRange[1]
+      );
+    }
 
     if (stockFilter === "in_stock") list = list.filter((p) => Number(p.countInStock) > 0);
     if (stockFilter === "low_stock") list = list.filter((p) => Number(p.countInStock) > 0 && Number(p.countInStock) <= Number(p.minStockAlert || 5));
@@ -115,7 +122,7 @@ export default function ProductList() {
     if (statusFilter === "inactive") list = list.filter((p) => (p.status || "active") === "inactive");
 
     return list;
-  }, [products, searchKeyword, categoryVal, priceMin, priceMax, stockFilter, statusFilter, catData, usingSampleData]);
+  }, [products, searchKeyword, categoryVal, priceRange, stockFilter, statusFilter, catData, usingSampleData]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
   const slice = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
@@ -141,6 +148,16 @@ export default function ProductList() {
       setSelected((prev) => prev.filter((x) => x !== id));
       loadProducts();
     });
+  };
+
+  const requestDeleteProduct = (item) => {
+    setDeleteTarget({ id: item.id || item._id, name: item.name });
+  };
+
+  const confirmDeleteProduct = () => {
+    if (!deleteTarget) return;
+    deleteProduct(deleteTarget.id);
+    setDeleteTarget(null);
   };
 
   const bulkDelete = () => {
@@ -202,33 +219,48 @@ export default function ProductList() {
         {usingSampleData && (
           <p className="admin-dash__sample-banner">Showing sample handmade products — connect live data via Add Product or your API.</p>
         )}
-        <div className="admin-dash__toolbar admin-dash__toolbar--wrap">
+        <div className="admin-dash__toolbar admin-dash__toolbar--wrap admin-dash__toolbar--filters">
           <input
             className="admin-dash__input"
             style={{ maxWidth: "14rem" }}
             placeholder="Search products…"
+            aria-label="Search products"
             value={searchKeyword}
             onChange={(e) => { setSearchKeyword(e.target.value); setPage(0); }}
           />
-          <select className="admin-dash__select" style={{ maxWidth: "12rem" }} value={categoryVal} onChange={(e) => { setCategoryVal(e.target.value); setPage(0); }}>
+          <select className="admin-dash__select" style={{ maxWidth: "12rem" }} value={categoryVal} onChange={(e) => { setCategoryVal(e.target.value); setPage(0); }} aria-label="Filter by category">
             <option value="all">All categories</option>
             {catData?.categoryList?.map((cat) => (
               <option key={cat._id} value={cat._id}>{cat.name}</option>
             ))}
           </select>
-          <input className="admin-dash__input" style={{ maxWidth: "7rem" }} type="number" placeholder="Min price" value={priceMin} onChange={(e) => setPriceMin(e.target.value)} />
-          <input className="admin-dash__input" style={{ maxWidth: "7rem" }} type="number" placeholder="Max price" value={priceMax} onChange={(e) => setPriceMax(e.target.value)} />
-          <select className="admin-dash__select" style={{ maxWidth: "10rem" }} value={stockFilter} onChange={(e) => setStockFilter(e.target.value)}>
+          <PriceRangeFilter
+            bounds={priceBounds}
+            value={priceRange}
+            onApply={(range) => {
+              setPriceRange(range);
+              setPage(0);
+            }}
+          />
+          <select className="admin-dash__select" style={{ maxWidth: "10rem" }} value={stockFilter} onChange={(e) => { setStockFilter(e.target.value); setPage(0); }} aria-label="Filter by stock">
             <option value="all">All stock</option>
             <option value="in_stock">In stock</option>
             <option value="low_stock">Low stock</option>
             <option value="out_of_stock">Out of stock</option>
           </select>
-          <select className="admin-dash__select" style={{ maxWidth: "10rem" }} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+          <select className="admin-dash__select" style={{ maxWidth: "10rem" }} value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(0); }} aria-label="Filter by status">
             <option value="all">All status</option>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </select>
+          <button
+            type="button"
+            className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm admin-dash__toolbar-end"
+            onClick={() => exportCsv(filtered)}
+          >
+            <FaFileExport aria-hidden />
+            Export
+          </button>
         </div>
 
         {selected.length > 0 && (
@@ -239,10 +271,6 @@ export default function ProductList() {
             <button type="button" className="admin-dash__btn admin-dash__btn--danger admin-dash__btn--sm" onClick={bulkDelete}>Delete</button>
           </div>
         )}
-
-        <div className="admin-dash__toolbar">
-          <button type="button" className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm" onClick={() => exportCsv(filtered)}>Export</button>
-        </div>
 
         <div className="admin-dash__table-wrap admin-dash__table-wrap--modern">
           <table className="admin-dash__table admin-dash__table--modern admin-dash__table--products">
@@ -309,7 +337,7 @@ export default function ProductList() {
                       <div className="admin-dash__actions">
                         <Link to={`${ADMIN_BASE}/product/details/${id}`} className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm" title="View"><FaEye /></Link>
                         <Link to={`${ADMIN_BASE}/product/edit/${id}`} className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm" title="Edit"><FaPencilAlt /></Link>
-                        <button type="button" className="admin-dash__btn admin-dash__btn--danger admin-dash__btn--sm" onClick={() => deleteProduct(id)} title="Delete"><MdDelete /></button>
+                        <button type="button" className="admin-dash__btn admin-dash__btn--danger admin-dash__btn--sm" onClick={() => requestDeleteProduct(item)} title="Delete"><MdDelete /></button>
                       </div>
                     </td>
                   </tr>
@@ -331,6 +359,21 @@ export default function ProductList() {
           <button type="button" className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm" disabled={page >= totalPages - 1} onClick={() => setPage((p) => p + 1)}>Next</button>
         </div>
       </section>
+
+      <AdminConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete product?"
+        message={
+          deleteTarget
+            ? `Are you sure you want to delete "${deleteTarget.name}"? This action cannot be undone.`
+            : ""
+        }
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        danger
+        onConfirm={confirmDeleteProduct}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </>
   );
 }

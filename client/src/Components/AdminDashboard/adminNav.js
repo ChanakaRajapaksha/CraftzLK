@@ -23,9 +23,6 @@ export const adminNavItems = [
     children: [
       { label: "Product List", path: `${ADMIN_BASE}/products` },
       { label: "Add Product", path: `${ADMIN_BASE}/product/upload` },
-      { label: "Add Product RAM", path: `${ADMIN_BASE}/productRAMS/add` },
-      { label: "Add Product Weight", path: `${ADMIN_BASE}/productWEIGHT/add` },
-      { label: "Add Product Size", path: `${ADMIN_BASE}/productSIZE/add` },
     ],
   },
   {

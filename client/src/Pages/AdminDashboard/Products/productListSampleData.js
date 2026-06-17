@@ -140,3 +140,69 @@ export function getProductListSampleData() {
 export function isSampleProductId(id) {
   return String(id || "").startsWith("sample-");
 }
+
+const SAMPLE_DETAIL_DEFAULTS = {
+  shortDescription: "Handcrafted with care by Sri Lankan artisans.",
+  description:
+    "This product is part of the CraftzLK demo catalog. It showcases how product details appear in the admin dashboard, including pricing, inventory, and imagery.",
+  oldPrice: 0,
+  discount: 0,
+  discountPrice: 0,
+  discountType: "percentage",
+  subCatName: "",
+  subCat: "",
+  stockStatus: "in_stock",
+  rating: 4.5,
+  productRam: [],
+  size: [],
+  productWeight: [],
+  location: "All",
+  variants: [],
+  customizationOptions: [],
+  shipping: {
+    weight: 0.5,
+    length: 20,
+    width: 15,
+    height: 10,
+    freeShipping: false,
+    shippingCharge: 350,
+  },
+  seo: {
+    metaTitle: "",
+    metaDescription: "",
+    keywords: "",
+  },
+};
+
+function slugify(text) {
+  return String(text || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+}
+
+export function getSampleProductById(id) {
+  const base = PRODUCT_LIST_SAMPLE.find((p) => (p.id || p._id) === id);
+  if (!base) return null;
+
+  const oldPrice = base.oldPrice ?? Math.round(base.price * 1.15);
+  const discount = base.discount ?? (oldPrice > base.price ? Math.round(((oldPrice - base.price) / oldPrice) * 100) : 0);
+
+  return {
+    ...SAMPLE_DETAIL_DEFAULTS,
+    ...base,
+    slug: slugify(base.name),
+    shortDescription: base.shortDescription || `${base.name} — ${base.catName} from ${base.brand || "CraftzLK"}.`,
+    oldPrice,
+    discount,
+    discountPrice: Math.max(0, oldPrice - base.price),
+    stockStatus: base.countInStock > 0 ? "in_stock" : "out_of_stock",
+    seo: {
+      metaTitle: base.name,
+      metaDescription: `${base.name} available on CraftzLK.`,
+      keywords: [base.catName, base.brand, "handmade", "Sri Lanka"].filter(Boolean).join(", "),
+    },
+  };
+}

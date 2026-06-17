@@ -61,6 +61,20 @@ router.post(`/upload`, upload.array("images"), async (req, res) => {
   }
 });
 
+const mapCategoryFields = (cat, children = []) => ({
+  _id: cat._id,
+  id: cat._id,
+  name: cat.name,
+  images: cat.images,
+  color: cat.color,
+  slug: cat.slug,
+  parentId: cat.parentId,
+  description: cat.description || "",
+  status: cat.status || "active",
+  seo: cat.seo || {},
+  children,
+});
+
 const createCategories = (categories, parentId=null) => {
 
   const categoryList = [];
@@ -73,16 +87,7 @@ const createCategories = (categories, parentId=null) => {
   }
   
   for (let cat of category) {
- 
-    categoryList.push({
-      _id: cat._id,
-      id: cat._id,
-      name: cat.name,
-      images:cat.images,
-      color:cat.color,
-      slug: cat.slug,
-      children: createCategories(categories, cat._id)
-    });
+    categoryList.push(mapCategoryFields(cat, createCategories(categories, cat._id)));
   }
 
   return categoryList;
@@ -157,15 +162,7 @@ const createCat = (categories, parentId=null,cat) => {
     category = categories.filter((cat) => cat.parentId == parentId);
 
   }
-  categoryList.push({
-    _id: cat._id,
-    id: cat._id,
-    name: cat.name,
-    images:cat.images,
-    color:cat.color,
-    slug: cat.slug,
-    children: category
-  });
+  categoryList.push(mapCategoryFields(cat, category));
 
   return categoryList;
 
@@ -202,21 +199,19 @@ router.get("/:id", async (req, res) => {
 });
 
 router.post("/create", async (req, res) => {
-  let catObj = {};
+  const images = Array.isArray(req.body.images) && req.body.images.length
+    ? req.body.images
+    : imagesArr;
 
-  if (imagesArr.length > 0) {
-    catObj = {
-      name: req.body.name,
-      images: imagesArr,
-      color: req.body.color,
-      slug: req.body.name,
-    };
-  } else {
-    catObj = {
-      name: req.body.name,
-      slug: req.body.name,
-    };
-  }
+  const catObj = {
+    name: req.body.name,
+    slug: req.body.slug || slugify(req.body.name, { lower: true }),
+    images,
+    color: req.body.color || "",
+    description: req.body.description || "",
+    status: req.body.status === "inactive" ? "inactive" : "active",
+    seo: req.body.seo || {},
+  };
 
   if (req.body.parentId) {
     catObj.parentId = req.body.parentId;
@@ -293,14 +288,17 @@ router.delete("/:id", async (req, res) => {
 });
 
 router.put("/:id", async (req, res) => {
-  
-    
   const category = await Category.findByIdAndUpdate(
     req.params.id,
     {
       name: req.body.name,
       images: req.body.images,
-      color: req.body.color,
+      color: req.body.color || "",
+      slug: req.body.slug || slugify(req.body.name || "", { lower: true }),
+      description: req.body.description || "",
+      status: req.body.status === "inactive" ? "inactive" : "active",
+      seo: req.body.seo || {},
+      ...(req.body.parentId !== undefined ? { parentId: req.body.parentId || undefined } : {}),
     },
     { new: true }
   );

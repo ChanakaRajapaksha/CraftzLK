@@ -19,10 +19,25 @@ const categorySchema = mongoose.Schema({
     ],
     color:{
         type:String,
+        default: ""
     },
     parentId:{
         type:String
-    }
+    },
+    description: {
+        type: String,
+        default: ""
+    },
+    status: {
+        type: String,
+        enum: ["active", "inactive"],
+        default: "active"
+    },
+    seo: {
+        metaTitle: { type: String, default: "" },
+        metaDescription: { type: String, default: "" },
+        keywords: { type: String, default: "" },
+    },
 },{timestamps:true})
 
 categorySchema.virtual('id').get(function () {
