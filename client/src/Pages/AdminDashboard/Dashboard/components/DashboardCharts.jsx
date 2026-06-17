@@ -24,6 +24,92 @@ const tooltipStyle = {
   fontFamily: "inherit",
 };
 
+const METRIC_LABELS = {
+  revenue: "Revenue",
+  orders: "Orders",
+  profit: "Profit",
+};
+
+export function SalesTrendChart({ data, metric, onMetricChange }) {
+  const metrics = [
+    { id: "revenue", label: "Revenue" },
+    { id: "orders", label: "Orders" },
+    { id: "profit", label: "Profit" },
+  ];
+
+  const formatValue = (v) => {
+    if (metric === "orders") return v;
+    return `Rs ${Number(v).toLocaleString()}`;
+  };
+
+  return (
+    <section className="admin-dash__widget admin-dash__widget--chart">
+      <div className="admin-dash__widget-head">
+        <div>
+          <h2 className="admin-dash__widget-title">Sales Revenue</h2>
+          <div className="admin-dash__chart-legend-inline">
+            <span className="admin-dash__chart-legend-item">
+              <span className="admin-dash__chart-legend-line admin-dash__chart-legend-line--current" />
+              This Year
+            </span>
+            <span className="admin-dash__chart-legend-item">
+              <span className="admin-dash__chart-legend-line admin-dash__chart-legend-line--previous" />
+              Last Year
+            </span>
+          </div>
+        </div>
+        <div className="admin-dash__pill-group">
+          {metrics.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              className={`admin-dash__pill${metric === m.id ? " admin-dash__pill--active" : ""}`}
+              onClick={() => onMetricChange(m.id)}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="admin-dash__chart">
+        {data?.length ? (
+          <ResponsiveContainer width="100%" height={320}>
+            <LineChart data={data} margin={{ top: 12, right: 16, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="4 4" stroke="rgba(201,169,97,0.2)" vertical={false} />
+              <XAxis dataKey="name" tick={{ fill: "#5c4d3a", fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: "#5c4d3a", fontSize: 11 }} axisLine={false} tickLine={false} />
+              <Tooltip
+                contentStyle={tooltipStyle}
+                formatter={(v) => [formatValue(v), METRIC_LABELS[metric]]}
+              />
+              <Line
+                type="monotone"
+                dataKey="current"
+                stroke="#b8860b"
+                strokeWidth={2.5}
+                dot={{ fill: "#b8860b", r: 4 }}
+                activeDot={{ r: 6 }}
+                name="This Year"
+              />
+              <Line
+                type="monotone"
+                dataKey="previous"
+                stroke="#9a8b78"
+                strokeWidth={2}
+                strokeDasharray="6 4"
+                dot={{ fill: "#9a8b78", r: 3 }}
+                name="Last Year"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="admin-dash__chart-empty">No sales data for this period</div>
+        )}
+      </div>
+    </section>
+  );
+}
+
 export function RevenueChartPanel({ data, period, onPeriodChange }) {
   const periods = [
     { id: "daily", label: "Daily" },

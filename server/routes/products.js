@@ -34,6 +34,49 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+function toStringArray(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.filter(Boolean);
+  return [String(value)];
+}
+
+function mapProductBody(body, images = []) {
+  return {
+    name: body.name,
+    sku: body.sku || "",
+    slug: body.slug || "",
+    shortDescription: body.shortDescription || "",
+    description: body.description,
+    images,
+    brand: body.brand || "",
+    price: Number(body.price) || 0,
+    oldPrice: Number(body.oldPrice) || 0,
+    discountPrice: Number(body.discountPrice) || 0,
+    discountType: body.discountType || "percentage",
+    catId: body.catId,
+    catName: body.catName,
+    subCat: body.subCat,
+    subCatId: body.subCatId,
+    subCatName: body.subCatName,
+    category: body.category,
+    countInStock: Number(body.countInStock) || 0,
+    stockStatus: body.stockStatus || "in_stock",
+    minStockAlert: Number(body.minStockAlert) || 5,
+    status: body.status || "active",
+    rating: Number(body.rating) || 0,
+    isFeatured: Boolean(body.isFeatured),
+    discount: Number(body.discount) || 0,
+    productRam: toStringArray(body.productRam),
+    size: toStringArray(body.size),
+    productWeight: toStringArray(body.productWeight),
+    location: body.location !== "" ? body.location : "All",
+    variants: Array.isArray(body.variants) ? body.variants : [],
+    customizationOptions: Array.isArray(body.customizationOptions) ? body.customizationOptions : [],
+    shipping: body.shipping || {},
+    seo: body.seo || {},
+  };
+}
+
 router.post(`/upload`, upload.array("images"), async (req, res) => {
   imagesArr = [];
 
@@ -487,28 +530,7 @@ router.post(`/create`, async (req, res) => {
     });
   });
 
-  product = new Product({
-    name: req.body.name,
-    description: req.body.description,
-    images: images_Array,
-    brand: req.body.brand,
-    price: req.body.price,
-    oldPrice: req.body.oldPrice,
-    catId: req.body.catId,
-    catName: req.body.catName,
-    subCat: req.body.subCat,
-    subCatId: req.body.subCatId,
-    subCatName: req.body.subCatName,
-    category: req.body.category,
-    countInStock: req.body.countInStock,
-    rating: req.body.rating,
-    isFeatured: req.body.isFeatured,
-    discount: req.body.discount,
-    productRam: req.body.productRam,
-    size: req.body.size,
-    productWeight: req.body.productWeight,
-    location: req.body.location !== "" ? req.body.location : "All",
-  });
+  product = new Product(mapProductBody(req.body, images_Array));
 
   product = await product.save();
 
@@ -522,6 +544,44 @@ router.post(`/create`, async (req, res) => {
   imagesArr = [];
 
   res.status(201).json(product);
+});
+
+router.post("/bulk/delete", async (req, res) => {
+  const ids = Array.isArray(req.body.ids) ? req.body.ids : [];
+  if (!ids.length) {
+    return res.status(400).json({ success: false, message: "No product IDs provided." });
+  }
+
+  for (const id of ids) {
+    const product = await Product.findById(id);
+    if (!product) continue;
+    for (const img of product.images || []) {
+      const urlArr = img.split("/");
+      const image = urlArr[urlArr.length - 1];
+      const imageName = image?.split(".")[0];
+      if (imageName) {
+        cloudinary.uploader.destroy(imageName, () => {});
+      }
+    }
+    await Product.findByIdAndDelete(id);
+    const myListItems = await MyList.find({ productId: id });
+    for (const item of myListItems) await MyList.findByIdAndDelete(item.id);
+    const cartItems = await Cart.find({ productId: id });
+    for (const item of cartItems) await Cart.findByIdAndDelete(item.id);
+  }
+
+  res.status(200).json({ success: true, message: "Products deleted." });
+});
+
+router.post("/bulk/status", async (req, res) => {
+  const ids = Array.isArray(req.body.ids) ? req.body.ids : [];
+  const status = req.body.status === "inactive" ? "inactive" : "active";
+  if (!ids.length) {
+    return res.status(400).json({ success: false, message: "No product IDs provided." });
+  }
+
+  await Product.updateMany({ _id: { $in: ids } }, { status });
+  res.status(200).json({ success: true, message: `Products ${status === "active" ? "activated" : "disabled"}.` });
 });
 
 router.get("/:id", async (req, res) => {
@@ -607,29 +667,7 @@ router.delete("/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   const product = await Product.findByIdAndUpdate(
     req.params.id,
-    {
-      name: req.body.name,
-      subCat: req.body.subCat,
-      description: req.body.description,
-      images: req.body.images,
-      brand: req.body.brand,
-      price: req.body.price,
-      oldPrice: req.body.oldPrice,
-      catId: req.body.catId,
-      subCat: req.body.subCat,
-      subCatId: req.body.subCatId,
-      subCatName: req.body.subCatName,
-      catName: req.body.catName,
-      category: req.body.category,
-      countInStock: req.body.countInStock,
-      rating: req.body.rating,
-      numReviews: req.body.numReviews,
-      isFeatured: req.body.isFeatured,
-      productRam: req.body.productRam,
-      size: req.body.size,
-      productWeight: req.body.productWeight,
-      location: req.body.location,
-    },
+    mapProductBody(req.body, req.body.images || []),
     { new: true }
   );
 

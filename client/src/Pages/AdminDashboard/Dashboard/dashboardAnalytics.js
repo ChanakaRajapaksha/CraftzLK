@@ -1,5 +1,17 @@
 const LOW_STOCK_THRESHOLD = 5;
 const MS_DAY = 86400000;
+const PROFIT_MARGIN = 0.386;
+
+export const DATE_PRESETS = [
+  { id: "today", label: "Today" },
+  { id: "yesterday", label: "Yesterday" },
+  { id: "last7days", label: "Last 7 Days" },
+  { id: "thisWeek", label: "This Week" },
+  { id: "thisMonth", label: "This Month" },
+  { id: "lastMonth", label: "Last Month" },
+  { id: "thisYear", label: "This Year" },
+  { id: "custom", label: "Custom Range" },
+];
 
 export function parseAmount(value) {
   const n = parseFloat(String(value ?? 0).replace(/,/g, ""));
@@ -18,6 +30,12 @@ function startOfDay(d) {
   return x;
 }
 
+function endOfDay(d) {
+  const x = new Date(d);
+  x.setHours(23, 59, 59, 999);
+  return x;
+}
+
 function isSameDay(a, b) {
   return startOfDay(a).getTime() === startOfDay(b).getTime();
 }
@@ -25,6 +43,71 @@ function isSameDay(a, b) {
 function isInRange(date, start, end) {
   const t = date.getTime();
   return t >= start.getTime() && t <= end.getTime();
+}
+
+function startOfWeek(d) {
+  const x = startOfDay(d);
+  const day = x.getDay();
+  const diff = day === 0 ? 6 : day - 1;
+  x.setDate(x.getDate() - diff);
+  return x;
+}
+
+export function getDateRange(preset, customStart, customEnd) {
+  const now = new Date();
+  const todayStart = startOfDay(now);
+  const todayEnd = endOfDay(now);
+
+  switch (preset) {
+    case "yesterday": {
+      const start = new Date(todayStart.getTime() - MS_DAY);
+      const end = new Date(todayStart.getTime() - 1);
+      return { start, end };
+    }
+    case "last7days":
+      return { start: new Date(todayStart.getTime() - 6 * MS_DAY), end: todayEnd };
+    case "thisWeek":
+      return { start: startOfWeek(now), end: todayEnd };
+    case "thisMonth":
+      return { start: new Date(now.getFullYear(), now.getMonth(), 1), end: todayEnd };
+    case "lastMonth": {
+      const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+      return { start, end };
+    }
+    case "thisYear":
+      return { start: new Date(now.getFullYear(), 0, 1), end: todayEnd };
+    case "custom": {
+      const start = customStart ? startOfDay(new Date(customStart)) : todayStart;
+      const end = customEnd ? endOfDay(new Date(customEnd)) : todayEnd;
+      return { start, end };
+    }
+    case "today":
+    default:
+      return { start: todayStart, end: todayEnd };
+  }
+}
+
+export function getPreviousDateRange(preset, customStart, customEnd) {
+  const current = getDateRange(preset, customStart, customEnd);
+  const duration = current.end.getTime() - current.start.getTime();
+  const prevEnd = new Date(current.start.getTime() - 1);
+  const prevStart = new Date(prevEnd.getTime() - duration);
+  return { start: prevStart, end: prevEnd };
+}
+
+export function getComparisonLabel(preset) {
+  const labels = {
+    today: "yesterday",
+    yesterday: "the day before",
+    last7days: "previous 7 days",
+    thisWeek: "last week",
+    thisMonth: "last month",
+    lastMonth: "previous month",
+    thisYear: "last year",
+    custom: "previous period",
+  };
+  return labels[preset] || "previous period";
 }
 
 export function sumOrdersInRange(orders, start, end) {
@@ -40,6 +123,68 @@ export function filterOrdersInRange(orders, start, end) {
     const d = parseOrderDate(order);
     return d && isInRange(d, start, end);
   });
+}
+
+export function countItemsSold(orders, start, end) {
+  return filterOrdersInRange(orders, start, end).reduce((sum, order) => {
+    const items = (order.products || []).reduce((s, item) => s + Number(item.quantity || 1), 0);
+    return sum + items;
+  }, 0);
+}
+
+export function countUniqueCustomers(orders, start, end) {
+  const keys = new Set();
+  filterOrdersInRange(orders, start, end).forEach((order) => {
+    const key = order.userid || order.userId || order.email;
+    if (key) keys.add(key);
+  });
+  return keys.size;
+}
+
+export function estimateProfit(revenue) {
+  return revenue * PROFIT_MARGIN;
+}
+
+export function computePeriodMetrics(orders, start, end) {
+  const filtered = filterOrdersInRange(orders, start, end);
+  const revenue = filtered.reduce((s, o) => s + parseAmount(o.amount), 0);
+  const orderCount = filtered.length;
+  const customers = countUniqueCustomers(orders, start, end);
+  const itemsSold = countItemsSold(orders, start, end);
+  const avgOrderValue = orderCount ? revenue / orderCount : 0;
+  const profit = estimateProfit(revenue);
+
+  return { revenue, orderCount, customers, itemsSold, avgOrderValue, profit };
+}
+
+export function computePercentChange(current, previous) {
+  if (previous === 0) return current > 0 ? 100 : 0;
+  return ((current - previous) / previous) * 100;
+}
+
+export function buildKpiComparisons(orders, preset, customStart, customEnd) {
+  const current = getDateRange(preset, customStart, customEnd);
+  const previous = getPreviousDateRange(preset, customStart, customEnd);
+  const cur = computePeriodMetrics(orders, current.start, current.end);
+  const prev = computePeriodMetrics(orders, previous.start, previous.end);
+
+  const makeTrend = (c, p) => {
+    const change = computePercentChange(c, p);
+    return {
+      value: c,
+      previous: p,
+      change,
+      direction: change > 0 ? "up" : change < 0 ? "down" : "flat",
+    };
+  };
+
+  return {
+    revenue: makeTrend(cur.revenue, prev.revenue),
+    orders: makeTrend(cur.orderCount, prev.orderCount),
+    profit: makeTrend(cur.profit, prev.profit),
+    comparisonLabel: getComparisonLabel(preset),
+    period: cur,
+  };
 }
 
 export function computeSalesSummary(orders) {
@@ -71,9 +216,10 @@ function normalizeStatus(status) {
   return String(status || "pending").toLowerCase().trim();
 }
 
-export function computeOrderSummary(orders) {
+export function computeOrderSummary(orders, start, end) {
+  const list = start && end ? filterOrdersInRange(orders, start, end) : orders;
   const counts = {
-    total: orders.length,
+    total: list.length,
     pending: 0,
     processing: 0,
     completed: 0,
@@ -81,7 +227,7 @@ export function computeOrderSummary(orders) {
     returned: 0,
   };
 
-  orders.forEach((order) => {
+  list.forEach((order) => {
     const s = normalizeStatus(order.status);
     if (s.includes("process")) counts.processing += 1;
     else if (s.includes("complete") || s.includes("deliver")) counts.completed += 1;
@@ -122,15 +268,15 @@ export function computeProductSummary(products) {
     outOfStock,
     lowStock,
     draft,
+    available: active,
   };
 }
 
-export function computeCustomerSummary(orders, totalCustomers = 0) {
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+export function computeCustomerSummary(orders, totalCustomers = 0, start, end) {
+  const rangeOrders = start && end ? filterOrdersInRange(orders, start, end) : orders;
   const customerOrders = new Map();
 
-  orders.forEach((order) => {
+  rangeOrders.forEach((order) => {
     const key = order.userid || order.userId || order.email;
     if (!key) return;
     const d = parseOrderDate(order);
@@ -143,15 +289,19 @@ export function computeCustomerSummary(orders, totalCustomers = 0) {
 
   customerOrders.forEach((dates) => {
     dates.sort((a, b) => a - b);
-    const first = dates[0];
-    if (first && first >= monthStart) newCustomers += 1;
     if (dates.length > 1) returningCustomers += 1;
+    else newCustomers += 1;
   });
+
+  const totalInPeriod = customerOrders.size;
+  const returningRate = totalInPeriod ? (returningCustomers / totalInPeriod) * 100 : 0;
 
   return {
     totalCustomers,
     newCustomers,
     returningCustomers,
+    returningRate,
+    periodCustomers: totalInPeriod,
   };
 }
 
@@ -203,6 +353,35 @@ export function buildRevenueChartData(orders, period = "monthly") {
   });
 }
 
+export function buildSalesTrendComparison(orders, metric = "revenue") {
+  const now = new Date();
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const thisYear = now.getFullYear();
+  const lastYear = thisYear - 1;
+  const currentMonth = now.getMonth();
+
+  return months.slice(0, currentMonth + 1).map((name, idx) => {
+    const thisStart = new Date(thisYear, idx, 1);
+    const thisEnd = idx === currentMonth ? now : new Date(thisYear, idx + 1, 0, 23, 59, 59, 999);
+    const lastStart = new Date(lastYear, idx, 1);
+    const lastEnd = new Date(lastYear, idx + 1, 0, 23, 59, 59, 999);
+
+    const thisOrders = filterOrdersInRange(orders, thisStart, thisEnd);
+    const lastOrders = filterOrdersInRange(orders, lastStart, lastEnd);
+
+    const thisRevenue = thisOrders.reduce((s, o) => s + parseAmount(o.amount), 0);
+    const lastRevenue = lastOrders.reduce((s, o) => s + parseAmount(o.amount), 0);
+
+    if (metric === "orders") {
+      return { name, current: thisOrders.length, previous: lastOrders.length };
+    }
+    if (metric === "profit") {
+      return { name, current: estimateProfit(thisRevenue), previous: estimateProfit(lastRevenue) };
+    }
+    return { name, current: thisRevenue, previous: lastRevenue };
+  });
+}
+
 export function buildOrderStatusChart(orderSummary) {
   return [
     { name: "Pending", value: orderSummary.pending, fill: "#d4a574" },
@@ -213,9 +392,11 @@ export function buildOrderStatusChart(orderSummary) {
   ].filter((d) => d.value > 0);
 }
 
-export function buildTopProducts(orders, products, limit = 5) {
+export function buildTopProducts(orders, products, limit = 5, start, end) {
+  const orderList = start && end ? filterOrdersInRange(orders, start, end) : orders;
   const qtyMap = new Map();
-  orders.forEach((order) => {
+
+  orderList.forEach((order) => {
     (order.products || []).forEach((item) => {
       const id = item.productId || item.productTitle;
       if (!id) return;
@@ -247,24 +428,11 @@ export function buildTopProducts(orders, products, limit = 5) {
     .slice(0, limit);
 }
 
-export function buildTopCategories(orders, catData, limit = 5) {
-  const catMap = new Map();
-  const productCat = new Map();
-
-  (catData?.categoryList || []).forEach((cat) => {
-    catMap.set(cat._id, cat.name);
-    catMap.set(cat.name, cat.name);
-  });
-
-  orders.forEach((order) => {
-    (order.products || []).forEach((item) => {
-      const title = item.productTitle || "";
-      productCat.set(title, productCat.get(title) || "General");
-    });
-  });
-
+export function buildTopCategories(orders, catData, limit = 5, start, end) {
+  const orderList = start && end ? filterOrdersInRange(orders, start, end) : orders;
   const salesByCat = new Map();
-  orders.forEach((order) => {
+
+  orderList.forEach((order) => {
     (order.products || []).forEach((item) => {
       const catName = item.catName || "Uncategorized";
       salesByCat.set(catName, (salesByCat.get(catName) || 0) + Number(item.quantity || 1));
@@ -278,10 +446,16 @@ export function buildTopCategories(orders, catData, limit = 5) {
     }));
   }
 
-  return [...salesByCat.entries()]
+  const entries = [...salesByCat.entries()]
     .map(([name, value]) => ({ name, value }))
     .sort((a, b) => b.value - a.value)
     .slice(0, limit);
+
+  const total = entries.reduce((s, e) => s + e.value, 0);
+  return entries.map((e) => ({
+    ...e,
+    percent: total ? Math.round((e.value / total) * 100) : 0,
+  }));
 }
 
 export function buildCustomerGrowth(orders) {
@@ -298,6 +472,40 @@ export function buildCustomerGrowth(orders) {
       customers: unique.size,
     };
   });
+}
+
+export function buildRecentOrders(orders, limit = 5, start, end) {
+  const orderList = start && end ? filterOrdersInRange(orders, start, end) : orders;
+  return [...orderList]
+    .sort((a, b) => (parseOrderDate(b)?.getTime() || 0) - (parseOrderDate(a)?.getTime() || 0))
+    .slice(0, limit)
+    .map((order, i) => {
+      const num = String(order._id || order.id || "").replace(/\D/g, "");
+      return {
+        id: order._id || order.id,
+        orderNumber: order.orderNumber || `#${num ? 1000 + parseInt(num, 10) : 1001 + i}`,
+        customer: order.name || "Customer",
+        amount: parseAmount(order.amount),
+        status: normalizeStatus(order.status),
+      };
+    });
+}
+
+export function getLowStockProducts(products, limit = 5) {
+  return (products || [])
+    .filter((p) => {
+      const stock = Number(p.countInStock ?? 0);
+      const hasBasics = Boolean(p.name?.trim()) && parseAmount(p.price) > 0;
+      const hasImages = Array.isArray(p.images) && p.images.length > 0;
+      return hasBasics && hasImages && stock > 0 && stock <= LOW_STOCK_THRESHOLD;
+    })
+    .sort((a, b) => Number(a.countInStock) - Number(b.countInStock))
+    .slice(0, limit)
+    .map((p) => ({
+      id: p.id || p._id,
+      name: p.name,
+      remaining: Number(p.countInStock ?? 0),
+    }));
 }
 
 export function buildRecentActivities(orders, products, reviewsCount) {
@@ -367,4 +575,18 @@ export function formatCompact(value) {
   const n = Number(value);
   if (!Number.isFinite(n)) return value;
   return n.toLocaleString();
+}
+
+export function formatPercentChange(change) {
+  const abs = Math.abs(change).toFixed(1);
+  return `${abs}%`;
+}
+
+export function getStatusBadgeClass(status) {
+  const s = normalizeStatus(status);
+  if (s.includes("complete") || s.includes("deliver")) return "completed";
+  if (s.includes("process")) return "processing";
+  if (s.includes("cancel")) return "cancelled";
+  if (s.includes("return")) return "returned";
+  return "pending";
 }

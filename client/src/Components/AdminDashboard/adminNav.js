@@ -4,11 +4,8 @@ export const adminNavItems = [
   {
     key: "dashboard",
     label: "Dashboard",
-    children: [
-      { label: "Dashboard Home", path: ADMIN_BASE },
-      { label: "Sales Analytics", path: `${ADMIN_BASE}?tab=sales` },
-      { label: "Store Performance", path: `${ADMIN_BASE}?tab=performance` },
-    ],
+    path: ADMIN_BASE,
+    end: true,
   },
   {
     key: "category",
@@ -25,7 +22,7 @@ export const adminNavItems = [
     label: "Products",
     children: [
       { label: "Product List", path: `${ADMIN_BASE}/products` },
-      { label: "Product Upload", path: `${ADMIN_BASE}/product/upload` },
+      { label: "Add Product", path: `${ADMIN_BASE}/product/upload` },
       { label: "Add Product RAM", path: `${ADMIN_BASE}/productRAMS/add` },
       { label: "Add Product Weight", path: `${ADMIN_BASE}/productWEIGHT/add` },
       { label: "Add Product Size", path: `${ADMIN_BASE}/productSIZE/add` },

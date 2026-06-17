@@ -18,6 +18,7 @@ export default function ImageUploadField({
   setAlertBox,
   multiple = true,
   clearStagingOnMount = true,
+  reorderable = false,
 }) {
   const [uploading, setUploading] = useState(false);
 
@@ -95,10 +96,27 @@ export default function ImageUploadField({
     setPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const moveImage = (index, direction) => {
+    setPreviews((prev) => {
+      const next = [...prev];
+      const target = index + direction;
+      if (target < 0 || target >= next.length) return prev;
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  };
+
   return (
     <div className="admin-dash__upload-grid">
       {previews.map((img, index) => (
         <div className="admin-dash__upload-box" key={`${img}-${index}`}>
+          {reorderable && (
+            <div className="admin-dash__upload-reorder">
+              <button type="button" onClick={() => moveImage(index, -1)} disabled={index === 0} aria-label="Move image left">‹</button>
+              <button type="button" onClick={() => moveImage(index, 1)} disabled={index === previews.length - 1} aria-label="Move image right">›</button>
+            </div>
+          )}
+          {index === 0 && reorderable && <span className="admin-dash__upload-main-badge">Main</span>}
           <button
             type="button"
             className="admin-dash__upload-remove"
