@@ -1,5 +1,5 @@
 import { useState } from "react";
-import ImageUploadField from "../../../Components/AdminDashboard/ImageUploadField";
+import ProductImageUploadField from "../../../Components/AdminDashboard/ProductImageUploadField";
 import { CATEGORY_FORM_TABS, slugify } from "./categoryFormDefaults";
 
 function Field({ label, htmlFor, children, full = false }) {
@@ -126,16 +126,22 @@ export default function CategoryForm({
         )}
 
         {tab === "images" && (
-          <div>
-            <p className="admin-dash__panel-desc">Upload the category image shown in listings and navigation.</p>
-            <Field label="Category Image">
-              <ImageUploadField
+          <div className="admin-dash__product-images-tab">
+            <Field label="Category Image" full>
+              <ProductImageUploadField
                 uploadEndpoint="/api/category/upload"
                 deleteImageEndpoint="/api/category/deleteImage"
                 previews={previews}
                 setPreviews={setPreviews}
                 setAlertBox={setAlertBox}
                 clearStagingOnMount={!isEdit}
+                mainImageTitle="Category Image"
+                mainImageDescription="This image is shown in category listings, navigation, and shop pages."
+                galleryTitle="Uploaded Images"
+                galleryDescription="Drag to reorder. The first image is used as the category image."
+                emptyMessage="No images uploaded yet. Add a category image to continue."
+                entityLabel="category"
+                uploadHint="JPG, PNG, WebP · Multiple files supported"
               />
             </Field>
           </div>

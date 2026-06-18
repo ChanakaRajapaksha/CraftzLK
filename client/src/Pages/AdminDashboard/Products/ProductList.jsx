@@ -3,6 +3,7 @@ import { Link, useOutletContext } from "react-router-dom";
 import { FaEye, FaFileExport, FaPencilAlt } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
+import AdminPagination from "../../../Components/AdminDashboard/AdminPagination";
 import AdminConfirmDialog from "../../../Components/AdminDashboard/AdminConfirmDialog";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
 import { MdShoppingBag, MdCategory } from "react-icons/md";
@@ -126,6 +127,12 @@ export default function ProductList() {
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
   const slice = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  useEffect(() => {
+    if (page > 0 && page >= totalPages) {
+      setPage(Math.max(0, totalPages - 1));
+    }
+  }, [page, totalPages]);
 
   const toggleSelectAll = (checked) => {
     setSelected(checked ? slice.map((p) => p.id || p._id) : []);
@@ -272,8 +279,9 @@ export default function ProductList() {
           </div>
         )}
 
-        <div className="admin-dash__table-wrap admin-dash__table-wrap--modern">
-          <table className="admin-dash__table admin-dash__table--modern admin-dash__table--products">
+        <div className="admin-dash__data-table">
+          <div className="admin-dash__table-wrap admin-dash__table-wrap--modern">
+            <table className="admin-dash__table admin-dash__table--modern admin-dash__table--products">
             <thead>
               <tr>
                 <th>
@@ -346,17 +354,21 @@ export default function ProductList() {
               )}
             </tbody>
           </table>
-        </div>
+          </div>
 
-        <div className="admin-dash__pagination">
-          <span>Page {page + 1} of {totalPages} · {filtered.length} products</span>
-          <select className="admin-dash__select" style={{ maxWidth: "5rem" }} value={rowsPerPage} onChange={(e) => { setRowsPerPage(Number(e.target.value)); setPage(0); }}>
-            <option value={10}>10</option>
-            <option value={25}>25</option>
-            <option value={50}>50</option>
-          </select>
-          <button type="button" className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>Previous</button>
-          <button type="button" className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm" disabled={page >= totalPages - 1} onClick={() => setPage((p) => p + 1)}>Next</button>
+          <AdminPagination
+            page={page}
+            totalPages={totalPages}
+            totalItems={filtered.length}
+            itemLabel="products"
+            rowsPerPage={rowsPerPage}
+            rowsPerPageOptions={[10, 25, 50]}
+            onPageChange={setPage}
+            onRowsPerPageChange={(value) => {
+              setRowsPerPage(value);
+              setPage(0);
+            }}
+          />
         </div>
       </section>
 

@@ -17,6 +17,13 @@ export default function ProductImageUploadField({
   setPreviews,
   setAlertBox,
   clearStagingOnMount = true,
+  mainImageTitle = "Main Image",
+  mainImageDescription = "This image appears first on the product page and in listings.",
+  galleryTitle = "Gallery Images",
+  galleryDescription = "Drag images to reorder. The first image is used as the main product image.",
+  emptyMessage = "No images uploaded yet. Add at least one product image to publish.",
+  entityLabel = "product",
+  uploadHint = "JPG, PNG, WebP · Multiple files supported",
 }) {
   const [uploading, setUploading] = useState(false);
   const [dropActive, setDropActive] = useState(false);
@@ -185,7 +192,7 @@ export default function ProductImageUploadField({
           >
             <FaCloudUploadAlt size={28} aria-hidden />
             <p><strong>Drag & drop images here</strong> or click to browse</p>
-            <span>JPG, PNG, WebP · Multiple files supported</span>
+            <span>{uploadHint}</span>
           </button>
         )}
       </div>
@@ -193,11 +200,11 @@ export default function ProductImageUploadField({
       {mainImage && (
         <section className="admin-dash__product-images-section">
           <div className="admin-dash__product-images-section-head">
-            <h3 className="admin-dash__product-images-title">Main Image</h3>
-            <p className="admin-dash__panel-desc">This image appears first on the product page and in listings.</p>
+            <h3 className="admin-dash__product-images-title">{mainImageTitle}</h3>
+            <p className="admin-dash__panel-desc">{mainImageDescription}</p>
           </div>
           <div className="admin-dash__product-images-main">
-            <img src={mainImage} alt="Main product" />
+            <img src={mainImage} alt={`Main ${entityLabel}`} />
             <button
               type="button"
               className="admin-dash__product-images-remove"
@@ -214,10 +221,8 @@ export default function ProductImageUploadField({
       {galleryImages.length > 0 && (
         <section className="admin-dash__product-images-section">
           <div className="admin-dash__product-images-section-head">
-            <h3 className="admin-dash__product-images-title">Gallery Images</h3>
-            <p className="admin-dash__panel-desc">
-              Drag images to reorder. The first image is used as the main product image.
-            </p>
+            <h3 className="admin-dash__product-images-title">{galleryTitle}</h3>
+            <p className="admin-dash__panel-desc">{galleryDescription}</p>
           </div>
           <div className="admin-dash__product-images-gallery">
             {galleryImages.map((img, index) => (
@@ -231,7 +236,7 @@ export default function ProductImageUploadField({
                 onDragEnd={handleGalleryDragEnd}
               >
                 <div className="admin-dash__product-images-gallery-thumb">
-                  <img src={img} alt={`Product image ${index + 1}`} />
+                  <img src={img} alt={`${entityLabel} image ${index + 1}`} />
                   {index === 0 ? (
                     <span className="admin-dash__product-images-badge">Main</span>
                   ) : (
@@ -266,7 +271,7 @@ export default function ProductImageUploadField({
       )}
 
       {galleryImages.length === 0 && (
-        <p className="admin-dash__product-images-empty">No images uploaded yet. Add at least one product image to publish.</p>
+        <p className="admin-dash__product-images-empty">{emptyMessage}</p>
       )}
     </div>
   );

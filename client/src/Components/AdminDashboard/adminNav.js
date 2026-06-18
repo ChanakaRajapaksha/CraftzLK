@@ -8,21 +8,27 @@ export const adminNavItems = [
     end: true,
   },
   {
-    key: "category",
-    label: "Category",
-    children: [
-      { label: "Category List", path: `${ADMIN_BASE}/category` },
-      { label: "Add Category", path: `${ADMIN_BASE}/category/add` },
-      { label: "Sub Category List", path: `${ADMIN_BASE}/subCategory` },
-      { label: "Add Sub Category", path: `${ADMIN_BASE}/subCategory/add` },
-    ],
-  },
-  {
     key: "products",
     label: "Products",
     children: [
       { label: "Product List", path: `${ADMIN_BASE}/products` },
       { label: "Add Product", path: `${ADMIN_BASE}/product/upload` },
+    ],
+  },
+  {
+    key: "category",
+    label: "Category",
+    children: [
+      { label: "Category List", path: `${ADMIN_BASE}/category` },
+      { label: "Add Category", path: `${ADMIN_BASE}/category/add` },
+    ],
+  },
+  {
+    key: "artisans",
+    label: "Brand / Artisan",
+    children: [
+      { label: "Artisan List", path: `${ADMIN_BASE}/artisans` },
+      { label: "Add Artisan", path: `${ADMIN_BASE}/artisans/add` },
     ],
   },
   {

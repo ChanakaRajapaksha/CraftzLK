@@ -52,6 +52,9 @@ import EditCategory from "./Pages/AdminDashboard/Categories/EditCategory";
 import SubCategoryList from "./Pages/AdminDashboard/Categories/SubCategoryList";
 import AddSubCategory from "./Pages/AdminDashboard/Categories/AddSubCategory";
 import EditSubCategory from "./Pages/AdminDashboard/Categories/EditSubCategory";
+import ArtisanList from "./Pages/AdminDashboard/Artisans/ArtisanList";
+import AddArtisan from "./Pages/AdminDashboard/Artisans/AddArtisan";
+import EditArtisan from "./Pages/AdminDashboard/Artisans/EditArtisan";
 import ProductList from "./Pages/AdminDashboard/Products/ProductList";
 import ProductUpload from "./Pages/AdminDashboard/Products/ProductUpload";
 import ProductDetails from "./Pages/AdminDashboard/Products/ProductDetails";
@@ -511,6 +514,9 @@ function AppContent() {
           <Route path="category" element={<CategoryList />} />
           <Route path="category/add" element={<AddCategory />} />
           <Route path="category/edit/:id" element={<EditCategory />} />
+          <Route path="artisans" element={<ArtisanList />} />
+          <Route path="artisans/add" element={<AddArtisan />} />
+          <Route path="artisans/edit/:id" element={<EditArtisan />} />
           <Route path="subCategory" element={<SubCategoryList />} />
           <Route path="subCategory/add" element={<AddSubCategory />} />
           <Route path="subCategory/edit/:id" element={<EditSubCategory />} />

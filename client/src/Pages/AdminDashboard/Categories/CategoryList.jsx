@@ -4,6 +4,7 @@ import { FaPencilAlt, FaPlus } from "react-icons/fa";
 import { MdDelete, MdCategory, MdLayers } from "react-icons/md";
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
+import AdminPagination from "../../../Components/AdminDashboard/AdminPagination";
 import AdminConfirmDialog from "../../../Components/AdminDashboard/AdminConfirmDialog";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
 import { deleteData, fetchDataFromApi } from "../../../utils/api";
@@ -23,7 +24,14 @@ export default function CategoryList() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [parentFilter, setParentFilter] = useState("all");
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const applySampleCategories = () => {
+    setCategories(getCategoryListSampleData());
+    setUsingSampleData(true);
+  };
 
   const loadCategories = () => {
     fetchDataFromApi("/api/category")
@@ -33,19 +41,15 @@ export default function CategoryList() {
           setCategories(flattenCategories(list));
           setUsingSampleData(false);
         } else {
-          setCategories(getCategoryListSampleData());
-          setUsingSampleData(true);
+          applySampleCategories();
         }
       })
-      .catch(() => {
-        setCategories(getCategoryListSampleData());
-        setUsingSampleData(true);
-      });
+      .catch(() => applySampleCategories());
   };
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    loadCategories();
+    applySampleCategories();
     fetchDataFromApi("/api/products")
       .then((res) => setProducts(res?.products || []))
       .catch(() => {});
@@ -78,6 +82,15 @@ export default function CategoryList() {
     return list;
   }, [categories, searchKeyword, statusFilter, parentFilter]);
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
+  const slice = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  useEffect(() => {
+    if (page > 0 && page >= totalPages) {
+      setPage(Math.max(0, totalPages - 1));
+    }
+  }, [page, totalPages]);
+
   const deleteCategory = (id) => {
     if (usingSampleData || isSampleCategoryId(id)) {
       setCategories((prev) => prev.filter((cat) => (cat._id || cat.id) !== id));
@@ -100,10 +113,7 @@ export default function CategoryList() {
     setDeleteTarget(null);
   };
 
-  const getEditPath = (item) => {
-    if (item.isMain) return `${ADMIN_BASE}/category/edit/${item._id || item.id}`;
-    return `${ADMIN_BASE}/subCategory/edit/${item._id || item.id}`;
-  };
+  const getEditPath = (item) => `${ADMIN_BASE}/category/edit/${item._id || item.id}`;
 
   return (
     <>
@@ -120,17 +130,32 @@ export default function CategoryList() {
       />
 
       <div className="admin-dash__stats">
-        <StatCard icon={<MdCategory />} label="Total categories" value={stats.total} />
-        <StatCard icon={<MdLayers />} label="Main categories" value={stats.mainCount} gradient={["#a67c52", "#c9a961"]} />
-        <StatCard icon={<IoShieldCheckmarkSharp />} label="Subcategories" value={stats.subCount} gradient={["#6b5344", "#d4a574"]} />
-        <StatCard icon={<MdCategory />} label="Active" value={stats.activeCount} gradient={["#5a7a5e", "#7a9a7e"]} />
+        <StatCard
+          icon={<MdCategory />}
+          label="Total categories"
+          value={stats.total}
+        />
+        <StatCard
+          icon={<MdLayers />}
+          label="Main categories"
+          value={stats.mainCount}
+          gradient={["#a67c52", "#c9a961"]}
+        />
+        <StatCard
+          icon={<IoShieldCheckmarkSharp />}
+          label="Subcategories"
+          value={stats.subCount}
+          gradient={["#6b5344", "#d4a574"]}
+        />
+        <StatCard
+          icon={<MdCategory />}
+          label="Active"
+          value={stats.activeCount}
+          gradient={["#5a7a5e", "#7a9a7e"]}
+        />
       </div>
 
       <section className="admin-dash__panel">
-        {usingSampleData && (
-          <p className="admin-dash__sample-banner">Showing sample categories — add live categories via Add Category or your API.</p>
-        )}
-
         <div className="admin-dash__toolbar admin-dash__toolbar--wrap admin-dash__toolbar--filters">
           <input
             className="admin-dash__input"
@@ -138,13 +163,19 @@ export default function CategoryList() {
             placeholder="Search categories…"
             aria-label="Search categories"
             value={searchKeyword}
-            onChange={(e) => setSearchKeyword(e.target.value)}
+            onChange={(e) => {
+              setSearchKeyword(e.target.value);
+              setPage(0);
+            }}
           />
           <select
             className="admin-dash__select"
             style={{ maxWidth: "12rem" }}
             value={parentFilter}
-            onChange={(e) => setParentFilter(e.target.value)}
+            onChange={(e) => {
+              setParentFilter(e.target.value);
+              setPage(0);
+            }}
             aria-label="Filter by parent type"
           >
             <option value="all">All types</option>
@@ -155,7 +186,10 @@ export default function CategoryList() {
             className="admin-dash__select"
             style={{ maxWidth: "10rem" }}
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setPage(0);
+            }}
             aria-label="Filter by status"
           >
             <option value="all">All status</option>
@@ -164,12 +198,13 @@ export default function CategoryList() {
           </select>
         </div>
 
-        <div className="admin-dash__table-wrap admin-dash__table-wrap--modern">
-          <table className="admin-dash__table admin-dash__table--modern admin-dash__table--categories">
+        <div className="admin-dash__data-table">
+          <div className="admin-dash__table-wrap admin-dash__table-wrap--modern">
+            <table className="admin-dash__table admin-dash__table--modern admin-dash__table--categories">
             <thead>
               <tr>
                 <th>Image</th>
-                <th>Category</th>
+                <th>Category Name</th>
                 <th>Parent</th>
                 <th>Products</th>
                 <th>Status</th>
@@ -177,41 +212,62 @@ export default function CategoryList() {
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 ? (
+              {slice.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="admin-dash__table-empty">No categories match your filters.</td>
+                  <td colSpan={6} className="admin-dash__table-empty">
+                    No categories match your filters.
+                  </td>
                 </tr>
               ) : (
-                filtered.map((item) => {
+                slice.map((item) => {
                   const id = item._id || item.id;
                   const isActive = (item.status || "active") === "active";
                   const count = item.productCount ?? productCounts[id] ?? 0;
 
                   return (
-                    <tr key={id} className={item.isMain ? "" : "admin-dash__category-row--sub"}>
+                    <tr
+                      key={id}
+                      className={
+                        item.isMain ? "" : "admin-dash__category-row--sub"
+                      }
+                    >
                       <td>
                         {item.images?.[0] ? (
-                          <img src={item.images[0]} alt="" className="admin-dash__table-thumb" />
+                          <img
+                            src={item.images[0]}
+                            alt=""
+                            className="admin-dash__table-thumb"
+                          />
                         ) : (
                           <div className="admin-dash__product-placeholder admin-dash__table-thumb" />
                         )}
                       </td>
                       <td>
                         <strong>{item.name}</strong>
-                        {!item.isMain && <span className="admin-dash__category-sub-pill">Subcategory</span>}
+                        {!item.isMain && (
+                          <span className="admin-dash__category-sub-pill">
+                            Subcategory
+                          </span>
+                        )}
                       </td>
                       <td>{item.parentName || "—"}</td>
                       <td>
                         <span className="admin-dash__badge">{count}</span>
                       </td>
                       <td>
-                        <span className={`admin-dash__status-badge admin-dash__status-badge--${isActive ? "completed" : "cancelled"}`}>
+                        <span
+                          className={`admin-dash__status-badge admin-dash__status-badge--${isActive ? "completed" : "cancelled"}`}
+                        >
                           {isActive ? "Active" : "Inactive"}
                         </span>
                       </td>
                       <td>
                         <div className="admin-dash__actions">
-                          <Link to={getEditPath(item)} className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm" title="Edit">
+                          <Link
+                            to={getEditPath(item)}
+                            className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
+                            title="Edit"
+                          >
                             <FaPencilAlt />
                           </Link>
                           <button
@@ -230,6 +286,21 @@ export default function CategoryList() {
               )}
             </tbody>
           </table>
+          </div>
+
+          <AdminPagination
+            page={page}
+            totalPages={totalPages}
+            totalItems={filtered.length}
+            itemLabel="categories"
+            rowsPerPage={rowsPerPage}
+            rowsPerPageOptions={[10, 25, 50]}
+            onPageChange={setPage}
+            onRowsPerPageChange={(value) => {
+              setRowsPerPage(value);
+              setPage(0);
+            }}
+          />
         </div>
       </section>
 

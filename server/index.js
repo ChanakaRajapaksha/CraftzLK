@@ -98,11 +98,13 @@ const homeBottomBannerSchema = require('./routes/homeBottomBanner');
 const paymentRoutes = require("./routes/payment");
 const compareListSchema = require('./routes/compareList');
 const compareController = require('./routes/compareController');
+const artisanRoutes = require('./routes/artisans');
 
 // API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/category", categoryRoutes);
+app.use("/api/artisans", artisanRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/imageUpload", imageUploadRoutes);
 app.use("/api/productWeight", productWeightRoutes);

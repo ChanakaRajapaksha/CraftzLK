@@ -5,7 +5,7 @@ import { BiSolidCategory } from "react-icons/bi";
 import { FaProductHunt, FaClipboardCheck } from "react-icons/fa";
 import { TbSlideshow } from "react-icons/tb";
 import { FaAngleRight, FaAngleDown } from "react-icons/fa6";
-import { IoMdLogOut } from "react-icons/io";
+import { HiOutlineUserGroup } from "react-icons/hi";
 import { toast } from "sonner";
 import AuthController from "../../controllers/auth.controller";
 import { MyContext } from "../../App";
@@ -16,6 +16,7 @@ const ICONS = {
   dashboard: MdDashboard,
   category: BiSolidCategory,
   products: FaProductHunt,
+  artisans: HiOutlineUserGroup,
   mainBanners: TbSlideshow,
   slideBanners: TbSlideshow,
   sideBanners: TbSlideshow,
@@ -85,7 +86,7 @@ export default function AdminSidebar() {
                   <ul className="admin-dash__subnav">
                     {item.children.map((child) => (
                       <li key={child.path}>
-                        <NavLink to={child.path} end={child.path === ADMIN_BASE || child.path === `${ADMIN_BASE}/category` || child.path === `${ADMIN_BASE}/products` || child.path === `${ADMIN_BASE}/banners` || child.path === `${ADMIN_BASE}/homeSideBanners` || child.path === `${ADMIN_BASE}/homeBottomBanners`}>
+                        <NavLink to={child.path} end={child.path === ADMIN_BASE || child.path === `${ADMIN_BASE}/category` || child.path === `${ADMIN_BASE}/products` || child.path === `${ADMIN_BASE}/artisans` || child.path === `${ADMIN_BASE}/banners` || child.path === `${ADMIN_BASE}/homeSideBanners` || child.path === `${ADMIN_BASE}/homeBottomBanners`}>
                           {child.label}
                         </NavLink>
                       </li>
