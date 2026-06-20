@@ -32,36 +32,104 @@ export const adminNavItems = [
     ],
   },
   {
-    key: "mainBanners",
-    label: "Home Main Banners",
+    key: "orders",
+    label: "Orders",
     children: [
-      { label: "Banner List", path: `${ADMIN_BASE}/homeBannerSlide/list` },
-      { label: "Banner Upload", path: `${ADMIN_BASE}/homeBannerSlide/add` },
+      { label: "Order List", path: `${ADMIN_BASE}/orders` },
     ],
   },
   {
-    key: "slideBanners",
-    label: "Home Slide Banners",
+    key: "customers",
+    label: "Customers",
     children: [
-      { label: "Banners List", path: `${ADMIN_BASE}/banners` },
-      { label: "Banner Upload", path: `${ADMIN_BASE}/banners/add` },
+      { label: "Customer List", path: `${ADMIN_BASE}/customers` },
     ],
   },
   {
-    key: "sideBanners",
-    label: "Home Side Banners",
+    key: "promotions",
+    label: "Promotions & Marketing",
     children: [
-      { label: "Banners List", path: `${ADMIN_BASE}/homeSideBanners` },
-      { label: "Banner Upload", path: `${ADMIN_BASE}/homeSideBanners/add` },
+      { label: "Coupon List", path: `${ADMIN_BASE}/promotions/coupons` },
+      { label: "Add Coupon", path: `${ADMIN_BASE}/promotions/coupons/add` },
+      { label: "Discounts", path: `${ADMIN_BASE}/promotions/discounts` },
+      { label: "Create Discount", path: `${ADMIN_BASE}/promotions/discounts/add` },
+      { label: "Banner List", path: `${ADMIN_BASE}/promotions/banners` },
+      { label: "Add Banner", path: `${ADMIN_BASE}/promotions/banners/add` },
     ],
   },
   {
-    key: "bottomBanners",
-    label: "Home Bottom Banners",
+    key: "homepage",
+    label: "Homepage Content",
     children: [
-      { label: "Banners List", path: `${ADMIN_BASE}/homeBottomBanners` },
-      { label: "Banner Upload", path: `${ADMIN_BASE}/homeBottomBanners/add` },
+      { label: "Homepage Sections", path: `${ADMIN_BASE}/homepage` },
+      { label: "Featured Products", path: `${ADMIN_BASE}/homepage/featured` },
+      { label: "Trending Products", path: `${ADMIN_BASE}/homepage/trending` },
+      { label: "New Arrivals", path: `${ADMIN_BASE}/homepage/new-arrivals` },
+      { label: "Best Sellers", path: `${ADMIN_BASE}/homepage/best-sellers` },
+      { label: "Popular Categories", path: `${ADMIN_BASE}/homepage/popular-categories` },
     ],
   },
-  { key: "orders", label: "Orders", path: `${ADMIN_BASE}/orders` },
+  {
+    key: "reviews",
+    label: "Review Management",
+    children: [
+      { label: "Reviews List", path: `${ADMIN_BASE}/reviews` },
+    ],
+  },
+  {
+    key: "inventory",
+    label: "Inventory Management",
+    children: [
+      { label: "Stock List", path: `${ADMIN_BASE}/inventory/stock` },
+      { label: "Stock Adjustment", path: `${ADMIN_BASE}/inventory/adjust` },
+    ],
+  },
+  {
+    key: "shipping",
+    label: "Shipping Management",
+    children: [
+      { label: "Shipping Methods", path: `${ADMIN_BASE}/shipping/methods` },
+      { label: "Add Shipping Method", path: `${ADMIN_BASE}/shipping/methods/add` },
+    ],
+  },
+  {
+    key: "payments",
+    label: "Payment Management",
+    children: [
+      { label: "Payment Methods", path: `${ADMIN_BASE}/payments/methods` },
+      { label: "Transactions", path: `${ADMIN_BASE}/payments/transactions` },
+    ],
+  },
+  {
+    key: "reports",
+    label: "Reports",
+    children: [
+      { label: "Sales Reports", path: `${ADMIN_BASE}/reports/sales` },
+      { label: "Product Reports", path: `${ADMIN_BASE}/reports/products` },
+      { label: "Customer Reports", path: `${ADMIN_BASE}/reports/customers` },
+    ],
+  },
+  {
+    key: "cms",
+    label: "CMS Pages",
+    children: [
+      { label: "Pages", path: `${ADMIN_BASE}/cms/pages` },
+      { label: "Add Page", path: `${ADMIN_BASE}/cms/pages/add` },
+    ],
+  },
+  {
+    key: "notifications",
+    label: "Notification Management",
+    children: [
+      { label: "Notifications", path: `${ADMIN_BASE}/notifications` },
+      { label: "Templates", path: `${ADMIN_BASE}/notifications/templates` },
+    ],
+  },
+  {
+    key: "settings",
+    label: "Settings",
+    children: [
+      { label: "General Settings", path: `${ADMIN_BASE}/settings` },
+    ],
+  },
 ];

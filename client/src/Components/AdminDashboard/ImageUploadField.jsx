@@ -17,6 +17,7 @@ export default function ImageUploadField({
   setPreviews,
   setAlertBox,
   multiple = true,
+  maxImages,
   clearStagingOnMount = true,
   reorderable = false,
 }) {
@@ -128,6 +129,7 @@ export default function ImageUploadField({
           <img src={img} alt="" />
         </div>
       ))}
+      {(!maxImages || previews.length < maxImages) && (
       <div className="admin-dash__upload-box">
         {uploading ? (
           <div className="admin-dash__upload-loading">
@@ -142,6 +144,7 @@ export default function ImageUploadField({
           </label>
         )}
       </div>
+      )}
     </div>
   );
 }

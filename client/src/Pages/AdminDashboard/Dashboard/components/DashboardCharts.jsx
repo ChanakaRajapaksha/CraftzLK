@@ -15,14 +15,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-
-const tooltipStyle = {
-  background: "rgba(255,253,247,0.98)",
-  border: "1px solid rgba(201,169,97,0.45)",
-  borderRadius: 12,
-  boxShadow: "0 8px 24px rgba(92,77,58,0.12)",
-  fontFamily: "inherit",
-};
+import { useChartTooltipStyle } from "../../../../Components/AdminDashboard/useChartTooltipStyle";
 
 const METRIC_LABELS = {
   revenue: "Revenue",
@@ -31,6 +24,7 @@ const METRIC_LABELS = {
 };
 
 export function SalesTrendChart({ data, metric, onMetricChange }) {
+  const { tooltipStyle, axisTick, axisTickSm } = useChartTooltipStyle();
   const metrics = [
     { id: "revenue", label: "Revenue" },
     { id: "orders", label: "Orders" },
@@ -76,8 +70,8 @@ export function SalesTrendChart({ data, metric, onMetricChange }) {
           <ResponsiveContainer width="100%" height={320}>
             <LineChart data={data} margin={{ top: 12, right: 16, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="4 4" stroke="rgba(201,169,97,0.2)" vertical={false} />
-              <XAxis dataKey="name" tick={{ fill: "#5c4d3a", fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: "#5c4d3a", fontSize: 11 }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="name" tick={axisTick} axisLine={false} tickLine={false} />
+              <YAxis tick={axisTick} axisLine={false} tickLine={false} />
               <Tooltip
                 contentStyle={tooltipStyle}
                 formatter={(v) => [formatValue(v), METRIC_LABELS[metric]]}
@@ -111,6 +105,7 @@ export function SalesTrendChart({ data, metric, onMetricChange }) {
 }
 
 export function RevenueChartPanel({ data, period, onPeriodChange }) {
+  const { tooltipStyle, axisTick, axisTickSm } = useChartTooltipStyle();
   const periods = [
     { id: "daily", label: "Daily" },
     { id: "weekly", label: "Weekly" },
@@ -149,8 +144,8 @@ export function RevenueChartPanel({ data, period, onPeriodChange }) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="4 4" stroke="rgba(201,169,97,0.2)" vertical={false} />
-              <XAxis dataKey="name" tick={{ fill: "#5c4d3a", fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: "#5c4d3a", fontSize: 11 }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="name" tick={axisTick} axisLine={false} tickLine={false} />
+              <YAxis tick={axisTick} axisLine={false} tickLine={false} />
               <Tooltip
                 contentStyle={tooltipStyle}
                 formatter={(v) => [`Rs ${Number(v).toLocaleString()}`, "Revenue"]}
@@ -167,6 +162,7 @@ export function RevenueChartPanel({ data, period, onPeriodChange }) {
 }
 
 export function OrderStatusChart({ data }) {
+  const { tooltipStyle, axisTick, axisTickSm } = useChartTooltipStyle();
   const total = data.reduce((s, d) => s + d.value, 0);
 
   return (
@@ -218,6 +214,7 @@ export function OrderStatusChart({ data }) {
 }
 
 export function TopProductsChart({ data }) {
+  const { tooltipStyle, axisTick, axisTickSm } = useChartTooltipStyle();
   return (
     <section className="admin-dash__panel admin-dash__chart-panel">
       <div className="admin-dash__panel-head">
@@ -231,8 +228,8 @@ export function TopProductsChart({ data }) {
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={data} layout="vertical" margin={{ top: 8, right: 16, left: 8, bottom: 8 }}>
               <CartesianGrid strokeDasharray="4 4" stroke="rgba(201,169,97,0.2)" horizontal={false} />
-              <XAxis type="number" tick={{ fill: "#5c4d3a", fontSize: 11 }} />
-              <YAxis type="category" dataKey="name" width={100} tick={{ fill: "#5c4d3a", fontSize: 11 }} />
+              <XAxis type="number" tick={axisTick} />
+              <YAxis type="category" dataKey="name" width={100} tick={axisTick} />
               <Tooltip contentStyle={tooltipStyle} />
               <Bar dataKey="qty" fill="#c9a961" radius={[0, 8, 8, 0]} name="Units sold" />
             </BarChart>
@@ -246,6 +243,7 @@ export function TopProductsChart({ data }) {
 }
 
 export function TopCategoriesChart({ data }) {
+  const { tooltipStyle, axisTick, axisTickSm } = useChartTooltipStyle();
   return (
     <section className="admin-dash__panel admin-dash__chart-panel">
       <div className="admin-dash__panel-head">
@@ -259,8 +257,8 @@ export function TopCategoriesChart({ data }) {
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="4 4" stroke="rgba(201,169,97,0.2)" vertical={false} />
-              <XAxis dataKey="name" tick={{ fill: "#5c4d3a", fontSize: 11 }} />
-              <YAxis tick={{ fill: "#5c4d3a", fontSize: 11 }} />
+              <XAxis dataKey="name" tick={axisTick} />
+              <YAxis tick={axisTick} />
               <Tooltip contentStyle={tooltipStyle} />
               <Bar dataKey="value" fill="#b8860b" radius={[8, 8, 0, 0]} name="Units" />
             </BarChart>
@@ -274,6 +272,7 @@ export function TopCategoriesChart({ data }) {
 }
 
 export function CustomerGrowthChart({ data }) {
+  const { tooltipStyle, axisTick, axisTickSm } = useChartTooltipStyle();
   return (
     <section className="admin-dash__panel admin-dash__chart-panel">
       <div className="admin-dash__panel-head">
@@ -287,8 +286,8 @@ export function CustomerGrowthChart({ data }) {
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={data} margin={{ top: 12, right: 16, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="4 4" stroke="rgba(201,169,97,0.2)" vertical={false} />
-              <XAxis dataKey="name" tick={{ fill: "#5c4d3a", fontSize: 11 }} />
-              <YAxis tick={{ fill: "#5c4d3a", fontSize: 11 }} allowDecimals={false} />
+              <XAxis dataKey="name" tick={axisTick} />
+              <YAxis tick={axisTick} allowDecimals={false} />
               <Tooltip contentStyle={tooltipStyle} />
               <Legend />
               <Line

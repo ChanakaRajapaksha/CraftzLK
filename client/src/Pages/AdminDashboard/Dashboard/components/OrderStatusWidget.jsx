@@ -5,14 +5,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-
-const tooltipStyle = {
-  background: "rgba(255,253,247,0.98)",
-  border: "1px solid rgba(201,169,97,0.45)",
-  borderRadius: 12,
-  boxShadow: "0 8px 24px rgba(92,77,58,0.12)",
-  fontFamily: "inherit",
-};
+import { useChartTooltipStyle } from "../../../../Components/AdminDashboard/useChartTooltipStyle";
 
 const ALL_STATUSES = [
   { key: "pending", label: "Pending", fill: "#d4a574" },
@@ -23,6 +16,7 @@ const ALL_STATUSES = [
 ];
 
 export default function OrderStatusWidget({ orderSummary, chartData }) {
+  const { tooltipStyle, axisTick, axisTickSm } = useChartTooltipStyle();
   const total = orderSummary.total;
 
   return (

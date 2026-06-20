@@ -71,6 +71,43 @@ import SideBannerForm from "./Pages/AdminDashboard/Banners/SideBannerForm";
 import HomeBottomBannersList from "./Pages/AdminDashboard/Banners/HomeBottomBannersList";
 import BottomBannerForm from "./Pages/AdminDashboard/Banners/BottomBannerForm";
 import AdminOrders from "./Pages/AdminDashboard/Orders/index.jsx";
+import OrderDetails from "./Pages/AdminDashboard/Orders/OrderDetails.jsx";
+import CustomerList from "./Pages/AdminDashboard/Customers/CustomerList";
+import CustomerDetails from "./Pages/AdminDashboard/Customers/CustomerDetails";
+import CouponList from "./Pages/AdminDashboard/Promotions/CouponList";
+import AddCoupon from "./Pages/AdminDashboard/Promotions/AddCoupon";
+import EditCoupon from "./Pages/AdminDashboard/Promotions/EditCoupon";
+import DiscountList from "./Pages/AdminDashboard/Promotions/DiscountList";
+import AddDiscount from "./Pages/AdminDashboard/Promotions/AddDiscount";
+import EditDiscount from "./Pages/AdminDashboard/Promotions/EditDiscount";
+import PromoBannerList from "./Pages/AdminDashboard/Promotions/PromoBannerList";
+import AddPromoBanner from "./Pages/AdminDashboard/Promotions/AddPromoBanner";
+import EditPromoBanner from "./Pages/AdminDashboard/Promotions/EditPromoBanner";
+import HomepageSectionsList from "./Pages/AdminDashboard/HomepageContent/HomepageSectionsList";
+import FeaturedProductsSection from "./Pages/AdminDashboard/HomepageContent/FeaturedProductsSection";
+import TrendingProductsSection from "./Pages/AdminDashboard/HomepageContent/TrendingProductsSection";
+import NewArrivalsSection from "./Pages/AdminDashboard/HomepageContent/NewArrivalsSection";
+import BestSellersSection from "./Pages/AdminDashboard/HomepageContent/BestSellersSection";
+import PopularCategoriesSection from "./Pages/AdminDashboard/HomepageContent/PopularCategoriesSection";
+import ReviewList from "./Pages/AdminDashboard/Reviews/ReviewList";
+import StockList from "./Pages/AdminDashboard/Inventory/StockList";
+import StockAdjustment from "./Pages/AdminDashboard/Inventory/StockAdjustment";
+import ShippingMethodList from "./Pages/AdminDashboard/Shipping/ShippingMethodList";
+import AddShippingMethod from "./Pages/AdminDashboard/Shipping/AddShippingMethod";
+import EditShippingMethod from "./Pages/AdminDashboard/Shipping/EditShippingMethod";
+import PaymentMethodList from "./Pages/AdminDashboard/Payments/PaymentMethodList";
+import EditPaymentMethod from "./Pages/AdminDashboard/Payments/EditPaymentMethod";
+import TransactionList from "./Pages/AdminDashboard/Payments/TransactionList";
+import SalesReports from "./Pages/AdminDashboard/Reports/SalesReports";
+import ProductReports from "./Pages/AdminDashboard/Reports/ProductReports";
+import CustomerReports from "./Pages/AdminDashboard/Reports/CustomerReports";
+import CmsPageList from "./Pages/AdminDashboard/Cms/CmsPageList";
+import AddCmsPage from "./Pages/AdminDashboard/Cms/AddCmsPage";
+import EditCmsPage from "./Pages/AdminDashboard/Cms/EditCmsPage";
+import NotificationSettingsPage from "./Pages/AdminDashboard/Notifications/NotificationSettingsPage";
+import NotificationTemplateList from "./Pages/AdminDashboard/Notifications/NotificationTemplateList";
+import EditNotificationTemplate from "./Pages/AdminDashboard/Notifications/EditNotificationTemplate";
+import GeneralSettings from "./Pages/AdminDashboard/Settings/GeneralSettings";
 
 // Default context value so consumers never get undefined (e.g. before Provider mounts or in edge cases)
 const defaultContextValue = {
@@ -517,6 +554,44 @@ function AppContent() {
           <Route path="artisans" element={<ArtisanList />} />
           <Route path="artisans/add" element={<AddArtisan />} />
           <Route path="artisans/edit/:id" element={<EditArtisan />} />
+          <Route path="orders" element={<AdminOrders />} />
+          <Route path="orders/:id" element={<OrderDetails />} />
+          <Route path="customers" element={<CustomerList />} />
+          <Route path="customers/:id" element={<CustomerDetails />} />
+          <Route path="promotions/coupons" element={<CouponList />} />
+          <Route path="promotions/coupons/add" element={<AddCoupon />} />
+          <Route path="promotions/coupons/edit/:id" element={<EditCoupon />} />
+          <Route path="promotions/discounts" element={<DiscountList />} />
+          <Route path="promotions/discounts/add" element={<AddDiscount />} />
+          <Route path="promotions/discounts/edit/:id" element={<EditDiscount />} />
+          <Route path="promotions/banners" element={<PromoBannerList />} />
+          <Route path="promotions/banners/add" element={<AddPromoBanner />} />
+          <Route path="promotions/banners/edit/:id" element={<EditPromoBanner />} />
+          <Route path="homepage" element={<HomepageSectionsList />} />
+          <Route path="homepage/featured" element={<FeaturedProductsSection />} />
+          <Route path="homepage/trending" element={<TrendingProductsSection />} />
+          <Route path="homepage/new-arrivals" element={<NewArrivalsSection />} />
+          <Route path="homepage/best-sellers" element={<BestSellersSection />} />
+          <Route path="homepage/popular-categories" element={<PopularCategoriesSection />} />
+          <Route path="reviews" element={<ReviewList />} />
+          <Route path="inventory/stock" element={<StockList />} />
+          <Route path="inventory/adjust" element={<StockAdjustment />} />
+          <Route path="shipping/methods" element={<ShippingMethodList />} />
+          <Route path="shipping/methods/add" element={<AddShippingMethod />} />
+          <Route path="shipping/methods/edit/:id" element={<EditShippingMethod />} />
+          <Route path="payments/methods" element={<PaymentMethodList />} />
+          <Route path="payments/methods/edit/:id" element={<EditPaymentMethod />} />
+          <Route path="payments/transactions" element={<TransactionList />} />
+          <Route path="reports/sales" element={<SalesReports />} />
+          <Route path="reports/products" element={<ProductReports />} />
+          <Route path="reports/customers" element={<CustomerReports />} />
+          <Route path="cms/pages" element={<CmsPageList />} />
+          <Route path="cms/pages/add" element={<AddCmsPage />} />
+          <Route path="cms/pages/edit/:id" element={<EditCmsPage />} />
+          <Route path="notifications" element={<NotificationSettingsPage />} />
+          <Route path="notifications/templates" element={<NotificationTemplateList />} />
+          <Route path="notifications/templates/edit/:id" element={<EditNotificationTemplate />} />
+          <Route path="settings" element={<GeneralSettings />} />
           <Route path="subCategory" element={<SubCategoryList />} />
           <Route path="subCategory/add" element={<AddSubCategory />} />
           <Route path="subCategory/edit/:id" element={<EditSubCategory />} />
@@ -539,7 +614,6 @@ function AppContent() {
           <Route path="homeBottomBanners" element={<HomeBottomBannersList />} />
           <Route path="homeBottomBanners/add" element={<BottomBannerForm />} />
           <Route path="homeBottomBanners/edit/:id" element={<BottomBannerForm />} />
-          <Route path="orders" element={<AdminOrders />} />
         </Route>
       </Routes>
 

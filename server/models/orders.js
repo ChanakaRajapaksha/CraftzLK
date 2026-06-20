@@ -41,6 +41,10 @@ const ordersSchema = mongoose.Schema({
             productTitle: {
                 type: String
             },
+            variant: {
+                type: String,
+                default: ""
+            },
             quantity:{
                 type:Number
             },
@@ -55,9 +59,44 @@ const ordersSchema = mongoose.Schema({
             }
         }
     ],
+    orderNumber: {
+        type: String,
+        default: ""
+    },
+    paymentStatus: {
+        type: String,
+        enum: ["paid", "pending", "failed", "refunded"],
+        default: "pending"
+    },
+    paymentMethod: {
+        type: String,
+        default: ""
+    },
+    subtotal: {
+        type: Number,
+        default: 0
+    },
+    discount: {
+        type: Number,
+        default: 0
+    },
+    tax: {
+        type: Number,
+        default: 0
+    },
+    shipping: {
+        type: Number,
+        default: 0
+    },
+    statusHistory: [
+        {
+            status: { type: String },
+            date: { type: Date, default: Date.now }
+        }
+    ],
     status:{
         type:String,
-        default:"pending"
+        default:"placed"
     },
     date: {
         type: Date,

@@ -287,35 +287,42 @@ router.delete('/:id', async (req, res) => {
 
 
 router.put('/:id', async (req, res) => {
+    try {
+        const order = await Orders.findById(req.params.id);
 
-    const order = await Orders.findByIdAndUpdate(
-        req.params.id,
-        {
-            name: req.body.name,
-            phoneNumber: req.body.phoneNumber,
-            address: req.body.address,
-            pincode: req.body.pincode,
-            amount: req.body.amount,
-            paymentId: req.body.paymentId,
-            email: req.body.email,
-            userid: req.body.userid,
-            products: req.body.products,
-            status:req.body.status
-        },
-        { new: true }
-    )
+        if (!order) {
+            return res.status(404).json({
+                message: 'Order not found!',
+                success: false
+            });
+        }
 
+        const nextStatus = req.body.status ?? req.body.orderStatus ?? order.status;
+        if (nextStatus && nextStatus !== order.status) {
+            order.statusHistory = order.statusHistory || [];
+            order.statusHistory.push({ status: nextStatus, date: new Date() });
+            order.status = nextStatus;
+        }
 
+        if (req.body.paymentStatus !== undefined) order.paymentStatus = req.body.paymentStatus;
+        if (req.body.name !== undefined) order.name = req.body.name;
+        if (req.body.phoneNumber !== undefined) order.phoneNumber = req.body.phoneNumber;
+        if (req.body.address !== undefined) order.address = req.body.address;
+        if (req.body.pincode !== undefined) order.pincode = req.body.pincode;
+        if (req.body.amount !== undefined) order.amount = req.body.amount;
+        if (req.body.paymentId !== undefined) order.paymentId = req.body.paymentId;
+        if (req.body.email !== undefined) order.email = req.body.email;
+        if (req.body.userid !== undefined) order.userid = req.body.userid;
+        if (req.body.products !== undefined) order.products = req.body.products;
 
-    if (!order) {
+        await order.save();
+        return res.send(order);
+    } catch (error) {
         return res.status(500).json({
             message: 'Order cannot be updated!',
             success: false
-        })
+        });
     }
-
-    res.send(order);
-
 })
 
 

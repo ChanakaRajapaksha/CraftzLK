@@ -1,0 +1,947 @@
+/* Admin dashboard dark theme — toggled via .admin-dash--dark on the layout root */
+
+.admin-dash--dark {
+  color-scheme: dark;
+
+  --adm-bg-base: #12100e;
+  --adm-bg-gradient-1: rgba(201, 169, 97, 0.07);
+  --adm-bg-gradient-2: rgba(184, 134, 11, 0.04);
+  --adm-sidebar-bg: rgba(18, 16, 14, 0.98);
+  --adm-sidebar-border: rgba(201, 169, 97, 0.18);
+  --adm-surface: rgba(28, 24, 20, 0.94);
+  --adm-surface-alt: rgba(34, 29, 24, 0.96);
+  --adm-text: #f5efe6;
+  --adm-text-secondary: #d4c4b0;
+  --adm-text-muted: #b8a898;
+  --adm-input-text: #f0e8dc;
+  --adm-border: rgba(201, 169, 97, 0.24);
+  --adm-border-soft: rgba(201, 169, 97, 0.16);
+  --adm-nav-text: #d4c4b0;
+  --adm-nav-hover-bg: rgba(201, 169, 97, 0.12);
+  --adm-nav-active-bg: rgba(184, 134, 11, 0.22);
+  --adm-nav-active-text: #fff8ec;
+  --adm-accent: #e8c878;
+  --adm-accent-strong: #f0d890;
+  --adm-shadow: rgba(0, 0, 0, 0.35);
+  --adm-overlay: rgba(0, 0, 0, 0.62);
+
+  /* Remap global theme.css tokens so !important rules use light text */
+  --text-primary: #f5efe6;
+  --text-secondary: #d4c4b0;
+  --text-muted: #b8a898;
+  --text-hint: #a89888;
+
+  color: var(--adm-text-secondary);
+
+  background-color: var(--adm-bg-base);
+  background-image:
+    radial-gradient(38rem 24rem at 110% -5%, var(--adm-bg-gradient-1), transparent 65%),
+    radial-gradient(30rem 22rem at -10% 35%, var(--adm-bg-gradient-2), transparent 60%);
+}
+
+html.admin-dash-theme-dark {
+  background-color: #12100e;
+}
+
+/* Override global theme.css text colors (uses !important on headings/nav) */
+.admin-dash--dark h1,
+.admin-dash--dark h2,
+.admin-dash--dark h3,
+.admin-dash--dark h4,
+.admin-dash--dark h5,
+.admin-dash--dark h6 {
+  color: var(--adm-text) !important;
+}
+
+.admin-dash--dark p {
+  color: var(--adm-text-secondary) !important;
+}
+
+.admin-dash--dark span,
+.admin-dash--dark li {
+  color: inherit;
+}
+
+.admin-dash--dark nav a {
+  color: var(--adm-nav-text) !important;
+}
+
+.admin-dash--dark nav a:hover {
+  color: var(--adm-nav-active-text) !important;
+}
+
+.admin-dash--dark .admin-dash__sidebar {
+  background: var(--adm-sidebar-bg);
+  border-right-color: var(--adm-sidebar-border);
+}
+
+.admin-dash--dark .admin-dash__brand-name,
+.admin-dash--dark .admin-dash__title,
+.admin-dash--dark .admin-dash__panel-title,
+.admin-dash--dark .admin-dash__widget-title,
+.admin-dash--dark .admin-dash__widget-section-title,
+.admin-dash--dark .admin-dash__stat-value,
+.admin-dash--dark .admin-dash__kpi-value,
+.admin-dash--dark .admin-dash__sales-metric-value,
+.admin-dash--dark .admin-dash__order-status-total-value,
+.admin-dash--dark .admin-dash__table-footer-info strong,
+.admin-dash--dark .admin-dash__confirm-dialog h3,
+.admin-dash--dark .admin-dash__legend-list strong,
+.admin-dash--dark .admin-dash__order-status-item strong {
+  color: var(--adm-text) !important;
+}
+
+.admin-dash--dark .admin-dash__subtitle,
+.admin-dash--dark .admin-dash__panel-desc,
+.admin-dash--dark .admin-dash__hint,
+.admin-dash--dark .admin-dash__table-empty,
+.admin-dash--dark .admin-dash__chart-empty,
+.admin-dash--dark .admin-dash__report-loading,
+.admin-dash--dark .admin-dash__label,
+.admin-dash--dark .admin-dash__table-footer-info,
+.admin-dash--dark .admin-dash__legend-list,
+.admin-dash--dark .admin-dash__confirm-dialog p,
+.admin-dash--dark .admin-dash__kpi-label,
+.admin-dash--dark .admin-dash__kpi-meta,
+.admin-dash--dark .admin-dash__kpi-vs,
+.admin-dash--dark .admin-dash__sales-metric-label,
+.admin-dash--dark .admin-dash__order-status-total-label,
+.admin-dash--dark .admin-dash__order-status-item,
+.admin-dash--dark .admin-dash__widget-section-sub,
+.admin-dash--dark .admin-dash__widget-empty,
+.admin-dash--dark .admin-dash__chart-legend-item {
+  color: var(--adm-text-secondary) !important;
+}
+
+.admin-dash--dark .admin-dash__breadcrumbs,
+.admin-dash--dark .admin-dash__stat-label {
+  color: var(--adm-text-muted) !important;
+}
+
+.admin-dash--dark .admin-dash__eyebrow {
+  color: var(--adm-accent) !important;
+}
+
+.admin-dash--dark .admin-dash__sales-metric--revenue .admin-dash__sales-metric-value {
+  color: var(--adm-accent-strong) !important;
+}
+
+.admin-dash--dark .admin-dash__nav a,
+.admin-dash--dark .admin-dash__nav ul li a,
+.admin-dash--dark .admin-dash__subnav a,
+.admin-dash--dark .admin-dash__nav-link,
+.admin-dash--dark .admin-dash__nav-toggle,
+.admin-dash--dark .admin-dash__logout {
+  color: var(--adm-nav-text) !important;
+}
+
+.admin-dash--dark .admin-dash__nav-link:hover,
+.admin-dash--dark .admin-dash__nav-toggle:hover,
+.admin-dash--dark .admin-dash__nav a:hover,
+.admin-dash--dark .admin-dash__subnav a:hover {
+  background: var(--adm-nav-hover-bg);
+  color: var(--adm-nav-active-text) !important;
+}
+
+.admin-dash--dark .admin-dash__nav-link--active,
+.admin-dash--dark .admin-dash__subnav a.active,
+.admin-dash--dark .admin-dash__subnav a:hover.active {
+  background: var(--adm-nav-active-bg);
+  color: var(--adm-nav-active-text) !important;
+}
+
+.admin-dash--dark .admin-dash__subnav a:hover,
+.admin-dash--dark .admin-dash__subnav a.active {
+  color: var(--adm-nav-active-text) !important;
+}
+
+.admin-dash--dark .admin-dash__nav-link--active {
+  border-left-color: var(--adm-accent);
+}
+
+.admin-dash--dark .admin-dash__subnav {
+  border-left-color: var(--adm-border-soft);
+}
+
+.admin-dash--dark .admin-dash__brand,
+.admin-dash--dark .admin-dash__product-form-actions {
+  border-color: var(--adm-border-soft);
+}
+
+.admin-dash--dark .admin-dash__logout {
+  background: var(--adm-surface-alt);
+  border-color: var(--adm-border);
+}
+
+.admin-dash--dark .admin-dash__logout:hover {
+  background: rgba(220, 53, 69, 0.16);
+  color: #f5a5ad !important;
+  border-color: rgba(220, 53, 69, 0.35);
+}
+
+.admin-dash--dark .admin-dash__panel,
+.admin-dash--dark .admin-dash__stat,
+.admin-dash--dark .admin-dash__widget,
+.admin-dash--dark .admin-dash__kpi-card,
+.admin-dash--dark .admin-dash__chart-panel,
+.admin-dash--dark .admin-dash__report-panel,
+.admin-dash--dark .admin-dash__notification-channel,
+.admin-dash--dark .admin-dash__confirm-dialog,
+.admin-dash--dark .admin-dash__date-filter-menu,
+.admin-dash--dark .admin-dash__product-panel {
+  background: var(--adm-surface);
+  border: 1px solid var(--adm-border-soft);
+  border-color: var(--adm-border);
+  box-shadow: 0 10px 28px var(--adm-shadow);
+}
+
+.admin-dash--dark .admin-dash__kpi-card {
+  border-left-width: 4px;
+  border-left-style: solid;
+}
+
+.admin-dash--dark .admin-dash__kpi-card--revenue {
+  border-left-color: #e8c878;
+}
+
+.admin-dash--dark .admin-dash__kpi-card--orders {
+  border-left-color: #c9a961;
+}
+
+.admin-dash--dark .admin-dash__kpi-card--profit {
+  border-left-color: #8fbf96;
+}
+
+.admin-dash--dark .admin-dash__kpi-card--products {
+  border-left-color: #c9a961;
+}
+
+.admin-dash--dark .admin-dash__kpi-card--customers {
+  border-left-color: #8fbf96;
+}
+
+.admin-dash--dark .admin-dash__kpi-card--low-stock {
+  border-left-color: #e8b878;
+}
+
+.admin-dash--dark .admin-dash__kpi-low-stock-item {
+  color: var(--adm-text-secondary) !important;
+}
+
+.admin-dash--dark .admin-dash__kpi-low-stock-item em {
+  color: var(--adm-accent) !important;
+}
+
+.admin-dash--dark .admin-dash__stat {
+  background: linear-gradient(145deg, var(--adm-surface-alt), var(--adm-surface));
+}
+
+.admin-dash--dark .admin-dash__select,
+.admin-dash--dark .admin-dash__input,
+.admin-dash--dark .admin-dash__textarea {
+  background: var(--adm-surface-alt);
+  border-color: var(--adm-border);
+  color: var(--adm-input-text);
+}
+
+.admin-dash--dark .admin-dash__select:focus,
+.admin-dash--dark .admin-dash__input:focus,
+.admin-dash--dark .admin-dash__textarea:focus {
+  border-color: #c9a961;
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.18);
+}
+
+.admin-dash--dark input::placeholder,
+.admin-dash--dark textarea::placeholder,
+.admin-dash--dark input::-webkit-input-placeholder,
+.admin-dash--dark textarea::-webkit-input-placeholder {
+  color: #7a6f62 !important;
+}
+
+.admin-dash--dark .admin-dash__btn--ghost {
+  background: var(--adm-surface-alt);
+  color: var(--adm-text-secondary);
+  border-color: var(--adm-border);
+}
+
+.admin-dash--dark .admin-dash__btn--ghost:hover,
+.admin-dash--dark .admin-dash__btn--ghost:focus-visible {
+  background: rgba(201, 169, 97, 0.14);
+  color: var(--adm-text) !important;
+  border-color: rgba(201, 169, 97, 0.45);
+}
+.admin-dash--dark .admin-dash__table th,
+.admin-dash--dark .admin-dash__table--modern thead th {
+  background: rgba(201, 169, 97, 0.08) !important;
+  color: var(--adm-text-secondary) !important;
+  border-color: var(--adm-border-soft);
+}
+
+.admin-dash--dark .admin-dash__table td,
+.admin-dash--dark .admin-dash__table--modern tbody td {
+  color: var(--adm-text) !important;
+  border-color: var(--adm-border-soft);
+}
+
+.admin-dash--dark .admin-dash__table tr:hover td,
+.admin-dash--dark .admin-dash__table--modern tbody tr:hover td {
+  background: rgba(201, 169, 97, 0.06);
+}
+
+.admin-dash--dark .admin-dash__table--modern tbody tr:nth-child(even) td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.admin-dash--dark .admin-dash__table-wrap--modern,
+.admin-dash--dark .admin-dash__data-table .admin-dash__table-wrap--modern {
+  background: var(--adm-surface-alt);
+  border-color: var(--adm-border-soft);
+}
+
+.admin-dash--dark .admin-dash__table-footer {
+  background: var(--adm-surface-alt);
+  border-color: var(--adm-border-soft);
+}
+
+.admin-dash--dark .admin-dash__sample-banner,
+.admin-dash--dark .admin-dash__sample-banner--standalone {
+  background: rgba(201, 169, 97, 0.12);
+  color: var(--adm-text-secondary);
+}
+
+.admin-dash--dark .admin-dash__product-tab {
+  color: var(--adm-text-muted);
+  border-color: transparent;
+}
+
+.admin-dash--dark .admin-dash__product-tab:hover {
+  color: var(--adm-text);
+  background: rgba(201, 169, 97, 0.08);
+}
+
+.admin-dash--dark .admin-dash__product-tab--active {
+  color: var(--adm-text);
+  background: rgba(201, 169, 97, 0.14);
+  border-color: rgba(201, 169, 97, 0.35);
+}
+
+.admin-dash--dark .admin-dash__pill {
+  background: var(--adm-surface-alt);
+  border-color: var(--adm-border);
+  color: var(--adm-text-secondary);
+}
+
+.admin-dash--dark .admin-dash__pill--active {
+  color: #fff;
+}
+
+.admin-dash--dark .admin-dash__date-filter-btn {
+  background: var(--adm-surface-alt);
+  border-color: var(--adm-border);
+  color: var(--adm-text-secondary);
+}
+
+.admin-dash--dark .admin-dash__date-filter-btn:hover,
+.admin-dash--dark .admin-dash__date-filter--active .admin-dash__date-filter-btn {
+  border-color: rgba(201, 169, 97, 0.45);
+  color: var(--adm-text);
+}
+
+.admin-dash--dark .admin-dash__date-filter-option {
+  color: var(--adm-text-secondary);
+}
+
+.admin-dash--dark .admin-dash__date-filter-option:hover,
+.admin-dash--dark .admin-dash__date-filter-option--active {
+  background: rgba(201, 169, 97, 0.12);
+  color: var(--adm-text);
+}
+
+.admin-dash--dark .admin-dash__slug-code {
+  background: rgba(201, 169, 97, 0.14);
+  color: #e8dcc8;
+}
+
+.admin-dash--dark .admin-dash__settings-preview,
+.admin-dash--dark .admin-dash__notification-preview-body {
+  background: rgba(201, 169, 97, 0.1);
+  border-color: var(--adm-border-soft);
+  color: var(--adm-text);
+}
+
+.admin-dash--dark .admin-dash__settings-asset-preview,
+.admin-dash--dark .admin-dash__inventory-current-stock--boxed {
+  background: var(--adm-surface-alt);
+  border-color: var(--adm-border);
+}
+
+.admin-dash--dark .admin-dash__settings-asset-empty {
+  color: var(--adm-text-muted);
+}
+
+.admin-dash--dark .admin-dash__shipping-zones,
+.admin-dash--dark .admin-dash__variant-group,
+.admin-dash--dark .admin-dash__checkbox-item,
+.admin-dash--dark .admin-dash__banner-upload-wrap {
+  background: var(--adm-surface-alt);
+  border-color: var(--adm-border-soft);
+}
+
+.admin-dash--dark .admin-dash__confirm-overlay {
+  background: var(--adm-overlay);
+}
+
+.admin-dash--dark .admin-dash__legend-dot {
+  box-shadow: 0 0 0 2px var(--adm-surface);
+}
+
+.admin-dash--dark .admin-dash__theme-toggle {
+  background: var(--adm-surface-alt);
+  border-color: var(--adm-border);
+}
+
+.admin-dash--dark .admin-dash__theme-toggle-label,
+.admin-dash--dark .admin-dash__theme-toggle-state {
+  color: var(--adm-text-secondary) !important;
+}
+
+.admin-dash--dark .admin-dash__payment-details-cell,
+.admin-dash--dark .admin-dash__cms-path-cell,
+.admin-dash--dark .admin-dash__notification-preview-cell,
+.admin-dash--dark .admin-dash__shipping-zones-cell {
+  color: var(--adm-text-muted);
+}
+
+.admin-dash--dark .admin-dash__loading,
+.admin-dash--dark .admin-dash__loading p {
+  color: var(--adm-text-muted);
+}
+
+.admin-dash--dark .recharts-cartesian-grid line {
+  stroke: rgba(201, 169, 97, 0.15);
+}
+
+.admin-dash--dark .recharts-text,
+.admin-dash--dark .recharts-legend-item-text,
+.admin-dash--dark .recharts-cartesian-axis-tick-value {
+  fill: var(--adm-text-secondary) !important;
+  color: var(--adm-text-secondary) !important;
+}
+
+.admin-dash--dark .recharts-default-tooltip {
+  background: rgba(28, 24, 20, 0.98) !important;
+  border: 1px solid rgba(201, 169, 97, 0.35) !important;
+  border-radius: 12px !important;
+  color: #f5efe6 !important;
+}
+
+.admin-dash--dark .recharts-tooltip-label,
+.admin-dash--dark .recharts-tooltip-item {
+  color: #f5efe6 !important;
+}
+
+.admin-dash--dark .MuiPaper-root {
+  background-color: var(--adm-surface) !important;
+  color: var(--adm-text) !important;
+}
+
+.admin-dash--dark label,
+.admin-dash--dark .admin-dash__label {
+  color: var(--adm-text-secondary) !important;
+}
+
+.admin-dash--dark .admin-dash__brand-role {
+  color: var(--adm-text-muted);
+}
+
+.admin-dash--dark .admin-dash__breadcrumbs a {
+  color: var(--adm-text-muted);
+}
+
+.admin-dash--dark .admin-dash__breadcrumbs a:hover {
+  color: #e8dcc8;
+}
+
+.admin-dash--dark .admin-dash__pagination,
+.admin-dash--dark .admin-dash__pagination-size-label {
+  color: var(--adm-text-secondary);
+}
+
+.admin-dash--dark .admin-dash__pagination-group {
+  background: var(--adm-surface-alt);
+  border-color: var(--adm-border);
+  box-shadow: none;
+}
+
+.admin-dash--dark .admin-dash__pagination-btn {
+  color: var(--adm-text-secondary);
+}
+
+.admin-dash--dark .admin-dash__pagination-btn:hover:not(:disabled):not(.admin-dash__pagination-btn--static) {
+  background: rgba(201, 169, 97, 0.14);
+  color: var(--adm-text);
+}
+
+.admin-dash--dark .admin-dash__pagination-btn--arrow {
+  color: #c9a961;
+}
+
+.admin-dash--dark .admin-dash__pagination-ellipsis {
+  color: var(--adm-text-muted);
+}
+
+.admin-dash--dark .admin-dash__upload-box,
+.admin-dash--dark .admin-dash__upload-add {
+  background: var(--adm-surface-alt);
+  border-color: var(--adm-border);
+  color: var(--adm-text-muted);
+}
+
+.admin-dash--dark .admin-dash__upload-loading {
+  color: var(--adm-text-muted);
+}
+
+.admin-dash--dark .admin-dash__checkbox-item {
+  color: var(--adm-text);
+}
+
+.admin-dash--dark .admin-dash__toggle {
+  background: var(--adm-surface-alt);
+  border-color: var(--adm-border);
+  color: var(--adm-text-secondary);
+}
+
+.admin-dash--dark .admin-dash__theme-toggle--compact {
+  margin: 0;
+  max-width: 22rem;
+}
+
+.admin-dash--dark .admin-dash__status-badge--completed {
+  background: rgba(107, 143, 113, 0.28);
+  color: #b8d4bb;
+}
+
+.admin-dash--dark .admin-dash__status-badge--processing {
+  background: rgba(201, 169, 97, 0.28);
+  color: #e8dcc8;
+}
+
+.admin-dash--dark .admin-dash__status-badge--pending {
+  background: rgba(212, 165, 116, 0.28);
+  color: #f0d4a8;
+}
+
+.admin-dash--dark .admin-dash__status-badge--cancelled {
+  background: rgba(196, 92, 92, 0.28);
+  color: #f5a5ad;
+}
+
+.admin-dash--dark .admin-dash__status-badge--returned {
+  background: rgba(154, 139, 120, 0.28);
+  color: #c4b8a8;
+}
+
+.admin-dash--dark .admin-dash__badge--muted {
+  background: rgba(154, 139, 120, 0.22);
+  color: #c4b8a8;
+}
+
+/* Section nav, tabs, and dashboard controls */
+.admin-dash--dark .admin-dash__section-nav-item {
+  background: var(--adm-surface-alt);
+  border-color: var(--adm-border);
+  color: var(--adm-text-secondary) !important;
+}
+
+.admin-dash--dark .admin-dash__section-nav-item:hover {
+  border-color: rgba(201, 169, 97, 0.45);
+  color: var(--adm-text) !important;
+}
+
+.admin-dash--dark .admin-dash__section-nav-item--active {
+  background: linear-gradient(135deg, #c9a961, #b8860b);
+  border-color: transparent;
+  color: #fff !important;
+  box-shadow: 0 3px 12px rgba(184, 134, 11, 0.25);
+}
+
+.admin-dash--dark .admin-dash__tabs {
+  background: var(--adm-surface-alt);
+  border-color: var(--adm-border);
+}
+
+.admin-dash--dark .admin-dash__tab {
+  color: var(--adm-text-secondary) !important;
+}
+
+.admin-dash--dark .admin-dash__tab:hover {
+  background: rgba(201, 169, 97, 0.12);
+  color: var(--adm-text) !important;
+}
+
+.admin-dash--dark .admin-dash__tab--active {
+  color: #fff !important;
+}
+
+.admin-dash--dark .admin-dash__stat-trend--up,
+.admin-dash--dark .admin-dash__kpi-change--up {
+  color: #9fd4a5 !important;
+}
+
+.admin-dash--dark .admin-dash__stat-trend--down,
+.admin-dash--dark .admin-dash__kpi-change--down {
+  color: #f5a5ad !important;
+}
+
+.admin-dash--dark .admin-dash__stat-trend--flat,
+.admin-dash--dark .admin-dash__kpi-change--flat {
+  color: var(--adm-text-muted) !important;
+}
+
+.admin-dash--dark .admin-dash__widget-link {
+  color: var(--adm-accent) !important;
+}
+
+.admin-dash--dark .admin-dash__order-status-total {
+  border-bottom-color: var(--adm-border-soft);
+}
+
+.admin-dash--dark .admin-dash__chart-legend-line--previous {
+  background: var(--adm-text-muted);
+}
+
+.admin-dash--dark .admin-dash__chart-legend-line--current {
+  background: var(--adm-accent);
+}
+
+.admin-dash--dark .admin-dash__category-item-head {
+  color: var(--adm-text-secondary) !important;
+}
+
+.admin-dash--dark .admin-dash__category-bar-track {
+  background: rgba(201, 169, 97, 0.18);
+}
+
+.admin-dash--dark .admin-dash__customer-total {
+  border-bottom-color: var(--adm-border-soft);
+}
+
+.admin-dash--dark .admin-dash__customer-total-value {
+  color: var(--adm-text) !important;
+}
+
+.admin-dash--dark .admin-dash__customer-total-label {
+  color: var(--adm-text-muted) !important;
+}
+
+.admin-dash--dark .admin-dash__activity-item {
+  background: var(--adm-surface-alt);
+  border-color: var(--adm-border-soft);
+}
+
+.admin-dash--dark .admin-dash__activity-item:hover {
+  background: rgba(201, 169, 97, 0.1);
+}
+
+.admin-dash--dark .admin-dash__activity-title {
+  color: var(--adm-text) !important;
+}
+
+.admin-dash--dark .admin-dash__activity-detail,
+.admin-dash--dark .admin-dash__activity-time {
+  color: var(--adm-text-muted) !important;
+}
+
+.admin-dash--dark .admin-dash__inventory-total-label,
+.admin-dash--dark .admin-dash__inventory-health-label {
+  color: var(--adm-text-muted) !important;
+}
+
+.admin-dash--dark .admin-dash__inventory-total-value {
+  color: var(--adm-accent-strong) !important;
+}
+
+.admin-dash--dark .admin-dash__inventory-legend {
+  color: var(--adm-text-secondary) !important;
+}
+
+.admin-dash--dark .admin-dash__inventory-legend strong {
+  color: var(--adm-text) !important;
+}
+
+.admin-dash--dark .admin-dash__inventory-bar {
+  background: rgba(201, 169, 97, 0.18);
+}
+
+.admin-dash--dark .admin-dash__top-product-item {
+  background: var(--adm-surface-alt);
+  border-color: var(--adm-border-soft);
+}
+
+.admin-dash--dark .admin-dash__top-product-rank {
+  background: rgba(201, 169, 97, 0.22);
+  color: var(--adm-accent-strong);
+}
+
+.admin-dash--dark .admin-dash__top-product-name {
+  color: var(--adm-text) !important;
+}
+
+.admin-dash--dark .admin-dash__top-product-stats {
+  color: var(--adm-text-muted) !important;
+}
+
+.admin-dash--dark .admin-dash__top-product-stats strong {
+  color: var(--adm-text) !important;
+}
+
+.admin-dash--dark .admin-dash__customer-metric-label {
+  color: var(--adm-text-muted) !important;
+}
+
+.admin-dash--dark .admin-dash__customer-metric-value {
+  color: var(--adm-text) !important;
+}
+
+.admin-dash--dark .admin-dash__date-filter-option--active {
+  color: var(--adm-text) !important;
+}
+
+/* ── Catch-all: hardcoded dark-brown text in admin-dashboard.css ── */
+.admin-dash--dark :is(
+  .admin-dash__low-stock-name,
+  .admin-dash__product-view-price,
+  .admin-dash__detail-item dd,
+  .admin-dash__homepage-info-title,
+  .admin-dash__product-view-lead,
+  .admin-dash__customer-profile-meta h3,
+  .admin-dash__order-detail-total,
+  .admin-dash__order-detail-value,
+  .admin-dash__inventory-alert-title,
+  .admin-dash__metric-widget-value,
+  .admin-dash__recent-order-id,
+  .admin-dash__table-sub strong
+) {
+  color: var(--adm-text) !important;
+}
+
+.admin-dash--dark :is(
+  .admin-dash__subtitle,
+  .admin-dash__panel-desc,
+  .admin-dash__product-view-description,
+  .admin-dash__product-view-old-price,
+  .admin-dash__detail-item dt,
+  .admin-dash__price-filter-trigger,
+  .admin-dash__price-filter-panel,
+  .admin-dash__homepage-product-option,
+  .admin-dash__homepage-product-option-meta,
+  .admin-dash__homepage-info-panel,
+  .admin-dash__homepage-sort-item,
+  .admin-dash__notification-preview-body,
+  .admin-dash__notification-preview-cell,
+  .admin-dash__toggle,
+  .admin-dash__table-sub,
+  .admin-dash__customer-profile-meta p,
+  .admin-dash__customer-activity-item p,
+  .admin-dash__customer-activity-head,
+  .admin-dash__customer-wishlist-item p,
+  .admin-dash__order-detail-label,
+  .admin-dash__order-detail-meta,
+  .admin-dash__inventory-alert-list li,
+  .admin-dash__inventory-alert-list span,
+  .admin-dash__inventory-current-stock,
+  .admin-dash__metric-widget-label,
+  .admin-dash__recent-order-meta,
+  .admin-dash__toolbar,
+  .admin-dash__pagination-size-label,
+  .admin-dash__pagination-btn,
+  .admin-dash__pagination-ellipsis,
+  .admin-dash__upload-loading,
+  .admin-dash__field-hint,
+  .admin-dash__variant-label,
+  .admin-dash__shipping-rate-label,
+  .admin-dash__promo-code,
+  .admin-dash__cms-seo-hint,
+  .admin-dash__report-stat-label,
+  .admin-dash__settings-preview-label,
+  .admin-dash__btn--ghost,
+  .admin-dash__pill,
+  .admin-dash__tab,
+  .admin-dash__date-filter-btn,
+  .admin-dash__date-filter-option,
+  .admin-dash__date-filter-custom label,
+  .admin-dash__checkbox-item,
+  .admin-dash__upload-add,
+  .admin-dash__settings-asset-empty,
+  .admin-dash__payment-details-cell,
+  .admin-dash__cms-path-cell,
+  .admin-dash__shipping-zones-cell,
+  .admin-dash__table-empty,
+  .admin-dash__chart-empty,
+  .admin-dash__widget-empty,
+  .admin-dash__report-loading,
+  .admin-dash__hint,
+  .admin-dash__label,
+  .admin-dash__table-footer-info,
+  .admin-dash__breadcrumbs,
+  .admin-dash__brand-role,
+  .admin-dash__theme-toggle-label,
+  .admin-dash__theme-toggle-state
+) {
+  color: var(--adm-text-secondary) !important;
+}
+
+.admin-dash--dark :is(
+  .admin-dash__stat-label,
+  .admin-dash__kpi-label,
+  .admin-dash__kpi-meta,
+  .admin-dash__kpi-vs,
+  .admin-dash__sales-metric-label,
+  .admin-dash__order-status-total-label,
+  .admin-dash__widget-section-sub,
+  .admin-dash__chart-legend-item,
+  .admin-dash__activity-detail,
+  .admin-dash__activity-time,
+  .admin-dash__customer-metric-label,
+  .admin-dash__customer-total-label,
+  .admin-dash__inventory-total-label,
+  .admin-dash__inventory-health-label,
+  .admin-dash__top-product-stats,
+  .admin-dash__category-item-head,
+  .admin-dash__inventory-legend,
+  .admin-dash__order-status-item,
+  .admin-dash__legend-list,
+  .admin-dash__pagination,
+  .admin-dash__table-footer-info
+) {
+  color: var(--adm-text-muted) !important;
+}
+
+/* Keep primary buttons and active pills readable */
+.admin-dash--dark :is(
+  .admin-dash__btn:not(.admin-dash__btn--ghost):not(.admin-dash__btn--danger),
+  .admin-dash__pill--active,
+  .admin-dash__tab--active,
+  .admin-dash__section-nav-item--active,
+  .admin-dash__product-tab--active,
+  .admin-dash__pagination-btn--active
+) {
+  color: #fff !important;
+}
+
+.admin-dash--dark .admin-dash__nav-link--active,
+.admin-dash--dark .admin-dash__subnav a.active {
+  color: var(--adm-nav-active-text) !important;
+}
+
+.admin-dash--dark .admin-dash__sales-metric--revenue .admin-dash__sales-metric-value,
+.admin-dash--dark .admin-dash__inventory-total-value,
+.admin-dash--dark .admin-dash__product-view-discount,
+.admin-dash--dark .admin-dash__low-stock-remaining {
+  color: var(--adm-accent-strong) !important;
+}
+
+.admin-dash--dark .admin-dash__price-filter-trigger,
+.admin-dash--dark .admin-dash__price-filter-panel,
+.admin-dash--dark .admin-dash__homepage-product-option,
+.admin-dash--dark .admin-dash__homepage-sort-item,
+.admin-dash--dark .admin-dash__notification-preview-body {
+  background: var(--adm-surface-alt);
+  border-color: var(--adm-border-soft);
+}
+
+.admin-dash--dark .admin-dash__channel-badge--email {
+  background: rgba(201, 169, 97, 0.2);
+  color: #e8dcc8 !important;
+}
+
+.admin-dash--dark .admin-dash__channel-badge--sms {
+  background: rgba(107, 143, 113, 0.22);
+  color: #b8d4bb !important;
+}
+
+.admin-dash--dark .admin-dash__product-view-discount {
+  background: rgba(201, 169, 97, 0.22);
+  color: var(--adm-accent-strong) !important;
+}
+
+.admin-dash--dark .admin-dash__low-stock-remaining {
+  color: var(--adm-accent-strong) !important;
+}
+
+/* Top bar + notifications panel */
+.admin-dash--dark .admin-dash__topbar {
+  background: rgba(22, 19, 16, 0.94) !important;
+  border-bottom-color: var(--adm-border) !important;
+  box-shadow: 0 4px 18px var(--adm-shadow) !important;
+}
+
+.admin-dash--dark .admin-dash__topbar-eyebrow,
+.admin-dash--dark .admin-dash__notif-panel-title,
+.admin-dash--dark .admin-dash__notif-title {
+  color: var(--adm-text) !important;
+}
+
+.admin-dash--dark .admin-dash__topbar-tagline,
+.admin-dash--dark .admin-dash__notif-panel-sub,
+.admin-dash--dark .admin-dash__notif-time,
+.admin-dash--dark .admin-dash__notif-empty,
+.admin-dash--dark .admin-dash__notif-empty-state {
+  color: var(--adm-text-muted) !important;
+}
+
+.admin-dash--dark .admin-dash__topbar-theme,
+.admin-dash--dark .admin-dash__topbar-bell {
+  background: var(--adm-surface-alt);
+  border-color: var(--adm-border);
+  color: var(--adm-text-secondary) !important;
+}
+
+.admin-dash--dark .admin-dash__topbar-theme:hover,
+.admin-dash--dark .admin-dash__topbar-theme:focus-visible,
+.admin-dash--dark .admin-dash__topbar-bell:hover,
+.admin-dash--dark .admin-dash__topbar-bell:focus-visible,
+.admin-dash--dark .admin-dash__topbar-bell--active {
+  background: rgba(201, 169, 97, 0.14);
+  border-color: rgba(201, 169, 97, 0.45);
+  color: var(--adm-text) !important;
+}
+
+.admin-dash--dark .admin-dash__topbar-theme-icon {
+  color: var(--adm-accent);
+}
+
+.admin-dash--dark .admin-dash__notif-panel {
+  background: var(--adm-surface);
+  border-color: var(--adm-border);
+  box-shadow: 0 16px 40px var(--adm-shadow);
+}
+
+.admin-dash--dark .admin-dash__notif-panel-head,
+.admin-dash--dark .admin-dash__notif-panel-foot {
+  border-color: var(--adm-border-soft);
+  background: var(--adm-surface-alt);
+}
+
+.admin-dash--dark .admin-dash__notif-sample {
+  color: var(--adm-text-secondary);
+  background: rgba(201, 169, 97, 0.1);
+  border-bottom-color: var(--adm-border-soft);
+}
+
+.admin-dash--dark .admin-dash__notif-item:hover {
+  background: rgba(201, 169, 97, 0.1);
+}
+
+.admin-dash--dark .admin-dash__notif-item--unread {
+  background: rgba(201, 169, 97, 0.08);
+}
+
+.admin-dash--dark .admin-dash__notif-message {
+  color: var(--adm-text-secondary) !important;
+}
+
+.admin-dash--dark .admin-dash__notif-mark-all,
+.admin-dash--dark .admin-dash__notif-manage {
+  color: var(--adm-accent) !important;
+}

@@ -3,9 +3,10 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { MdDashboard } from "react-icons/md";
 import { BiSolidCategory } from "react-icons/bi";
 import { FaProductHunt, FaClipboardCheck } from "react-icons/fa";
-import { TbSlideshow } from "react-icons/tb";
 import { FaAngleRight, FaAngleDown } from "react-icons/fa6";
 import { HiOutlineUserGroup } from "react-icons/hi";
+import { IoMdPeople, IoMdLogOut } from "react-icons/io";
+import { MdCampaign, MdHome, MdInventory, MdLocalShipping, MdPayments, MdRateReview, MdAssessment, MdArticle, MdNotifications, MdSettings } from "react-icons/md";
 import { toast } from "sonner";
 import AuthController from "../../controllers/auth.controller";
 import { MyContext } from "../../App";
@@ -17,11 +18,18 @@ const ICONS = {
   category: BiSolidCategory,
   products: FaProductHunt,
   artisans: HiOutlineUserGroup,
-  mainBanners: TbSlideshow,
-  slideBanners: TbSlideshow,
-  sideBanners: TbSlideshow,
-  bottomBanners: TbSlideshow,
   orders: FaClipboardCheck,
+  customers: IoMdPeople,
+  promotions: MdCampaign,
+  homepage: MdHome,
+  reviews: MdRateReview,
+  inventory: MdInventory,
+  shipping: MdLocalShipping,
+  payments: MdPayments,
+  reports: MdAssessment,
+  cms: MdArticle,
+  notifications: MdNotifications,
+  settings: MdSettings,
 };
 
 function getStoredUser() {
@@ -86,7 +94,7 @@ export default function AdminSidebar() {
                   <ul className="admin-dash__subnav">
                     {item.children.map((child) => (
                       <li key={child.path}>
-                        <NavLink to={child.path} end={child.path === ADMIN_BASE || child.path === `${ADMIN_BASE}/category` || child.path === `${ADMIN_BASE}/products` || child.path === `${ADMIN_BASE}/artisans` || child.path === `${ADMIN_BASE}/banners` || child.path === `${ADMIN_BASE}/homeSideBanners` || child.path === `${ADMIN_BASE}/homeBottomBanners`}>
+                        <NavLink to={child.path} end={child.path === ADMIN_BASE || child.path === `${ADMIN_BASE}/category` || child.path === `${ADMIN_BASE}/products` || child.path === `${ADMIN_BASE}/artisans` || child.path === `${ADMIN_BASE}/orders` || child.path === `${ADMIN_BASE}/customers`}>
                           {child.label}
                         </NavLink>
                       </li>

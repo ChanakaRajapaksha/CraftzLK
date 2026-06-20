@@ -1,0 +1,80 @@
+const SAMPLE_COUPONS = [
+  {
+    _id: "sample-coupon-1",
+    id: "sample-coupon-1",
+    code: "WELCOME10",
+    discountType: "percentage",
+    discountValue: 10,
+    minOrderValue: 2500,
+    maxDiscount: 1500,
+    startDate: "2026-01-01",
+    expiryDate: "2026-12-31",
+    usageLimit: 500,
+    usageCount: 142,
+    status: "active",
+  },
+  {
+    _id: "sample-coupon-2",
+    id: "sample-coupon-2",
+    code: "CRAFTZ500",
+    discountType: "fixed",
+    discountValue: 500,
+    minOrderValue: 5000,
+    maxDiscount: 0,
+    startDate: "2026-03-01",
+    expiryDate: "2026-06-30",
+    usageLimit: 200,
+    usageCount: 87,
+    status: "active",
+  },
+  {
+    _id: "sample-coupon-3",
+    id: "sample-coupon-3",
+    code: "NEWYEAR25",
+    discountType: "percentage",
+    discountValue: 25,
+    minOrderValue: 3000,
+    maxDiscount: 3000,
+    startDate: "2025-12-15",
+    expiryDate: "2026-01-15",
+    usageLimit: 100,
+    usageCount: 100,
+    status: "expired",
+  },
+  {
+    _id: "sample-coupon-4",
+    id: "sample-coupon-4",
+    code: "ARTISAN15",
+    discountType: "percentage",
+    discountValue: 15,
+    minOrderValue: 1500,
+    maxDiscount: 2000,
+    startDate: "2026-04-01",
+    expiryDate: "2026-09-30",
+    usageLimit: 0,
+    usageCount: 34,
+    status: "active",
+  },
+  {
+    _id: "sample-coupon-5",
+    id: "sample-coupon-5",
+    code: "VIP1000",
+    discountType: "fixed",
+    discountValue: 1000,
+    minOrderValue: 8000,
+    maxDiscount: 0,
+    startDate: "2026-02-01",
+    expiryDate: "2026-08-31",
+    usageLimit: 50,
+    usageCount: 12,
+    status: "inactive",
+  },
+];
+
+export function getCouponListSampleData() {
+  return SAMPLE_COUPONS.map((item) => ({ ...item }));
+}
+
+export function isSampleCouponId(id) {
+  return String(id || "").startsWith("sample-coupon-");
+}

@@ -23,6 +23,15 @@ const productReviewsSchema = mongoose.Schema({
         required:true,
         default:1
     },
+    productName: {
+        type: String,
+        default: "",
+    },
+    status: {
+        type: String,
+        enum: ["pending", "approved", "rejected"],
+        default: "pending",
+    },
     dateCreated: {
         type: Date,
         default: Date.now,

@@ -7,16 +7,10 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-
-const tooltipStyle = {
-  background: "rgba(255,253,247,0.98)",
-  border: "1px solid rgba(201,169,97,0.45)",
-  borderRadius: 12,
-  boxShadow: "0 8px 24px rgba(92,77,58,0.12)",
-  fontFamily: "inherit",
-};
+import { useChartTooltipStyle } from "../../../../Components/AdminDashboard/useChartTooltipStyle";
 
 export default function CategoryPerformanceWidget({ categories }) {
+  const { tooltipStyle, axisTick, axisTickSm } = useChartTooltipStyle();
   if (!categories?.length) {
     return (
       <section className="admin-dash__widget">
@@ -53,8 +47,8 @@ export default function CategoryPerformanceWidget({ categories }) {
         <ResponsiveContainer width="100%" height={180}>
           <BarChart data={categories} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="4 4" stroke="rgba(201,169,97,0.2)" vertical={false} />
-            <XAxis dataKey="name" tick={{ fill: "#5c4d3a", fontSize: 10 }} interval={0} angle={-20} textAnchor="end" height={50} />
-            <YAxis tick={{ fill: "#5c4d3a", fontSize: 11 }} />
+            <XAxis dataKey="name" tick={axisTickSm} interval={0} angle={-20} textAnchor="end" height={50} />
+            <YAxis tick={axisTick} />
             <Tooltip contentStyle={tooltipStyle} formatter={(v) => [v, "Units"]} />
             <Bar dataKey="value" fill="#8b6f47" radius={[8, 8, 0, 0]} name="Units" />
           </BarChart>
