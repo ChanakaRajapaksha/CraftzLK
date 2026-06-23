@@ -16,6 +16,7 @@ import "../SignIn/signin.css";
 
 const ForgotPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [serverError, setServerError] = useState("");
   const context = useContext(MyContext);
   const history = useNavigate();
 
@@ -23,12 +24,15 @@ const ForgotPassword = () => {
     control,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm({
     defaultValues: {
       email: "",
     },
     mode: "onSubmit",
   });
+
+  const emailValue = watch("email");
 
   useEffect(() => {
     context.setisHeaderFooterShow(false);
@@ -39,23 +43,30 @@ const ForgotPassword = () => {
     localStorage.removeItem("refreshToken");
   }, []);
 
+  useEffect(() => {
+    if (serverError) setServerError("");
+  }, [emailValue]);
+
   const onSubmit = async (data) => {
     try {
       setIsLoading(true);
+      setServerError("");
 
       const result = await AuthController.forgotPassword(data.email);
 
       if (result.success) {
         toast.success(result.message || "Password reset link sent to your email!");
-        
-        // Redirect to sign in page after 3 seconds
+
         setTimeout(() => {
           setIsLoading(false);
           history("/signIn");
         }, 3000);
       } else {
         setIsLoading(false);
-        toast.error(result.message || "Failed to send reset link");
+        setServerError(
+          result.message ||
+            "No account found with this email address. Please check your email or create a new account."
+        );
       }
     } catch (error) {
       console.error("[ForgotPassword.onSubmit] Error:", error);
@@ -122,6 +133,20 @@ const ForgotPassword = () => {
               />
               {errors.email && (
                 <span className="form-error-text">{errors.email.message}</span>
+              )}
+              {serverError && (
+                <div className="forgot-password-server-error" role="alert">
+                  <p className="forgot-password-server-error__title">No account found</p>
+                  <p className="forgot-password-server-error__text">
+                    No account found with this email address.
+                    <br />
+                    Please check your email or{" "}
+                    <Link to="/signUp" className="forgot-password-server-error__link">
+                      create a new account
+                    </Link>
+                    .
+                  </p>
+                </div>
               )}
             </div>
 

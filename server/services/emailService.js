@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const { buildPasswordResetEmail, getPasswordResetLogoAttachment } = require('../templates/passwordResetEmail');
 
 class EmailService {
   constructor() {
@@ -51,20 +52,16 @@ class EmailService {
           </div>
         `
       },
-      'password-reset': {
-        subject: 'Password Reset Request',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #333;">Password Reset Request</h2>
-            <p>Hello ${data.name},</p>
-            <p>You requested a password reset for your account. Click the link below to reset your password:</p>
-            <p><a href="${data.resetUrl}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Password</a></p>
-            <p>This link will expire in 10 minutes.</p>
-            <p>If you didn't request this, please ignore this email.</p>
-            <p>Best regards,<br>The CraftzLK Team</p>
-          </div>
-        `
-      },
+      'password-reset': (() => {
+        const content = buildPasswordResetEmail(data);
+        const logoAttachment = getPasswordResetLogoAttachment();
+        return {
+          subject: content.subject,
+          html: content.html,
+          text: content.text,
+          attachments: logoAttachment ? [logoAttachment] : [],
+        };
+      })(),
       'password-changed': {
         subject: 'Password Changed Successfully',
         html: `

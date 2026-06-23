@@ -301,12 +301,14 @@ class AuthService {
   // Request password reset
   async requestPasswordReset(email) {
     try {
-      const user = await User.findOne({ email });
+      const normalizedEmail = String(email || '').trim().toLowerCase();
+      const user = await User.findByEmail(normalizedEmail);
+
       if (!user) {
-        // Don't reveal if email exists or not
         return {
-          success: true,
-          message: 'If the email exists, a password reset link has been sent'
+          success: false,
+          message:
+            'No account found with this email address. Please check your email or create a new account.',
         };
       }
 
@@ -324,17 +326,17 @@ class AuthService {
       const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
       await emailService.sendEmail({
         to: user.email,
-        subject: 'Password Reset Request',
         template: 'password-reset',
         data: {
           name: user.firstName,
-          resetUrl
+          resetUrl,
+          frontendUrl: baseUrl,
         }
       });
 
       return {
         success: true,
-        message: 'If the email exists, a password reset link has been sent'
+        message: 'Password reset link sent to your email.',
       };
     } catch (error) {
       throw new Error(error.message || 'Password reset request failed');

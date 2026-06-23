@@ -179,6 +179,39 @@
   animation: fadeIn 0.3s ease;
 }
 
+.forgot-password-server-error {
+  margin-top: 1rem;
+  padding: 0.875rem 1rem;
+  border-radius: 10px;
+  background: rgba(255, 138, 128, 0.12);
+  border: 1px solid rgba(255, 138, 128, 0.35);
+  animation: fadeIn 0.3s ease;
+}
+
+.forgot-password-server-error__title {
+  margin: 0 0 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #ff8a80;
+}
+
+.forgot-password-server-error__text {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.forgot-password-server-error__link {
+  color: #ffd54f;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.forgot-password-server-error__link:hover {
+  color: #ffe082;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

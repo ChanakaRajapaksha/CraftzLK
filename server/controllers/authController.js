@@ -107,6 +107,9 @@ class AuthController {
   async requestPasswordReset(req, res, next) {
     try {
       const result = await authService.requestPasswordReset(req.body.email);
+      if (!result.success) {
+        return res.status(404).json(result);
+      }
       res.status(200).json(result);
     } catch (error) {
       res.status(400).json({
