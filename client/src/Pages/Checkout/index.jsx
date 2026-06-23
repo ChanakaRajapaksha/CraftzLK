@@ -1,6 +1,7 @@
 import CircularProgress from "@mui/material/CircularProgress";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { MyContext } from "../../App";
 import { COLLECTIONS_ALL_PATH } from "../Collections/collectionsConstants";
 import { getCartSubtotal, parsePriceValue, saveLocalCart } from "../../utils/cartHelpers";
@@ -142,6 +143,13 @@ const Checkout = () => {
 
   const handlePlaceOrder = (e) => {
     e.preventDefault();
+
+    if (context.isLogin !== true) {
+      toast.info("Please sign in to place your order.");
+      history("/signIn", { state: { from: "/checkout" } });
+      return;
+    }
+
     setIsSubmitting(true);
 
     const user = JSON.parse(localStorage.getItem("user") || "null");

@@ -50,7 +50,7 @@ const Home = () => {
   useEffect(() => {
     const categoryData = context?.categoryData;
 
-    if (categoryData?.length !== 0) {
+    if (Array.isArray(categoryData) && categoryData.length > 0) {
       const randomIndex = Math.floor(
         Math.random() * categoryData.length
       );
@@ -94,8 +94,8 @@ const Home = () => {
         />
 
         <div className="homeContentAfterRails">
-          {context?.categoryData?.length !== 0 && (
-            <HomeCat catData={context?.categoryData} />
+          {Array.isArray(context?.categoryData) && context.categoryData.length > 0 && (
+            <HomeCat catData={context.categoryData} />
           )}
 
           {(homeSideBanners?.length !== 0 ||

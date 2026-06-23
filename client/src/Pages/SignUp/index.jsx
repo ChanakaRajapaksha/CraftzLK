@@ -14,6 +14,8 @@ import { toast } from "sonner";
 
 import GoogleImg from "../../assets/images/googleImg.png";
 import AuthController from "../../controllers/auth.controller";
+import { useAppDispatch } from "../../store/hooks";
+import { setAuthUser } from "../../store/slices/authSlice";
 import "../SignIn/signin.css";
 
 // Google OAuth - No Firebase needed
@@ -21,6 +23,7 @@ import "../SignIn/signin.css";
 const SignUp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const context = useContext(MyContext);
+  const dispatch = useAppDispatch();
   const history = useNavigate();
 
   const {
@@ -128,17 +131,12 @@ const SignUp = () => {
               );
 
               if (result.success) {
-                // Update context
                 const user = AuthController.getCurrentUser();
-                context.setIsLogin(true);
-
-                // Small delay to ensure isLogin is processed first
-                setTimeout(() => {
-                  context.setUser(user);
-                  context.setisHeaderFooterShow(true);
-                  toast.success(result.message || "Google Sign-In successful!");
-                  history("/");
-                }, 50);
+                dispatch(setAuthUser(user));
+                context.setUser(user);
+                context.setisHeaderFooterShow(true);
+                toast.success(result.message || "Google Sign-In successful!");
+                history("/");
               } else {
                 toast.error(
                   result.message || "Google Sign-In failed. Please try again.",

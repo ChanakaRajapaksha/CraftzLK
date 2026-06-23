@@ -122,6 +122,11 @@ class AuthController {
     }
   }
 
+  static clearLocalSession() {
+    clearAccessToken();
+    localStorage.removeItem("user");
+  }
+
   /**
    * Logout user — call API (cookie sent automatically), then clear access token and user
    * @returns {Promise<Object>} Logout response
@@ -132,8 +137,7 @@ class AuthController {
     } catch (_) {
       // Proceed to clear local state even if API fails (e.g. already expired)
     }
-    clearAccessToken();
-    localStorage.removeItem("user");
+    AuthController.clearLocalSession();
     return {
       success: true,
       message: "Logout successful",

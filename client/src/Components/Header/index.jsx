@@ -18,6 +18,8 @@ import { FaRegUser } from "react-icons/fa6";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import AuthController from "../../controllers/auth.controller";
+import { useAppDispatch } from "../../store/hooks";
+import { clearAuth } from "../../store/slices/authSlice";
 import SearchBox from "./SearchBox/index.jsx";
 import { getCartItemCount } from "../../utils/cartHelpers";
 
@@ -44,6 +46,7 @@ const Header = () => {
   const gotoTop = useRef();
   const lastScrollY = useRef(0);
   const context = useContext(MyContext);
+  const dispatch = useAppDispatch();
   const cartBadgeCount = getCartItemCount(context.cartData);
 
   const getUserRole = () => {
@@ -81,6 +84,7 @@ const Header = () => {
   const logout = async () => {
     setAnchorEl(null);
     await AuthController.logout();
+    dispatch(clearAuth());
     context.setIsLogin(false);
     toast.success("Logout Successfully");
     history("/signIn");

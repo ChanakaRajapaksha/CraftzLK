@@ -28,7 +28,10 @@ import VerifyOTP from "./Pages/VerifyOTP/index.jsx";
 import ChangePassword from "./Pages/ChangePassword/index.jsx";
 import ForgotPassword from "./Pages/ForgotPassword/index.jsx";
 import ResetPassword from "./Pages/ResetPassword/index.jsx";
-import { deleteData, editData, fetchDataFromApi, postData, restoreSession } from "./utils/api";
+import { deleteData, editData, fetchDataFromApi, postData } from "./utils/api";
+import { useAppDispatch, useAppSelector } from "./store/hooks";
+import { clearAuth, initializeAuth, revalidateAuth, selectIsLoggedIn, setAuthUser } from "./store/slices/authSlice";
+import { setSessionExpiredHandler } from "./utils/sessionEvents";
 import HandcraftAlert from "./Components/HandcraftAlert";
 import CartDrawer from "./Components/CartDrawer";
 import { getSampleProductById } from "./data/sampleProductDetails";
@@ -124,7 +127,10 @@ const isAdminRoute = (pathname) => pathname.startsWith('/dashboard');
 
 function AppContent() {
   const location = useLocation();
-  
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state) => state.auth);
+  const isLogin = useAppSelector(selectIsLoggedIn);
+
   // Calculate initial header/footer visibility based on current route
   const shouldHideHeaderFooter = noHeaderFooterRoutes.includes(location.pathname);
   
@@ -132,7 +138,13 @@ function AppContent() {
   const [selectedCountry, setselectedCountry] = useState("");
   const [isOpenProductModal, setisOpenProductModal] = useState(false);
   const [isHeaderFooterShow, setisHeaderFooterShow] = useState(!shouldHideHeaderFooter);
-  const [isLogin, setIsLogin] = useState(false);
+  const setIsLogin = (value) => {
+    if (value === true) return;
+    dispatch(clearAuth());
+  };
+  const setUser = (userData) => {
+    if (userData) dispatch(setAuthUser(userData));
+  };
   const [productData, setProductData] = useState([]);
 
   const [categoryData, setCategoryData] = useState([]);
@@ -155,12 +167,26 @@ function AppContent() {
     open: false,
   });
 
-  const [user, setUser] = useState({
-    name: "",
-    email: "",
-    userId: "",
-    image: null,
-  });
+  useEffect(() => {
+    dispatch(initializeAuth());
+    setSessionExpiredHandler(() => dispatch(clearAuth()));
+
+    const revalidate = () => dispatch(revalidateAuth());
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        revalidate();
+      }
+    };
+
+    window.addEventListener("focus", revalidate);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      window.removeEventListener("focus", revalidate);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [dispatch]);
 
   // Update header/footer visibility based on current route (hide on auth pages and admin dashboard)
   useEffect(() => {
@@ -327,33 +353,6 @@ function AppContent() {
       deleteData(`/api/cart/${item._id || item.id}`).then(() => getCartData());
     }
   };
-
-  // Restore session from refresh cookie (access token in memory; refresh token in httpOnly cookie)
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const restored = await restoreSession();
-      if (cancelled) return;
-      if (restored) {
-        const userStr = localStorage.getItem("user");
-        if (userStr) {
-          try {
-            const userData = JSON.parse(userStr);
-            if (userData && (userData.userId || userData.email)) {
-              setUser(userData);
-              setIsLogin(true);
-            }
-          } catch (_) {}
-        }
-      } else {
-        localStorage.removeItem("user");
-        setIsLogin(false);
-        setUser({ name: "", email: "", userId: "", image: null });
-      }
-    })();
-    return () => { cancelled = true; };
-  }, []);
-
 
   const openProductDetailsModal = (id, status) => {
     fetchDataFromApi(`/api/products/${id}`).then((res) => {

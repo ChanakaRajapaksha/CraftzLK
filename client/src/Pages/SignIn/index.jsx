@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { MyContext } from "../../App";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import InputAdornment from "@mui/material/InputAdornment";
 import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
@@ -13,6 +13,8 @@ import { toast } from "sonner";
 import GoogleImg from "../../assets/images/googleImg.png";
 import AuthController from "../../controllers/auth.controller";
 import { editData } from "../../utils/api";
+import { useAppDispatch } from "../../store/hooks";
+import { setAuthUser } from "../../store/slices/authSlice";
 import "./signin.css";
 
 // Google OAuth - No Firebase needed
@@ -21,7 +23,10 @@ const SignIn = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpenVerifyEmailBox, setIsOpenVerifyEmailBox] = useState(false);
   const context = useContext(MyContext);
+  const dispatch = useAppDispatch();
   const history = useNavigate();
+  const location = useLocation();
+  const redirectAfterLogin = location.state?.from || "/";
 
   const {
     control,
@@ -75,16 +80,14 @@ const SignIn = () => {
         });
 
         if (result.success) {
-          // Get user data from controller
           const user = AuthController.getCurrentUser();
-
-          // Update context
+          dispatch(setAuthUser(user));
           context.setUser(user);
           context.setIsLogin(true);
           context.setisHeaderFooterShow(true);
 
           toast.success(result.message || "Login successful!");
-          history("/");
+          history(redirectAfterLogin);
         } else {
           toast.error(result.message || "Login failed. Please try again.");
         }
@@ -132,19 +135,13 @@ const SignIn = () => {
             const result = await AuthController.googleAuth(response.access_token, userInfo);
 
             if (result.success) {
-              // Get user data from controller
               const user = AuthController.getCurrentUser();
-
-              // Update context
+              dispatch(setAuthUser(user));
+              context.setUser(user);
               context.setIsLogin(true);
-              
-              // Small delay to ensure isLogin is processed first
-              setTimeout(() => {
-                context.setUser(user);
-                context.setisHeaderFooterShow(true);
-                toast.success(result.message || "Google Sign-In successful!");
-                history("/");
-              }, 50);
+              context.setisHeaderFooterShow(true);
+              toast.success(result.message || "Google Sign-In successful!");
+              history(redirectAfterLogin);
             } else {
               toast.error(result.message || "Google Sign-In failed. Please try again.");
             }

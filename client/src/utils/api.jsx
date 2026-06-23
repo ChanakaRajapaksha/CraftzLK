@@ -1,4 +1,6 @@
 import axios from "axios";
+import { clearPersistedAuthUser } from "../store/authUser";
+import { notifySessionExpired } from "./sessionEvents";
 
 const apiBaseUrl = import.meta.env.VITE_API_URL || "";
 
@@ -70,7 +72,8 @@ apiClient.interceptors.response.use(
                 }
             } catch (refreshError) {
                 clearAccessToken();
-                localStorage.removeItem("user");
+                clearPersistedAuthUser();
+                notifySessionExpired();
                 
                 const currentPath = window.location.pathname;
                 if (!['/signIn', '/signUp', '/forgot-password', '/reset-password'].includes(currentPath)) {
@@ -83,18 +86,67 @@ apiClient.interceptors.response.use(
     }
 );
 
-/** Call refresh endpoint (cookie sent automatically); store new access token in memory. Returns true if session restored. */
-export const restoreSession = async () => {
+/** Call refresh endpoint (cookie sent automatically); store new access token in memory. Returns true/false, or null on transient errors. */
+let restoreSessionInFlight = null;
+let restoreSessionCache = null;
+let restoreSessionCacheAt = 0;
+const RESTORE_SESSION_CACHE_MS = 8000;
+
+export function invalidateRestoreSessionCache() {
+  restoreSessionCache = null;
+  restoreSessionCacheAt = 0;
+}
+
+export const restoreSession = async ({ bypassCache = false } = {}) => {
+  const now = Date.now();
+  if (
+    !bypassCache &&
+    restoreSessionCache !== null &&
+    now - restoreSessionCacheAt < RESTORE_SESSION_CACHE_MS
+  ) {
+    return restoreSessionCache;
+  }
+
+  if (restoreSessionInFlight) {
+    return restoreSessionInFlight;
+  }
+
+  restoreSessionInFlight = (async () => {
     try {
-        const response = await apiClient.post("/api/auth/refresh-token");
-        if (response.data?.success && response.data?.data?.accessToken) {
-            setAccessToken(response.data.data.accessToken);
-            return true;
-        }
-    } catch (_) {
-        clearAccessToken();
+      const response = await apiClient.post("/api/auth/refresh-token");
+      if (response.data?.success && response.data?.data?.accessToken) {
+        setAccessToken(response.data.data.accessToken);
+        restoreSessionCache = true;
+        restoreSessionCacheAt = Date.now();
+        return true;
+      }
+      clearAccessToken();
+      restoreSessionCache = false;
+      restoreSessionCacheAt = Date.now();
+      return false;
+    } catch (error) {
+      clearAccessToken();
+      const status = error.response?.status;
+      if (!error.response) {
+        restoreSessionCache = null;
+        restoreSessionCacheAt = Date.now();
+        return null;
+      }
+      if (status === 401 || status === 403) {
+        clearPersistedAuthUser();
+        restoreSessionCache = false;
+        restoreSessionCacheAt = Date.now();
+        return false;
+      }
+      restoreSessionCache = null;
+      restoreSessionCacheAt = Date.now();
+      return null;
+    } finally {
+      restoreSessionInFlight = null;
     }
-    return false;
+  })();
+
+  return restoreSessionInFlight;
 };
 
 export const fetchDataFromApi = async (url) => {
