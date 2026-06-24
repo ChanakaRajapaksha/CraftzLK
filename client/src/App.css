@@ -658,6 +658,21 @@ header .part3 .circle svg {
   border-radius: 50%;
 }
 
+.userImg__initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: #fff;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.userImg__initials strong {
+  font-weight: 700;
+}
+
 .userImg.lg {
   width: 60px !important;
   height: 60px !important;

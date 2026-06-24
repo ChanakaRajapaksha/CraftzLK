@@ -5,9 +5,8 @@ import UserAvatarImgComponent from "../../Components/userAvatarImg";
 import { COLLECTIONS_ALL_PATH } from "../Collections/collectionsConstants";
 import { getCartItemCount, parsePriceValue } from "../../utils/cartHelpers";
 import {
-  addLocalOrder,
+  fetchUserOrders,
   getOrderItemCount,
-  loadLocalOrders,
 } from "../../utils/orderHelpers";
 import { fetchDataFromApi } from "../../utils/api";
 import "./MyAccount.css";
@@ -62,15 +61,11 @@ const MyAccount = () => {
       return;
     }
 
-    try {
-      const lastOrder = JSON.parse(sessionStorage.getItem("lastOrder") || "null");
-      if (lastOrder?.orderId) addLocalOrder(lastOrder);
-    } catch {
-      /* ignore */
-    }
-    setOrders(loadLocalOrders());
-
     if (localUser?.userId) {
+      fetchUserOrders(localUser.userId)
+        .then(setOrders)
+        .catch(() => setOrders([]));
+
       fetchDataFromApi(`/api/user/${localUser.userId}`)
         .then((res) => {
           if (res?.phone) setPhone(res.phone);
@@ -104,6 +99,10 @@ const MyAccount = () => {
   const cartPreview = cartItems.slice(0, 4);
   const displayName = user?.name || "Guest";
   const isAdmin = user?.role === "admin";
+  const nameParts = displayName.trim().split(/\s+/).filter(Boolean);
+  const profileFirstName = nameParts[0] || "";
+  const profileLastName =
+    nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
 
   return (
     <div className="my-account">
@@ -135,7 +134,9 @@ const MyAccount = () => {
                 <UserAvatarImgComponent
                   lg
                   img={user?.image}
-                  userName={displayName.toUpperCase()}
+                  userName={displayName}
+                  firstName={profileFirstName}
+                  lastName={profileLastName}
                 />
               </div>
               <h2 className="my-account__profile-name">{displayName}</h2>

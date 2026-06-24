@@ -1,55 +1,31 @@
-const path = require('path');
-const fs = require('fs');
+const {
+  LOGO_CID,
+  escapeHtml,
+  getPasswordResetLogoAttachment,
+} = require('./passwordResetEmail');
 
-const LOGO_CID = 'craftzlk-logo@craftzlk';
-
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function resolveLogoPath() {
-  const candidates = [
-    path.join(__dirname, '../../client/public/images/craftzlk.png'),
-    path.join(__dirname, '../../client/dist/images/craftzlk.png'),
-  ];
-
-  return candidates.find((candidate) => fs.existsSync(candidate)) || null;
-}
-
-function getPasswordResetLogoAttachment() {
-  const logoPath = resolveLogoPath();
-  if (!logoPath) return null;
-
-  return {
-    filename: 'craftzlk.png',
-    path: logoPath,
-    cid: LOGO_CID,
-  };
-}
-
-function buildPasswordResetEmail({ name, resetUrl, frontendUrl }) {
+function buildTemporaryPasswordEmail({ name, temporaryPassword, frontendUrl }) {
   const safeName = escapeHtml(name || 'there');
-  const safeResetUrl = escapeHtml(resetUrl);
+  const safePassword = escapeHtml(temporaryPassword);
   const siteUrl = escapeHtml((frontendUrl || 'https://craftzlk.com').replace(/\/$/, ''));
+  const signInUrl = escapeHtml(`${(frontendUrl || 'https://craftzlk.com').replace(/\/$/, '')}/signIn`);
   const logoSrc = `cid:${LOGO_CID}`;
   const year = new Date().getFullYear();
 
-  const subject = 'Reset your CraftzLK password';
+  const subject = 'Welcome to CraftzLK — your temporary password';
 
   const text = [
     `Hello ${name || 'there'},`,
     '',
-    'You requested a password reset for your CraftzLK account.',
-    'Open the link below to choose a new password:',
-    resetUrl,
+    'Thank you for joining CraftzLK! Your account has been created successfully.',
     '',
-    'This link expires in 10 minutes.',
+    `Your temporary password: ${temporaryPassword}`,
     '',
-    "If you didn't request this, you can safely ignore this email.",
+    'This password expires in 24 hours.',
+    '',
+    `Sign in here: ${signInUrl}`,
+    '',
+    'We recommend changing your password after your first login.',
     '',
     'Best regards,',
     'The CraftzLK Team',
@@ -85,10 +61,10 @@ function buildPasswordResetEmail({ name, resetUrl, frontendUrl }) {
                 <tr>
                   <td style="padding:36px 32px 8px 32px;font-family:Georgia,'Times New Roman',serif;">
                     <p style="margin:0 0 8px 0;font-size:13px;line-height:1.4;color:#b8860b;font-family:Arial,Helvetica,sans-serif;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">
-                      Account security
+                      Welcome aboard
                     </p>
                     <h1 style="margin:0;font-size:28px;line-height:1.25;color:#3d2817;font-weight:700;">
-                      Password reset request
+                      Your temporary password
                     </h1>
                   </td>
                 </tr>
@@ -98,17 +74,33 @@ function buildPasswordResetEmail({ name, resetUrl, frontendUrl }) {
                       Hello <strong>${safeName}</strong>,
                     </p>
                     <p style="margin:0 0 16px 0;font-size:16px;line-height:1.6;color:#5c4033;">
-                      We received a request to reset the password for your CraftzLK account. Tap the button below to choose a new password and get back to shopping handcrafted treasures from Sri Lanka.
+                      Thank you for registering with CraftzLK. Your account is ready — use the temporary password below with your email address to sign in and start exploring handcrafted treasures from Sri Lanka.
                     </p>
                   </td>
                 </tr>
                 <tr>
-                  <td align="center" style="padding:28px 32px 8px 32px;">
+                  <td style="padding:24px 32px 8px 32px;font-family:Arial,Helvetica,sans-serif;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#faf8f3;border:1px solid rgba(201,169,97,0.35);border-radius:12px;">
+                      <tr>
+                        <td align="center" style="padding:22px 20px;">
+                          <p style="margin:0 0 10px 0;font-size:13px;line-height:1.4;color:#8b7355;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">
+                            Temporary password
+                          </p>
+                          <p style="margin:0;font-family:'Courier New',Courier,monospace;font-size:24px;line-height:1.4;color:#b8860b;font-weight:700;letter-spacing:0.12em;">
+                            ${safePassword}
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding:20px 32px 8px 32px;">
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                       <tr>
                         <td align="center" style="border-radius:999px;background-color:#b8860b;">
-                          <a href="${safeResetUrl}" target="_blank" style="display:inline-block;padding:14px 32px;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:999px;">
-                            Reset password
+                          <a href="${signInUrl}" target="_blank" style="display:inline-block;padding:14px 32px;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:999px;">
+                            Sign in to CraftzLK
                           </a>
                         </td>
                       </tr>
@@ -118,8 +110,8 @@ function buildPasswordResetEmail({ name, resetUrl, frontendUrl }) {
                 <tr>
                   <td style="padding:8px 32px 24px 32px;font-family:Arial,Helvetica,sans-serif;">
                     <p style="margin:0;font-size:13px;line-height:1.6;color:#8b7355;text-align:center;">
-                      Button not working? Copy and paste this link into your browser:<br />
-                      <a href="${safeResetUrl}" style="color:#b8860b;word-break:break-all;">${safeResetUrl}</a>
+                      Sign-in page:<br />
+                      <a href="${signInUrl}" style="color:#b8860b;word-break:break-all;">${signInUrl}</a>
                     </p>
                   </td>
                 </tr>
@@ -132,10 +124,10 @@ function buildPasswordResetEmail({ name, resetUrl, frontendUrl }) {
                             Important
                           </p>
                           <p style="margin:0 0 8px 0;font-size:14px;line-height:1.6;color:#5c4033;">
-                            This secure link expires in <strong>10 minutes</strong> for your protection.
+                            This temporary password expires in <strong>24 hours</strong> for your protection.
                           </p>
                           <p style="margin:0;font-size:14px;line-height:1.6;color:#5c4033;">
-                            If you did not request a password reset, please ignore this email. Your password will stay the same.
+                            After signing in, we recommend updating your password from your account settings. If you did not create this account, please contact our support team.
                           </p>
                         </td>
                       </tr>
@@ -153,7 +145,7 @@ function buildPasswordResetEmail({ name, resetUrl, frontendUrl }) {
               <p style="margin:0 0 16px 0;font-size:13px;line-height:1.6;color:#8b7355;">
                 <a href="${siteUrl}" style="color:#b8860b;text-decoration:none;font-weight:600;">Visit CraftzLK</a>
                 &nbsp;&nbsp;|&nbsp;&nbsp;
-                <a href="${siteUrl}/signIn" style="color:#b8860b;text-decoration:none;font-weight:600;">Sign in</a>
+                <a href="${signInUrl}" style="color:#b8860b;text-decoration:none;font-weight:600;">Sign in</a>
               </p>
               <p style="margin:0;font-size:12px;line-height:1.6;color:#a8957a;">
                 &copy; ${year} CraftzLK. All rights reserved.<br />
@@ -172,8 +164,6 @@ function buildPasswordResetEmail({ name, resetUrl, frontendUrl }) {
 }
 
 module.exports = {
-  LOGO_CID,
-  escapeHtml,
-  buildPasswordResetEmail,
+  buildTemporaryPasswordEmail,
   getPasswordResetLogoAttachment,
 };

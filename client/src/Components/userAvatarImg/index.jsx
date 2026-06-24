@@ -1,46 +1,62 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from "react";
+
+function getNameInitials({ name, firstName, lastName }) {
+  const first = (firstName || "").trim();
+  const last = (lastName || "").trim();
+
+  if (first || last) {
+    const initials = `${first.charAt(0)}${last.charAt(0)}`.toUpperCase();
+    if (initials) return initials;
+  }
+
+  if (!name || typeof name !== "string") return "U";
+
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "U";
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+
+  return `${parts[0].charAt(0)}${parts[parts.length - 1].charAt(0)}`.toUpperCase();
+}
 
 const UserAvatarImgComponent = (props) => {
-    
-    useEffect(() => {
-        console.log('UserAvatarImgComponent - Received props:', {
-            img: props.img,
-            userName: props.userName,
-            hasValidImage: props.img && typeof props.img === 'string' && props.img.length > 0
-        });
-    }, [props.img, props.userName]);
-    
-    const hasValidImage = props.img && typeof props.img === 'string' && props.img.length > 0;
-    const [imageError, setImageError] = React.useState(false);
-    
-    // Reset error state when image URL changes
-    React.useEffect(() => {
-        setImageError(false);
-    }, [props.img]);
-    
-    return (
-        <div className={`userImg ${props.lg === true ? 'lg' : ''}`}>
-            <span className="rounded-circle">
-                {hasValidImage && !imageError ? (
-                    <img 
-                        src={props.img} 
-                        alt="User avatar"
-                        referrerPolicy="no-referrer"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
-                        onError={(e) => {
-                            console.log('Image failed to load:', props.img);
-                            setImageError(true);
-                        }}
-                        onLoad={() => {
-                            console.log('Image loaded successfully:', props.img);
-                        }}
-                    />
-                ) : (
-                    <span>{props?.userName && props?.userName !== "" ? props?.userName?.charAt(0) : "U"}</span>
-                )}
-            </span>
-        </div>
-    )
-}
+  const hasValidImage =
+    props.img && typeof props.img === "string" && props.img.length > 0;
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [props.img]);
+
+  const initials = getNameInitials({
+    name: props.userName,
+    firstName: props.firstName,
+    lastName: props.lastName,
+  });
+
+  return (
+    <div className={`userImg ${props.lg === true ? "lg" : ""}`}>
+      <span className="rounded-circle">
+        {hasValidImage && !imageError ? (
+          <img
+            src={props.img}
+            alt="User avatar"
+            referrerPolicy="no-referrer"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              borderRadius: "50%",
+            }}
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <span className="userImg__initials" aria-hidden="true">
+            <strong>{initials}</strong>
+          </span>
+        )}
+      </span>
+    </div>
+  );
+};
 
 export default UserAvatarImgComponent;

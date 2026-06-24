@@ -39,9 +39,7 @@ import {
   addToLocalCart,
   buildCartPayloadFromSample,
   isSampleProductId,
-  loadLocalCart,
   removeFromLocalCart,
-  saveLocalCart,
   updateLocalCartQty,
 } from "./utils/cartHelpers";
 import Compare from "./Pages/Compare/index.jsx";
@@ -125,6 +123,8 @@ const MyContext = createContext(defaultContextValue);
 const noHeaderFooterRoutes = ['/signIn', '/signUp', '/verifyOTP', '/changePassword', '/forgot-password', '/reset-password'];
 const isAdminRoute = (pathname) => pathname.startsWith('/dashboard');
 
+const OBSOLETE_STORAGE_KEYS = ["craftzlk_local_cart", "craftzlk_local_orders"];
+
 function AppContent() {
   const location = useLocation();
   const dispatch = useAppDispatch();
@@ -153,7 +153,7 @@ function AppContent() {
   const [addingCartProductId, setAddingCartProductId] = useState(null);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
 
-  const [cartData, setCartData] = useState(() => loadLocalCart());
+  const [cartData, setCartData] = useState([]);
   const [searchData, setSearchData] = useState([]);
   const [isOpenNav, setIsOpenNav] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -166,6 +166,10 @@ function AppContent() {
     error: false,
     open: false,
   });
+
+  useEffect(() => {
+    OBSOLETE_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+  }, []);
 
   useEffect(() => {
     dispatch(initializeAuth());
@@ -206,22 +210,24 @@ function AppContent() {
         ) {
           fetchDataFromApi(`/api/cart?userId=${user?.userId}`).then((res) => {
             const apiItems = Array.isArray(res) ? res : [];
-            const localItems = loadLocalCart().filter((i) => isSampleProductId(i.productId));
-            const merged = [
-              ...apiItems,
-              ...localItems.filter(
-                (local) => !apiItems.some((api) => api.productId === local.productId)
-              ),
-            ];
-            setCartData(merged);
-            saveLocalCart(localItems);
+            setCartData((prev) => {
+              const sampleItems = (Array.isArray(prev) ? prev : []).filter((item) =>
+                isSampleProductId(item.productId)
+              );
+              return [
+                ...apiItems,
+                ...sampleItems.filter(
+                  (local) => !apiItems.some((api) => api.productId === local.productId)
+                ),
+              ];
+            });
           });
         }
       } catch (error) {
         console.error("Error parsing user data:", error);
       }
     } else {
-      setCartData(loadLocalCart());
+      setCartData([]);
     }
   }, [isLogin]);
 
@@ -272,33 +278,36 @@ function AppContent() {
         if (user?.userId) {
           fetchDataFromApi(`/api/cart?userId=${user?.userId}`).then((res) => {
             const apiItems = Array.isArray(res) ? res : [];
-            const localItems = loadLocalCart().filter((i) => isSampleProductId(i.productId));
-            const merged = [
-              ...apiItems,
-              ...localItems.filter(
-                (local) => !apiItems.some((api) => api.productId === local.productId)
-              ),
-            ];
-            setCartData(merged);
-            saveLocalCart(localItems);
+            setCartData((prev) => {
+              const sampleItems = (Array.isArray(prev) ? prev : []).filter((item) =>
+                isSampleProductId(item.productId)
+              );
+              return [
+                ...apiItems,
+                ...sampleItems.filter(
+                  (local) => !apiItems.some((api) => api.productId === local.productId)
+                ),
+              ];
+            });
           });
         }
       } catch (error) {
         console.error("Error parsing user data:", error);
       }
-    } else {
-      setCartData(loadLocalCart());
     }
   };
 
-  const syncLocalSampleCart = (sampleItems) => {
-    const sampleOnly = (Array.isArray(sampleItems) ? sampleItems : []).filter((i) =>
-      isSampleProductId(i.productId)
-    );
-    saveLocalCart(sampleOnly);
+  const syncSampleCartInState = (allItems) => {
+    const items = Array.isArray(allItems) ? allItems : [];
+    if (!isLogin) {
+      setCartData(items);
+      return;
+    }
+
+    const sampleOnly = items.filter((item) => isSampleProductId(item.productId));
     setCartData((prev) => {
       const apiItems = (Array.isArray(prev) ? prev : []).filter(
-        (i) => !isSampleProductId(i.productId)
+        (item) => !isSampleProductId(item.productId)
       );
       return [...apiItems, ...sampleOnly];
     });
@@ -318,7 +327,7 @@ function AppContent() {
 
     if (isSampleProductId(item.productId) || String(itemId).startsWith("local-")) {
       const next = updateLocalCartQty(items, itemId, quantity);
-      syncLocalSampleCart(next);
+      syncSampleCartInState(next);
       return;
     }
 
@@ -345,7 +354,7 @@ function AppContent() {
 
     if (isSampleProductId(item.productId) || String(itemId).startsWith("local-")) {
       const next = removeFromLocalCart(items, itemId);
-      syncLocalSampleCart(next);
+      syncSampleCartInState(next);
       return;
     }
 
@@ -385,9 +394,9 @@ function AppContent() {
     };
 
     const applyLocal = () => {
-      const current = Array.isArray(cartData) ? cartData : loadLocalCart();
+      const current = Array.isArray(cartData) ? cartData : [];
       const next = addToLocalCart(current, data);
-      syncLocalSampleCart(next);
+      syncSampleCartInState(next);
       if (openDrawer) setCartDrawerOpen(true);
       setTimeout(finish, 450);
     };

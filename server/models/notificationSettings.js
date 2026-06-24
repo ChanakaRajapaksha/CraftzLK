@@ -8,6 +8,7 @@ const notificationSettingsSchema = mongoose.Schema(
       fromName: { type: String, default: "CraftzLK" },
       fromEmail: { type: String, default: "" },
       replyTo: { type: String, default: "" },
+      emailPasswordEncrypted: { type: String, default: "" },
     },
     sms: {
       enabled: { type: Boolean, default: true },
@@ -31,8 +32,8 @@ exports.DEFAULT_NOTIFICATION_SETTINGS = {
   email: {
     enabled: true,
     fromName: "CraftzLK",
-    fromEmail: "hello@craftzlk.com",
-    replyTo: "hello@craftzlk.com",
+    fromEmail: "hellocraftzlk@gmail.com",
+    replyTo: "hellocraftzlk@gmail.com",
   },
   sms: {
     enabled: true,

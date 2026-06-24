@@ -63,13 +63,14 @@ class AuthService {
 
       // Send email with temporary password
       try {
+        const baseUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
         await emailService.sendEmail({
           to: user.email,
-          subject: 'Welcome! Your Temporary Password',
           template: 'temporary-password',
           data: {
             name: `${user.firstName} ${user.lastName}`,
-            temporaryPassword: temporaryPassword
+            temporaryPassword: temporaryPassword,
+            frontendUrl: baseUrl,
           }
         });
       } catch (emailError) {

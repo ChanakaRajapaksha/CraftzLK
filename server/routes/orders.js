@@ -232,7 +232,10 @@ router.post('/create', async (req, res) => {
         email: req.body.email,
         userid: req.body.userid,
         products: req.body.products,
-        date:req.body.date
+        date: req.body.date,
+        paymentMethod: req.body.paymentMethod,
+        subtotal: req.body.subtotal,
+        shipping: req.body.shipping,
     });
 
     let order1 = {

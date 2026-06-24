@@ -8,12 +8,31 @@ const {
   NotificationTemplate,
   DEFAULT_NOTIFICATION_TEMPLATES,
 } = require("../models/notificationTemplate");
+const { encrypt } = require("../utils/encryption");
+
+function parseEnabled(value, fallback = true) {
+  if (value === 1 || value === "1" || value === true) return true;
+  if (value === 0 || value === "0" || value === false) return false;
+  return fallback;
+}
 
 const mapSettings = (doc) => ({
   _id: doc._id,
   id: doc._id,
-  email: doc.email || DEFAULT_NOTIFICATION_SETTINGS.email,
-  sms: doc.sms || DEFAULT_NOTIFICATION_SETTINGS.sms,
+  email: {
+    enabled: doc.email?.enabled !== false,
+    email_enabled: doc.email?.enabled !== false ? 1 : 0,
+    fromName: doc.email?.fromName || "",
+    fromEmail: doc.email?.fromEmail || "",
+    replyTo: doc.email?.replyTo || "",
+    hasPassword: Boolean(doc.email?.emailPasswordEncrypted),
+  },
+  sms: {
+    enabled: doc.sms?.enabled !== false,
+    sms_enabled: doc.sms?.enabled !== false ? 1 : 0,
+    senderId: doc.sms?.senderId || "",
+    provider: doc.sms?.provider || "",
+  },
   dateUpdated: doc.updatedAt,
 });
 
@@ -61,25 +80,51 @@ router.put("/settings", async (req, res) => {
   try {
     await ensureDefaults();
     const body = req.body;
+    const existing = await NotificationSettings.findOne({ key: "default" });
+
+    const emailEnabled = parseEnabled(
+      body.email?.email_enabled ?? body.email?.enabled,
+      existing?.email?.enabled ?? true
+    );
+    const smsEnabled = parseEnabled(
+      body.sms?.sms_enabled ?? body.sms?.enabled,
+      existing?.sms?.enabled ?? true
+    );
+
+    const plainPassword =
+      body.email?.emailPassword?.trim() ||
+      body.email?.smtpPassword?.trim() ||
+      "";
+
+    const nextEncryptedPassword = plainPassword
+      ? encrypt(plainPassword)
+      : existing?.email?.emailPasswordEncrypted || "";
+
     const updated = await NotificationSettings.findOneAndUpdate(
       { key: "default" },
       {
         email: {
-          enabled: body.email?.enabled ?? true,
+          enabled: emailEnabled,
           fromName: body.email?.fromName || "",
           fromEmail: body.email?.fromEmail || "",
           replyTo: body.email?.replyTo || "",
+          emailPasswordEncrypted: nextEncryptedPassword,
         },
         sms: {
-          enabled: body.sms?.enabled ?? true,
+          enabled: smsEnabled,
           senderId: body.sms?.senderId || "",
           provider: body.sms?.provider || "",
         },
       },
       { new: true, upsert: true }
     );
-    return res.status(200).json(mapSettings(updated));
-  } catch {
+
+    return res.status(200).json({
+      success: true,
+      settings: mapSettings(updated),
+    });
+  } catch (error) {
+    console.error("[notifications/settings PUT]", error);
     return res.status(500).json({ success: false, message: "Failed to update notification settings." });
   }
 });

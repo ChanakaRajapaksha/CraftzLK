@@ -1,7 +1,5 @@
 import { getSampleProductById } from "../data/sampleProductDetails";
 
-export const LOCAL_CART_KEY = "craftzlk_local_cart";
-
 export const CRAFT_MILESTONES = [
   { threshold: 3000, label: "Artisan note", shortLabel: "Artisan note" },
   { threshold: 7500, label: "Gift packaging", shortLabel: "Gift packaging" },
@@ -38,19 +36,6 @@ export function getCartItemCount(items) {
 export function getMilestoneProgress(subtotal) {
   const max = CRAFT_MILESTONES[CRAFT_MILESTONES.length - 1].threshold;
   return Math.min(100, (subtotal / max) * 100);
-}
-
-export function loadLocalCart() {
-  try {
-    const raw = localStorage.getItem(LOCAL_CART_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-export function saveLocalCart(items) {
-  localStorage.setItem(LOCAL_CART_KEY, JSON.stringify(items));
 }
 
 export function buildCartPayloadFromSample(product, quantity = 1) {

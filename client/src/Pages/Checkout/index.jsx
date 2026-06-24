@@ -4,8 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { MyContext } from "../../App";
 import { COLLECTIONS_ALL_PATH } from "../Collections/collectionsConstants";
-import { getCartSubtotal, parsePriceValue, saveLocalCart } from "../../utils/cartHelpers";
-import { addLocalOrder } from "../../utils/orderHelpers";
+import { getCartSubtotal, isSampleProductId, parsePriceValue } from "../../utils/cartHelpers";
+import { deleteData, postData } from "../../utils/api";
 import "./Checkout.css";
 
 const FLAT_SHIPPING_LKR = 450;
@@ -126,8 +126,6 @@ const Checkout = () => {
     };
 
     setOrderPlaced(true);
-    addLocalOrder(orderDetails);
-    saveLocalCart([]);
     context.setCartData?.([]);
 
     try {
@@ -141,7 +139,24 @@ const Checkout = () => {
     }, 1600);
   };
 
-  const handlePlaceOrder = (e) => {
+  const clearBackendCart = async (items) => {
+    await Promise.all(
+      items
+        .filter((item) => {
+          const itemId = item._id || item.id;
+          return (
+            itemId &&
+            !isSampleProductId(item.productId) &&
+            !String(itemId).startsWith("local-")
+          );
+        })
+        .map((item) =>
+          deleteData(`/api/cart/${item._id || item.id}`).catch(() => undefined)
+        )
+    );
+  };
+
+  const handlePlaceOrder = async (e) => {
     e.preventDefault();
 
     if (context.isLogin !== true) {
@@ -156,7 +171,47 @@ const Checkout = () => {
     const orderPrefix = paymentMethod === "cod" ? "COD" : "BANK";
     const userSuffix = user?.userId || "guest";
     const orderId = `${orderPrefix}_${Date.now()}_${userSuffix}`;
-    submitOrder(orderId);
+    const fullName = `${formFields.firstName.trim()} ${formFields.lastName.trim()}`.trim();
+    const address = [
+      formFields.streetAddressLine1,
+      formFields.streetAddressLine2,
+      formFields.city,
+    ]
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .join(", ");
+
+    try {
+      await postData("/api/orders/create", {
+        name: fullName || "Customer",
+        phoneNumber: formFields.phoneNumber.trim() || "—",
+        address: address || "—",
+        pincode: formFields.city.trim() || "00000",
+        amount: String(orderTotal),
+        paymentId: orderId,
+        email: formFields.email,
+        userid: user?.userId,
+        products: cartItems.map((item) => ({
+          productId: item.productId,
+          productTitle: item.productTitle,
+          quantity: item.quantity || 1,
+          price: parsePriceValue(item.price),
+          image: item.image,
+          subTotal:
+            item.subTotal ?? parsePriceValue(item.price) * (item.quantity || 1),
+        })),
+        date: new Date().toISOString(),
+        paymentMethod,
+        subtotal,
+        shipping,
+      });
+
+      await clearBackendCart(cartItems);
+      submitOrder(orderId);
+    } catch {
+      toast.error("Failed to place order. Please try again.");
+      setIsSubmitting(false);
+    }
   };
 
   if (orderPlaced) {

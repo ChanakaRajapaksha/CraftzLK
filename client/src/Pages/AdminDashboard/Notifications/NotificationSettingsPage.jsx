@@ -1,61 +1,48 @@
 import { useEffect, useState } from "react";
 import { Link, useOutletContext } from "react-router-dom";
-import { MdEmail, MdSms } from "react-icons/md";
+import { MdEmail, MdSettings, MdSms } from "react-icons/md";
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
-import { editData, fetchDataFromApi } from "../../../utils/api";
+import { fetchDataFromApi } from "../../../utils/api";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
-import NotificationSettingsForm from "./NotificationSettingsForm";
+import NotificationSettingsModal from "./NotificationSettingsModal";
+import NotificationSettingsSummary from "./NotificationSettingsSummary";
+import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import {
   defaultNotificationSettings,
   settingsFromRecord,
-  settingsToPayload,
 } from "./notificationFormDefaults";
-import { getNotificationSettingsSample } from "./notificationListUtils";
 
 export default function NotificationSettingsPage() {
   const { setAlertBox } = useOutletContext();
   const [formFields, setFormFields] = useState({ ...defaultNotificationSettings });
-  const [usingSampleData, setUsingSampleData] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
+  const loadSettings = () => {
+    setLoading(true);
     fetchDataFromApi("/api/notifications/settings")
       .then((res) => {
         if (res?.settings) {
           setFormFields(settingsFromRecord(res.settings));
-          setUsingSampleData(false);
-        } else {
-          setFormFields(settingsFromRecord(getNotificationSettingsSample()));
-          setUsingSampleData(true);
         }
       })
       .catch(() => {
-        setFormFields(settingsFromRecord(getNotificationSettingsSample()));
-        setUsingSampleData(true);
+        setAlertBox?.({
+          open: true,
+          error: true,
+          msg: "Failed to load notification settings.",
+        });
       })
       .finally(() => setLoading(false));
-  }, []);
-
-  const submit = (e) => {
-    e.preventDefault();
-    if (usingSampleData) {
-      setAlertBox?.({ open: true, error: false, msg: "Sample settings saved locally." });
-      return;
-    }
-    setIsLoading(true);
-    editData("/api/notifications/settings", settingsToPayload(formFields))
-      .then(() => {
-        setAlertBox?.({ open: true, error: false, msg: "Notification settings saved." });
-      })
-      .catch(() => {
-        setAlertBox?.({ open: true, error: true, msg: "Failed to save settings." });
-      })
-      .finally(() => setIsLoading(false));
   };
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    loadSettings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
@@ -67,9 +54,19 @@ export default function NotificationSettingsPage() {
           { label: "Notifications" },
         ]}
         action={
-          <Link to={`${ADMIN_BASE}/notifications/templates`} className="admin-dash__btn admin-dash__btn--ghost">
-            View templates
-          </Link>
+          <div className="admin-dash__page-actions">
+            <button
+              type="button"
+              className="admin-dash__btn"
+              onClick={() => setModalOpen(true)}
+            >
+              <MdSettings aria-hidden />
+              Configure channels
+            </button>
+            <Link to={`${ADMIN_BASE}/notifications/templates`} className="admin-dash__btn admin-dash__btn--ghost">
+              View templates
+            </Link>
+          </div>
         }
       />
 
@@ -94,23 +91,21 @@ export default function NotificationSettingsPage() {
         />
       </div>
 
-      {usingSampleData && (
-        <p className="admin-dash__sample-banner admin-dash__sample-banner--standalone">
-          Showing sample notification settings — connect the API to persist changes.
-        </p>
-      )}
-
       {loading ? (
-        <p className="admin-dash__report-loading">Loading notification settings…</p>
+        <AdminLoadingState message="Loading notification settings…" />
       ) : (
-        <NotificationSettingsForm
+        <NotificationSettingsSummary
           formFields={formFields}
-          setFormFields={setFormFields}
-          setAlertBox={setAlertBox}
-          isLoading={isLoading}
-          onSubmit={submit}
+          onEdit={() => setModalOpen(true)}
         />
       )}
+
+      <NotificationSettingsModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSaved={(saved) => setFormFields(saved)}
+        setAlertBox={setAlertBox}
+      />
     </>
   );
 }

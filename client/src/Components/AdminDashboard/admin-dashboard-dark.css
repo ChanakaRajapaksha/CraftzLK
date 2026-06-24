@@ -945,3 +945,48 @@ html.admin-dash-theme-dark {
 .admin-dash--dark .admin-dash__notif-manage {
   color: var(--adm-accent) !important;
 }
+
+/* Notification settings modal */
+.admin-dash--dark .admin-dash__settings-modal {
+  background: var(--adm-surface) !important;
+  border-color: var(--adm-border) !important;
+  box-shadow: 0 18px 40px var(--adm-shadow) !important;
+}
+
+.admin-dash--dark .admin-dash__settings-modal-head,
+.admin-dash--dark .admin-dash__settings-modal-foot {
+  border-color: var(--adm-border-soft) !important;
+  background: var(--adm-surface-alt) !important;
+}
+
+.admin-dash--dark .admin-dash__settings-modal-title,
+.admin-dash--dark .admin-dash__settings-modal-stat-value {
+  color: var(--adm-text) !important;
+}
+
+.admin-dash--dark .admin-dash__settings-modal-sub,
+.admin-dash--dark .admin-dash__settings-modal-stat-label {
+  color: var(--adm-text-muted) !important;
+}
+
+.admin-dash--dark .admin-dash__settings-modal-stat {
+  background: var(--adm-surface-alt) !important;
+  border-color: var(--adm-border-soft) !important;
+}
+
+.admin-dash--dark .admin-dash__settings-modal-stat--on {
+  background: rgba(201, 169, 97, 0.1) !important;
+  border-color: var(--adm-border) !important;
+}
+
+.admin-dash--dark .admin-dash__settings-modal-close {
+  background: var(--adm-surface-alt) !important;
+  border-color: var(--adm-border) !important;
+  color: var(--adm-text-secondary) !important;
+}
+
+.admin-dash--dark .admin-dash__readonly-value {
+  background: var(--adm-surface-alt) !important;
+  border-color: var(--adm-border-soft) !important;
+  color: var(--adm-text) !important;
+}

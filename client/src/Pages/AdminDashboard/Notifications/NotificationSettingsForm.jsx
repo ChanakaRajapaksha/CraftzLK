@@ -1,10 +1,12 @@
+import { MdEmail, MdSms } from "react-icons/md";
 import { TEMPLATE_PLACEHOLDERS } from "./notificationFormDefaults";
 
-function Field({ label, htmlFor, children, full = false }) {
+function Field({ label, htmlFor, children, full = false, hint }) {
   return (
     <div className={`admin-dash__field${full ? " admin-dash__field--full" : ""}`}>
       <label className="admin-dash__label" htmlFor={htmlFor}>{label}</label>
       {children}
+      {hint && <p className="admin-dash__hint">{hint}</p>}
     </div>
   );
 }
@@ -15,6 +17,10 @@ export default function NotificationSettingsForm({
   setAlertBox,
   isLoading = false,
   onSubmit,
+  submitLabel = "Save notification settings",
+  formId,
+  variant = "page",
+  hideActions = false,
 }) {
   const changeEmail = (field, value) => {
     setFormFields((prev) => ({
@@ -40,13 +46,24 @@ export default function NotificationSettingsForm({
   };
 
   return (
-    <form className="admin-dash__product-form" onSubmit={handleSubmit}>
+    <form
+      id={formId}
+      className={`admin-dash__product-form${variant === "modal" ? " admin-dash__notification-form--modal" : ""}`}
+      onSubmit={handleSubmit}
+    >
       <div className="admin-dash__notification-channels">
         <section className="admin-dash__panel admin-dash__notification-channel">
           <div className="admin-dash__panel-head">
-            <div>
-              <h2 className="admin-dash__panel-title">Email notifications</h2>
-              <p className="admin-dash__panel-desc">Configure outgoing order and account emails.</p>
+            <div className="admin-dash__notification-channel-title">
+              {variant === "modal" && (
+                <span className="admin-dash__notification-channel-icon admin-dash__notification-channel-icon--email">
+                  <MdEmail aria-hidden />
+                </span>
+              )}
+              <div>
+                <h2 className="admin-dash__panel-title">Email notifications</h2>
+                <p className="admin-dash__panel-desc">Configure outgoing order and account emails.</p>
+              </div>
             </div>
             <label className="admin-dash__toggle">
               <input
@@ -90,14 +107,42 @@ export default function NotificationSettingsForm({
                 disabled={!formFields.email?.enabled}
               />
             </Field>
+            <Field
+              label="Email password (SMTP / app password)"
+              htmlFor="email-emailPassword"
+              full
+              hint={
+                formFields.email?.hasPassword
+                  ? "Leave blank to keep the current encrypted password. Used as EMAIL_PASS when sending mail."
+                  : "Stored encrypted in the database. Used with From email as EMAIL_USER when sending mail."
+              }
+            >
+              <input
+                className="admin-dash__input"
+                id="email-emailPassword"
+                type="password"
+                value={formFields.email?.emailPassword || ""}
+                onChange={(e) => changeEmail("emailPassword", e.target.value)}
+                placeholder={formFields.email?.hasPassword ? "••••••••" : "Enter email app password"}
+                disabled={!formFields.email?.enabled}
+                autoComplete="new-password"
+              />
+            </Field>
           </div>
         </section>
 
         <section className="admin-dash__panel admin-dash__notification-channel">
           <div className="admin-dash__panel-head">
-            <div>
-              <h2 className="admin-dash__panel-title">SMS notifications</h2>
-              <p className="admin-dash__panel-desc">Configure text alerts for order updates.</p>
+            <div className="admin-dash__notification-channel-title">
+              {variant === "modal" && (
+                <span className="admin-dash__notification-channel-icon admin-dash__notification-channel-icon--sms">
+                  <MdSms aria-hidden />
+                </span>
+              )}
+              <div>
+                <h2 className="admin-dash__panel-title">SMS notifications</h2>
+                <p className="admin-dash__panel-desc">Configure text alerts for order updates.</p>
+              </div>
             </div>
             <label className="admin-dash__toggle">
               <input
@@ -133,11 +178,13 @@ export default function NotificationSettingsForm({
         </section>
       </div>
 
-      <div className="admin-dash__product-form-actions">
-        <button type="submit" className="admin-dash__btn" disabled={isLoading}>
-          {isLoading ? "Saving…" : "Save notification settings"}
-        </button>
-      </div>
+      {!hideActions && (
+        <div className="admin-dash__product-form-actions">
+          <button type="submit" className="admin-dash__btn" disabled={isLoading}>
+            {isLoading ? "Saving…" : submitLabel}
+          </button>
+        </div>
+      )}
     </form>
   );
 }

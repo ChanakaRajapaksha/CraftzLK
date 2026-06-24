@@ -4,9 +4,8 @@ import { MyContext } from "../../App";
 import { COLLECTIONS_ALL_PATH } from "../Collections/collectionsConstants";
 import { parsePriceValue } from "../../utils/cartHelpers";
 import {
-  addLocalOrder,
+  fetchUserOrders,
   getOrderItemCount,
-  loadLocalOrders,
 } from "../../utils/orderHelpers";
 import "./Orders.css";
 
@@ -33,13 +32,11 @@ function getItemPreview(order) {
   return extra > 0 ? `${first} and ${extra} more item${extra > 1 ? "s" : ""}` : first;
 }
 
-function syncSessionOrder() {
+function getStoredUser() {
   try {
-    const lastOrder = JSON.parse(sessionStorage.getItem("lastOrder") || "null");
-    if (!lastOrder?.orderId) return;
-    addLocalOrder(lastOrder);
+    return JSON.parse(localStorage.getItem("user") || "null");
   } catch {
-    /* ignore */
+    return null;
   }
 }
 
@@ -52,13 +49,20 @@ const Orders = () => {
     window.scrollTo(0, 0);
     context.setEnableFilterTab?.(false);
 
-    syncSessionOrder();
-    const stored = loadLocalOrders();
-
-    setOrders(stored);
-    if (stored.length > 0) {
-      setExpandedId(stored[0].orderId);
+    const user = getStoredUser();
+    if (!user?.userId) {
+      setOrders([]);
+      return;
     }
+
+    fetchUserOrders(user.userId)
+      .then((stored) => {
+        setOrders(stored);
+        if (stored.length > 0) {
+          setExpandedId(stored[0].orderId);
+        }
+      })
+      .catch(() => setOrders([]));
   }, []);
 
   const stats = useMemo(() => {
