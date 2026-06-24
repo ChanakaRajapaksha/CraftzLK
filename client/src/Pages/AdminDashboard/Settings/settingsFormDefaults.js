@@ -2,7 +2,6 @@ export const SETTINGS_TABS = [
   { id: "general", label: "General" },
   { id: "currency", label: "Currency" },
   { id: "tax", label: "Tax" },
-  { id: "email", label: "Email" },
   { id: "appearance", label: "Appearance" },
 ];
 
@@ -29,8 +28,8 @@ export const TAX_RULE_OPTIONS = [
 export const defaultSettingsFields = {
   general: {
     storeName: "",
-    logo: "",
-    favicon: "",
+    logo: { url: "", publicId: "" },
+    favicon: { url: "", publicId: "" },
     contactEmail: "",
     contactPhone: "",
     contactAddress: "",
@@ -45,21 +44,23 @@ export const defaultSettingsFields = {
     rules: "exclusive",
     percentage: 0,
   },
-  email: {
-    smtpHost: "",
-    smtpPort: 587,
-    smtpUsername: "",
-    smtpPassword: "",
-    hasPassword: false,
-  },
 };
+
+export function normalizeSettingsAsset(asset) {
+  if (!asset) return { url: "", publicId: "" };
+  if (typeof asset === "string") return { url: asset, publicId: "" };
+  return {
+    url: asset.url || "",
+    publicId: asset.publicId || "",
+  };
+}
 
 export function settingsFromRecord(record) {
   return {
     general: {
       storeName: record?.general?.storeName || "",
-      logo: record?.general?.logo || "",
-      favicon: record?.general?.favicon || "",
+      logo: normalizeSettingsAsset(record?.general?.logo),
+      favicon: normalizeSettingsAsset(record?.general?.favicon),
       contactEmail: record?.general?.contactEmail || "",
       contactPhone: record?.general?.contactPhone || "",
       contactAddress: record?.general?.contactAddress || "",
@@ -74,30 +75,21 @@ export function settingsFromRecord(record) {
       rules: record?.tax?.rules || "exclusive",
       percentage: record?.tax?.percentage ?? 0,
     },
-    email: {
-      smtpHost: record?.email?.smtpHost || "",
-      smtpPort: record?.email?.smtpPort ?? 587,
-      smtpUsername: record?.email?.smtpUsername || "",
-      smtpPassword: "",
-      hasPassword: Boolean(record?.email?.hasPassword),
-    },
   };
 }
 
 export function settingsToPayload(formFields) {
   return {
-    general: { ...formFields.general },
+    general: {
+      ...formFields.general,
+      logo: normalizeSettingsAsset(formFields.general?.logo),
+      favicon: normalizeSettingsAsset(formFields.general?.favicon),
+    },
     currency: { ...formFields.currency },
     tax: {
       enabled: Boolean(formFields.tax?.enabled),
       rules: formFields.tax?.rules || "exclusive",
       percentage: Number(formFields.tax?.percentage) || 0,
-    },
-    email: {
-      smtpHost: formFields.email?.smtpHost || "",
-      smtpPort: Number(formFields.email?.smtpPort) || 587,
-      smtpUsername: formFields.email?.smtpUsername || "",
-      smtpPassword: formFields.email?.smtpPassword || "",
     },
   };
 }

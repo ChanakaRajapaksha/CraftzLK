@@ -1,12 +1,20 @@
 const mongoose = require("mongoose");
 
+const mediaAssetSchema = new mongoose.Schema(
+  {
+    url: { type: String, default: "" },
+    publicId: { type: String, default: "" },
+  },
+  { _id: false }
+);
+
 const storeSettingsSchema = mongoose.Schema(
   {
     key: { type: String, default: "default", unique: true },
     general: {
       storeName: { type: String, default: "CraftzLK" },
-      logo: { type: String, default: "" },
-      favicon: { type: String, default: "" },
+      logo: { type: mediaAssetSchema, default: () => ({}) },
+      favicon: { type: mediaAssetSchema, default: () => ({}) },
       contactEmail: { type: String, default: "" },
       contactPhone: { type: String, default: "" },
       contactAddress: { type: String, default: "" },
@@ -20,12 +28,6 @@ const storeSettingsSchema = mongoose.Schema(
       enabled: { type: Boolean, default: true },
       rules: { type: String, enum: ["inclusive", "exclusive", "none"], default: "exclusive" },
       percentage: { type: Number, default: 0 },
-    },
-    email: {
-      smtpHost: { type: String, default: "" },
-      smtpPort: { type: Number, default: 587 },
-      smtpUsername: { type: String, default: "" },
-      smtpPassword: { type: String, default: "" },
     },
   },
   { timestamps: true }
@@ -43,8 +45,8 @@ exports.DEFAULT_STORE_SETTINGS = {
   key: "default",
   general: {
     storeName: "CraftzLK",
-    logo: "",
-    favicon: "",
+    logo: { url: "", publicId: "" },
+    favicon: { url: "", publicId: "" },
     contactEmail: "hello@craftzlk.com",
     contactPhone: "+94 71 526 4449",
     contactAddress: "Colombo, Sri Lanka",
@@ -58,11 +60,5 @@ exports.DEFAULT_STORE_SETTINGS = {
     enabled: true,
     rules: "exclusive",
     percentage: 0,
-  },
-  email: {
-    smtpHost: "smtp.gmail.com",
-    smtpPort: 587,
-    smtpUsername: "",
-    smtpPassword: "",
   },
 };

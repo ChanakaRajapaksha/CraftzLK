@@ -19,6 +19,9 @@ if (missingEnvVars.length > 0) {
 
 // Import database connection
 const connectDB = require('./config/database');
+const { ensureUploadsDir } = require('./utils/uploadDir');
+
+ensureUploadsDir();
 
 // Import security middleware
 const cors = require('cors');

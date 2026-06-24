@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import { MdAttachMoney, MdEmail, MdStore } from "react-icons/md";
+import { MdAttachMoney, MdStore } from "react-icons/md";
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
@@ -12,7 +12,6 @@ import {
   settingsFromRecord,
   settingsToPayload,
 } from "./settingsFormDefaults";
-import { getSettingsSample } from "./settingsListUtils";
 
 export default function GeneralSettings() {
   const { setAlertBox } = useOutletContext();
@@ -29,12 +28,12 @@ export default function GeneralSettings() {
           setFormFields(settingsFromRecord(res.settings));
           setUsingSampleData(false);
         } else {
-          setFormFields(settingsFromRecord(getSettingsSample()));
+          setFormFields({ ...defaultSettingsFields });
           setUsingSampleData(true);
         }
       })
       .catch(() => {
-        setFormFields(settingsFromRecord(getSettingsSample()));
+        setFormFields({ ...defaultSettingsFields });
         setUsingSampleData(true);
       })
       .finally(() => setLoading(false));
@@ -68,7 +67,7 @@ export default function GeneralSettings() {
     <>
       <AdminPageHeader
         title="General Settings"
-        subtitle="Configure store identity, currency, tax, and email delivery."
+        subtitle="Configure store identity, currency, and tax."
         breadcrumbs={[{ label: "Settings" }, { label: "General Settings" }]}
       />
 
@@ -89,12 +88,6 @@ export default function GeneralSettings() {
               : "Off"
           }
           gradient={["#5a7a5e", "#7a9a7e"]}
-        />
-        <StatCard
-          icon={<MdEmail />}
-          label="SMTP"
-          value={formFields.email?.smtpHost || "—"}
-          gradient={["#4a5568", "#718096"]}
         />
       </div>
 

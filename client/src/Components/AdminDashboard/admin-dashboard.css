@@ -2356,6 +2356,10 @@
   grid-column: 1 / -1;
 }
 
+.admin-dash__product-form .admin-dash__field--narrow {
+  max-width: 14rem;
+}
+
 .admin-dash__product-form .admin-dash__field--checkbox {
   align-self: end;
 }
@@ -4056,6 +4060,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.25rem 1.5rem;
+  align-items: stretch;
 }
 
 @media (min-width: 768px) {
@@ -4065,13 +4070,17 @@
 }
 
 .admin-dash__settings-asset-field {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   min-width: 0;
+  height: 100%;
   margin-bottom: 0;
 }
 
 .admin-dash__settings-asset {
   display: flex;
+  flex: 1;
   flex-direction: column;
   align-items: stretch;
   width: 100%;
@@ -4080,6 +4089,8 @@
 
 .admin-dash__settings-asset-preview {
   width: 100%;
+  height: 9rem;
+  min-height: 9rem;
   box-sizing: border-box;
   border-radius: 12px;
   border: 1px dashed rgba(201, 169, 97, 0.45);
@@ -4090,16 +4101,9 @@
   overflow: hidden;
 }
 
-.admin-dash__settings-asset-field--logo .admin-dash__settings-asset-preview {
-  min-height: 9rem;
-  height: 9rem;
-}
-
-.admin-dash__settings-asset-field--favicon .admin-dash__settings-asset-preview {
-  width: 100%;
-  aspect-ratio: 1;
-  max-height: 12rem;
-  min-height: 8rem;
+.admin-dash__settings-asset-field--favicon .admin-dash__settings-asset-preview img {
+  max-width: 4rem;
+  max-height: 4rem;
 }
 
 .admin-dash__settings-asset-preview img {

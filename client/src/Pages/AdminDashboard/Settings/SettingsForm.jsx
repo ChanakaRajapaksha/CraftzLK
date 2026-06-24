@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import AdminThemeToggle from "../../../Components/AdminDashboard/AdminThemeToggle";
-import { uploadImage } from "../../../utils/api";
+import { uploadImage, deleteData } from "../../../utils/api";
 import {
   CURRENCY_OPTIONS,
   DECIMAL_FORMAT_OPTIONS,
@@ -10,9 +10,15 @@ import {
   formatCurrencyPreview,
 } from "./settingsFormDefaults";
 
-function Field({ label, htmlFor, children, full = false, hint }) {
+function Field({ label, htmlFor, children, full = false, narrow = false, hint }) {
+  const fieldClass = [
+    "admin-dash__field",
+    full && "admin-dash__field--full",
+    narrow && "admin-dash__field--narrow",
+  ].filter(Boolean).join(" ");
+
   return (
-    <div className={`admin-dash__field${full ? " admin-dash__field--full" : ""}`}>
+    <div className={fieldClass}>
       <label className="admin-dash__label" htmlFor={htmlFor}>{label}</label>
       {children}
       {hint && <p className="admin-dash__hint">{hint}</p>}
@@ -20,22 +26,41 @@ function Field({ label, htmlFor, children, full = false, hint }) {
   );
 }
 
-function BrandAssetField({ label, value, onChange, setAlertBox, accept = "image/*", variant = "logo" }) {
+function BrandAssetField({ label, asset, onChange, setAlertBox, accept = "image/*", variant = "logo" }) {
   const inputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
+  const imageUrl = asset?.url || "";
 
   const handleUpload = async (file) => {
     if (!file) return;
     const formData = new FormData();
-    formData.append("images", file);
+    formData.append("image", file);
     setUploading(true);
     try {
-      const res = await uploadImage("/api/settings/upload", formData);
-      const url = Array.isArray(res) ? res[0] : res?.[0];
-      if (url) onChange(url);
-      else setAlertBox?.({ open: true, error: true, msg: "Upload failed." });
+      const res = await uploadImage(`/api/settings/upload/${variant}`, formData);
+      const nextAsset = res?.asset || { url: res?.url || "", publicId: "" };
+      if (nextAsset.url) {
+        onChange(nextAsset);
+        setAlertBox?.({ open: true, error: false, msg: `${label} uploaded and saved.` });
+      } else {
+        setAlertBox?.({ open: true, error: true, msg: "Upload failed." });
+      }
     } catch {
       setAlertBox?.({ open: true, error: true, msg: "Upload failed." });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemove = async () => {
+    setUploading(true);
+    try {
+      const res = await deleteData(`/api/settings/assets/${variant}`);
+      const clearedAsset = res?.asset || { url: "", publicId: "" };
+      onChange(clearedAsset);
+      setAlertBox?.({ open: true, error: false, msg: `${label} removed.` });
+    } catch {
+      setAlertBox?.({ open: true, error: true, msg: `Failed to remove ${label.toLowerCase()}.` });
     } finally {
       setUploading(false);
     }
@@ -46,8 +71,8 @@ function BrandAssetField({ label, value, onChange, setAlertBox, accept = "image/
       <span className="admin-dash__label">{label}</span>
       <div className="admin-dash__settings-asset">
         <div className="admin-dash__settings-asset-preview">
-          {value ? (
-            <img src={value} alt={label} />
+          {imageUrl ? (
+            <img src={imageUrl} alt={label} />
           ) : (
             <span className="admin-dash__settings-asset-empty">No image uploaded</span>
           )}
@@ -69,11 +94,12 @@ function BrandAssetField({ label, value, onChange, setAlertBox, accept = "image/
             <FaCloudUploadAlt />
             {uploading ? "Uploading…" : "Upload"}
           </button>
-          {value && (
+          {imageUrl && (
             <button
               type="button"
               className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
-              onClick={() => onChange("")}
+              disabled={uploading}
+              onClick={handleRemove}
             >
               Remove
             </button>
@@ -111,13 +137,6 @@ export default function SettingsForm({
     setFormFields((prev) => ({
       ...prev,
       tax: { ...prev.tax, [field]: value },
-    }));
-  };
-
-  const changeEmail = (field, value) => {
-    setFormFields((prev) => ({
-      ...prev,
-      email: { ...prev.email, [field]: value },
     }));
   };
 
@@ -180,15 +199,15 @@ export default function SettingsForm({
             <div className="admin-dash__settings-assets-row">
               <BrandAssetField
                 label="Logo"
-                value={formFields.general?.logo || ""}
-                onChange={(url) => changeGeneral("logo", url)}
+                asset={formFields.general?.logo}
+                onChange={(asset) => changeGeneral("logo", asset)}
                 setAlertBox={setAlertBox}
               />
               <BrandAssetField
                 label="Favicon"
                 variant="favicon"
-                value={formFields.general?.favicon || ""}
-                onChange={(url) => changeGeneral("favicon", url)}
+                asset={formFields.general?.favicon}
+                onChange={(asset) => changeGeneral("favicon", asset)}
                 setAlertBox={setAlertBox}
                 accept="image/png,image/x-icon,image/vnd.microsoft.icon,image/jpeg,image/webp"
               />
@@ -248,7 +267,7 @@ export default function SettingsForm({
                 placeholder="Rs"
               />
             </Field>
-            <Field label="Decimal format" htmlFor="decimalFormat" full>
+            <Field label="Decimal format" htmlFor="decimalFormat" narrow>
               <select
                 className="admin-dash__select"
                 id="decimalFormat"
@@ -279,7 +298,7 @@ export default function SettingsForm({
                 <span>Enable tax calculation</span>
               </label>
             </div>
-            <Field label="Tax rules" htmlFor="taxRules" full>
+            <Field label="Tax rules" htmlFor="taxRules">
               <select
                 className="admin-dash__select"
                 id="taxRules"
@@ -316,60 +335,6 @@ export default function SettingsForm({
               hint="Switch between light and dark mode for the admin panel. Your choice is saved in this browser."
             >
               <AdminThemeToggle compact />
-            </Field>
-          </div>
-        )}
-
-        {tab === "email" && (
-          <div className="admin-dash__form-grid admin-dash__form-grid--2">
-            <Field label="SMTP host" htmlFor="smtpHost" full>
-              <input
-                className="admin-dash__input"
-                id="smtpHost"
-                value={formFields.email?.smtpHost || ""}
-                onChange={(e) => changeEmail("smtpHost", e.target.value)}
-                placeholder="smtp.gmail.com"
-              />
-            </Field>
-            <Field label="SMTP port" htmlFor="smtpPort">
-              <input
-                className="admin-dash__input"
-                id="smtpPort"
-                type="number"
-                min="1"
-                value={formFields.email?.smtpPort ?? 587}
-                onChange={(e) => changeEmail("smtpPort", e.target.value)}
-                placeholder="587"
-              />
-            </Field>
-            <Field label="SMTP username" htmlFor="smtpUsername" full>
-              <input
-                className="admin-dash__input"
-                id="smtpUsername"
-                value={formFields.email?.smtpUsername || ""}
-                onChange={(e) => changeEmail("smtpUsername", e.target.value)}
-                placeholder="notifications@craftzlk.com"
-              />
-            </Field>
-            <Field
-              label="SMTP password"
-              htmlFor="smtpPassword"
-              full
-              hint={
-                formFields.email?.hasPassword
-                  ? "Leave blank to keep the current password."
-                  : undefined
-              }
-            >
-              <input
-                className="admin-dash__input"
-                id="smtpPassword"
-                type="password"
-                value={formFields.email?.smtpPassword || ""}
-                onChange={(e) => changeEmail("smtpPassword", e.target.value)}
-                placeholder={formFields.email?.hasPassword ? "••••••••" : "Enter SMTP password"}
-                autoComplete="new-password"
-              />
             </Field>
           </div>
         )}
