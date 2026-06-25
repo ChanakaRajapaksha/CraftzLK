@@ -2,10 +2,17 @@ import { useState } from "react";
 import ProductImageUploadField from "../../../Components/AdminDashboard/ProductImageUploadField";
 import { CATEGORY_FORM_TABS, slugify } from "./categoryFormDefaults";
 
-function Field({ label, htmlFor, children, full = false }) {
+function Field({ label, htmlFor, children, full = false, required = false }) {
   return (
     <div className={`admin-dash__field${full ? " admin-dash__field--full" : ""}`}>
-      <label className="admin-dash__label" htmlFor={htmlFor}>{label}</label>
+      <label className="admin-dash__label" htmlFor={htmlFor}>
+        {label}
+        {required && (
+          <span className="admin-dash__required" aria-hidden="true">
+            *
+          </span>
+        )}
+      </label>
       {children}
     </div>
   );
@@ -21,6 +28,7 @@ export default function CategoryForm({
   isEdit = false,
   isLoading = false,
   submitLabel = "Save category",
+  variant = "page",
   onSubmit,
   lockParent = false,
 }) {
@@ -60,16 +68,15 @@ export default function CategoryForm({
       setTab("basic");
       return;
     }
-    if (previews.length === 0) {
-      setAlertBox?.({ open: true, error: true, msg: "Please upload a category image." });
-      setTab("images");
-      return;
-    }
     onSubmit(e);
   };
 
   return (
-    <form className="admin-dash__product-form" onSubmit={handleSubmit}>
+    <form
+      id={variant === "modal" ? "category-form-modal" : undefined}
+      className="admin-dash__product-form"
+      onSubmit={handleSubmit}
+    >
       <nav className="admin-dash__product-tabs" aria-label="Category form sections">
         {CATEGORY_FORM_TABS.map((item) => (
           <button
@@ -86,7 +93,7 @@ export default function CategoryForm({
       <section className="admin-dash__panel admin-dash__product-panel">
         {tab === "basic" && (
           <div className="admin-dash__form-grid admin-dash__form-grid--2">
-            <Field label="Category Name" htmlFor="name" full>
+            <Field label="Category Name" htmlFor="name" full required>
               <input
                 className="admin-dash__input"
                 id="name"
@@ -94,6 +101,8 @@ export default function CategoryForm({
                 value={formFields.name}
                 onChange={onNameChange}
                 placeholder="e.g. Fashion"
+                required
+                aria-required="true"
               />
             </Field>
             <Field label="Parent Category" htmlFor="parentId">
@@ -139,7 +148,7 @@ export default function CategoryForm({
                 mainImageDescription="This image is shown in category listings, navigation, and shop pages."
                 galleryTitle="Uploaded Images"
                 galleryDescription="Drag to reorder. The first image is used as the category image."
-                emptyMessage="No images uploaded yet. Add a category image to continue."
+                emptyMessage="No images uploaded yet. You can add a category image optionally."
                 entityLabel="category"
                 uploadHint="JPG, PNG, WebP · Multiple files supported"
               />
@@ -193,11 +202,13 @@ export default function CategoryForm({
           </div>
         )}
 
-        <div className="admin-dash__product-form-actions">
-          <button type="submit" className="admin-dash__btn" disabled={isLoading}>
-            {isLoading ? "Saving…" : submitLabel}
-          </button>
-        </div>
+        {variant !== "modal" && (
+          <div className="admin-dash__product-form-actions">
+            <button type="submit" className="admin-dash__btn" disabled={isLoading}>
+              {isLoading ? "Saving…" : submitLabel}
+            </button>
+          </div>
+        )}
       </section>
     </form>
   );

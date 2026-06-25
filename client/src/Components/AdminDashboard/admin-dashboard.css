@@ -392,6 +392,12 @@
   color: #5c4d3a !important;
 }
 
+.admin-dash__required {
+  margin-left: 0.2rem;
+  color: #c0392b;
+  font-weight: 700;
+}
+
 .admin-dash__field {
   margin-bottom: 1rem;
 }
@@ -4633,7 +4639,8 @@
   overflow: hidden;
 }
 
-.admin-dash__settings-modal--notifications {
+.admin-dash__settings-modal--notifications,
+.admin-dash__settings-modal--categories {
   width: min(100%, 76rem);
 }
 
@@ -4826,7 +4833,8 @@
 }
 
 @media (max-width: 991px) {
-  .admin-dash__settings-modal--notifications {
+  .admin-dash__settings-modal--notifications,
+  .admin-dash__settings-modal--categories {
     width: min(100%, 100%);
   }
 

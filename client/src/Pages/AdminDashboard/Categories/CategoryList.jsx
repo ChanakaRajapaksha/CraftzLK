@@ -1,89 +1,111 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useOutletContext } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useOutletContext, useSearchParams } from "react-router-dom";
 import { FaPencilAlt, FaPlus } from "react-icons/fa";
 import { MdDelete, MdCategory, MdLayers } from "react-icons/md";
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import AdminPagination from "../../../Components/AdminDashboard/AdminPagination";
 import AdminConfirmDialog from "../../../Components/AdminDashboard/AdminConfirmDialog";
+import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
 import { deleteData, fetchDataFromApi } from "../../../utils/api";
-import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
-import {
-  buildProductCountMap,
-  flattenCategories,
-  getCategoryListSampleData,
-  isSampleCategoryId,
-} from "./categoryListUtils";
+import CategoryFormModal from "./CategoryFormModal";
+
+const DEFAULT_STATS = {
+  total: 0,
+  mainCount: 0,
+  subCount: 0,
+  activeCount: 0,
+};
 
 export default function CategoryList() {
-  const { setAlertBox } = useOutletContext();
+  const { setAlertBox, catData, fetchCategory } = useOutletContext();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [categories, setCategories] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [usingSampleData, setUsingSampleData] = useState(false);
+  const [stats, setStats] = useState(DEFAULT_STATS);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [parentFilter, setParentFilter] = useState("all");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingCategoryId, setEditingCategoryId] = useState(null);
 
-  const applySampleCategories = () => {
-    setCategories(getCategoryListSampleData());
-    setUsingSampleData(true);
-  };
+  const hasActiveFilters = useMemo(
+    () =>
+      Boolean(searchKeyword.trim()) ||
+      statusFilter !== "all" ||
+      parentFilter !== "all",
+    [searchKeyword, statusFilter, parentFilter]
+  );
 
-  const loadCategories = () => {
-    fetchDataFromApi("/api/category")
+  const loadCategories = useCallback(() => {
+    setLoading(true);
+    setLoadError(false);
+
+    const params = new URLSearchParams({
+      page: String(page + 1),
+      perPage: String(rowsPerPage),
+    });
+
+    if (searchKeyword.trim()) params.set("search", searchKeyword.trim());
+    if (statusFilter !== "all") params.set("status", statusFilter);
+    if (parentFilter !== "all") params.set("parentType", parentFilter);
+
+    fetchDataFromApi(`/api/category/admin/list?${params.toString()}`)
       .then((res) => {
-        const list = res?.categoryList || [];
-        if (list.length) {
-          setCategories(flattenCategories(list));
-          setUsingSampleData(false);
-        } else {
-          applySampleCategories();
+        if (res?.success === false) {
+          throw new Error(res?.message || "Failed to load categories.");
         }
+
+        setCategories(Array.isArray(res?.categories) ? res.categories : []);
+        setTotalItems(Number(res?.total) || 0);
+        setTotalPages(Math.max(1, Number(res?.totalPages) || 1));
+        setStats(res?.stats || DEFAULT_STATS);
       })
-      .catch(() => applySampleCategories());
-  };
+      .catch(() => {
+        setCategories([]);
+        setTotalItems(0);
+        setTotalPages(1);
+        setStats(DEFAULT_STATS);
+        setLoadError(true);
+      })
+      .finally(() => setLoading(false));
+  }, [page, rowsPerPage, searchKeyword, statusFilter, parentFilter]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    applySampleCategories();
-    fetchDataFromApi("/api/products")
-      .then((res) => setProducts(res?.products || []))
-      .catch(() => {});
   }, []);
 
-  const productCounts = useMemo(() => buildProductCountMap(products), [products]);
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    const action = searchParams.get("action");
 
-  const stats = useMemo(() => {
-    const mainCount = categories.filter((cat) => cat.isMain).length;
-    const subCount = categories.filter((cat) => !cat.isMain).length;
-    const activeCount = categories.filter((cat) => (cat.status || "active") === "active").length;
-    return { mainCount, subCount, activeCount, total: categories.length };
-  }, [categories]);
-
-  const filtered = useMemo(() => {
-    let list = [...categories];
-
-    if (searchKeyword.trim()) {
-      const q = searchKeyword.toLowerCase();
-      list = list.filter((cat) =>
-        [cat.name, cat.parentName, cat.slug].some((v) => String(v || "").toLowerCase().includes(q))
-      );
+    if (editId) {
+      setEditingCategoryId(editId);
+      setModalOpen(true);
+    } else if (action === "add") {
+      setEditingCategoryId(null);
+      setModalOpen(true);
     }
+  }, [searchParams]);
 
-    if (statusFilter === "active") list = list.filter((cat) => (cat.status || "active") === "active");
-    if (statusFilter === "inactive") list = list.filter((cat) => (cat.status || "active") === "inactive");
-    if (parentFilter === "main") list = list.filter((cat) => cat.isMain);
-    if (parentFilter === "sub") list = list.filter((cat) => !cat.isMain);
+  const closeModal = () => {
+    setModalOpen(false);
+    setEditingCategoryId(null);
+    if (searchParams.get("edit") || searchParams.get("action")) {
+      setSearchParams({}, { replace: true });
+    }
+  };
 
-    return list;
-  }, [categories, searchKeyword, statusFilter, parentFilter]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
-  const slice = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  useEffect(() => {
+    loadCategories();
+  }, [loadCategories]);
 
   useEffect(() => {
     if (page > 0 && page >= totalPages) {
@@ -91,16 +113,36 @@ export default function CategoryList() {
     }
   }, [page, totalPages]);
 
+  const openCreateModal = () => {
+    setEditingCategoryId(null);
+    setModalOpen(true);
+  };
+
+  const openEditModal = (item) => {
+    setEditingCategoryId(item._id || item.id);
+    setModalOpen(true);
+  };
+
   const deleteCategory = (id) => {
-    if (usingSampleData || isSampleCategoryId(id)) {
-      setCategories((prev) => prev.filter((cat) => (cat._id || cat.id) !== id));
-      setAlertBox?.({ open: true, error: false, msg: "Category removed from sample list." });
-      return;
-    }
-    deleteData(`/api/category/${id}`).then(() => {
-      setAlertBox?.({ open: true, error: false, msg: "Category deleted." });
-      loadCategories();
-    });
+    deleteData(`/api/category/${id}`)
+      .then((res) => {
+        if (res?.success === false) {
+          setAlertBox?.({
+            open: true,
+            error: true,
+            msg: res?.message || "Failed to delete category.",
+          });
+          return;
+        }
+        setAlertBox?.({ open: true, error: false, msg: "Category deleted." });
+        fetchCategory?.();
+        loadCategories();
+      })
+      .catch((error) => {
+        const message =
+          error?.response?.data?.message || "Failed to delete category.";
+        setAlertBox?.({ open: true, error: true, msg: message });
+      });
   };
 
   const requestDelete = (item) => {
@@ -113,7 +155,11 @@ export default function CategoryList() {
     setDeleteTarget(null);
   };
 
-  const getEditPath = (item) => `${ADMIN_BASE}/category/edit/${item._id || item.id}`;
+  const emptyMessage = loadError
+    ? "Unable to load categories. Please try again."
+    : hasActiveFilters
+      ? "No categories match your filters."
+      : "No categories yet. Add your first category to organize products.";
 
   return (
     <>
@@ -122,19 +168,15 @@ export default function CategoryList() {
         subtitle="Manage main categories and subcategories in one place."
         breadcrumbs={[{ label: "Category" }]}
         action={
-          <Link to={`${ADMIN_BASE}/category/add`} className="admin-dash__btn">
+          <button type="button" className="admin-dash__btn" onClick={openCreateModal}>
             <FaPlus />
             Add Category
-          </Link>
+          </button>
         }
       />
 
       <div className="admin-dash__stats">
-        <StatCard
-          icon={<MdCategory />}
-          label="Total categories"
-          value={stats.total}
-        />
+        <StatCard icon={<MdCategory />} label="Total categories" value={stats.total} />
         <StatCard
           icon={<MdLayers />}
           label="Main categories"
@@ -201,97 +243,102 @@ export default function CategoryList() {
         <div className="admin-dash__data-table">
           <div className="admin-dash__table-wrap admin-dash__table-wrap--modern">
             <table className="admin-dash__table admin-dash__table--modern admin-dash__table--categories">
-            <thead>
-              <tr>
-                <th>Image</th>
-                <th>Category Name</th>
-                <th>Parent</th>
-                <th>Products</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {slice.length === 0 ? (
+              <thead>
                 <tr>
-                  <td colSpan={6} className="admin-dash__table-empty">
-                    No categories match your filters.
-                  </td>
+                  <th>Image</th>
+                  <th>Category Name</th>
+                  <th>Parent</th>
+                  <th>Products</th>
+                  <th>Status</th>
+                  <th>Actions</th>
                 </tr>
-              ) : (
-                slice.map((item) => {
-                  const id = item._id || item.id;
-                  const isActive = (item.status || "active") === "active";
-                  const count = item.productCount ?? productCounts[id] ?? 0;
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} className="admin-dash__table-empty">
+                      <AdminLoadingState message="Loading categories…" compact />
+                    </td>
+                  </tr>
+                ) : categories.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="admin-dash__table-empty">
+                      {emptyMessage}
+                    </td>
+                  </tr>
+                ) : (
+                  categories.map((item) => {
+                    const id = item._id || item.id;
+                    const isActive = (item.status || "active") === "active";
+                    const count = item.productCount ?? 0;
 
-                  return (
-                    <tr
-                      key={id}
-                      className={
-                        item.isMain ? "" : "admin-dash__category-row--sub"
-                      }
-                    >
-                      <td>
-                        {item.images?.[0] ? (
-                          <img
-                            src={item.images[0]}
-                            alt=""
-                            className="admin-dash__table-thumb"
-                          />
-                        ) : (
-                          <div className="admin-dash__product-placeholder admin-dash__table-thumb" />
-                        )}
-                      </td>
-                      <td>
-                        <strong>{item.name}</strong>
-                        {!item.isMain && (
-                          <span className="admin-dash__category-sub-pill">
-                            Subcategory
+                    return (
+                      <tr
+                        key={id}
+                        className={item.isMain ? "" : "admin-dash__category-row--sub"}
+                      >
+                        <td>
+                          {item.images?.[0] ? (
+                            <img
+                              src={item.images[0]}
+                              alt=""
+                              className="admin-dash__table-thumb"
+                            />
+                          ) : (
+                            <div className="admin-dash__product-placeholder admin-dash__table-thumb" />
+                          )}
+                        </td>
+                        <td>
+                          <strong>{item.name}</strong>
+                          {!item.isMain && (
+                            <span className="admin-dash__category-sub-pill">
+                              Subcategory
+                            </span>
+                          )}
+                        </td>
+                        <td>{item.parentName || "—"}</td>
+                        <td>
+                          <span className="admin-dash__badge">{count}</span>
+                        </td>
+                        <td>
+                          <span
+                            className={`admin-dash__status-badge admin-dash__status-badge--${isActive ? "completed" : "cancelled"}`}
+                          >
+                            {isActive ? "Active" : "Inactive"}
                           </span>
-                        )}
-                      </td>
-                      <td>{item.parentName || "—"}</td>
-                      <td>
-                        <span className="admin-dash__badge">{count}</span>
-                      </td>
-                      <td>
-                        <span
-                          className={`admin-dash__status-badge admin-dash__status-badge--${isActive ? "completed" : "cancelled"}`}
-                        >
-                          {isActive ? "Active" : "Inactive"}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="admin-dash__actions">
-                          <Link
-                            to={getEditPath(item)}
-                            className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
-                            title="Edit"
-                          >
-                            <FaPencilAlt />
-                          </Link>
-                          <button
-                            type="button"
-                            className="admin-dash__btn admin-dash__btn--danger admin-dash__btn--sm admin-dash__btn--icon"
-                            onClick={() => requestDelete(item)}
-                            title="Delete"
-                          >
-                            <MdDelete />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                        </td>
+                        <td>
+                          <div className="admin-dash__actions">
+                            <button
+                              type="button"
+                              className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
+                              title="Edit"
+                              onClick={() => openEditModal(item)}
+                            >
+                              <FaPencilAlt />
+                            </button>
+                            <button
+                              type="button"
+                              className="admin-dash__btn admin-dash__btn--danger admin-dash__btn--sm admin-dash__btn--icon"
+                              onClick={() => requestDelete(item)}
+                              title="Delete"
+                            >
+                              <MdDelete />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
           </div>
 
           <AdminPagination
             page={page}
             totalPages={totalPages}
-            totalItems={filtered.length}
+            totalItems={totalItems}
             itemLabel="categories"
             rowsPerPage={rowsPerPage}
             rowsPerPageOptions={[10, 25, 50]}
@@ -303,6 +350,17 @@ export default function CategoryList() {
           />
         </div>
       </section>
+
+      <CategoryFormModal
+        open={modalOpen}
+        categoryId={editingCategoryId}
+        initialParentId={editingCategoryId ? "" : searchParams.get("parent") || ""}
+        onClose={closeModal}
+        onSaved={loadCategories}
+        setAlertBox={setAlertBox}
+        catData={catData}
+        fetchCategory={fetchCategory}
+      />
 
       <AdminConfirmDialog
         open={Boolean(deleteTarget)}

@@ -20,7 +20,7 @@ export const adminNavItems = [
     label: "Category",
     children: [
       { label: "Category List", path: `${ADMIN_BASE}/category` },
-      { label: "Add Category", path: `${ADMIN_BASE}/category/add` },
+      { label: "Add Category", path: `${ADMIN_BASE}/category?action=add` },
     ],
   },
   {
