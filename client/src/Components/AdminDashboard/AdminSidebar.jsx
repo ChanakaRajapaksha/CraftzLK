@@ -10,6 +10,7 @@ import { MdCampaign, MdHome, MdInventory, MdLocalShipping, MdPayments, MdRateRev
 import { toast } from "sonner";
 import AuthController from "../../controllers/auth.controller";
 import { MyContext } from "../../App";
+import { DEFAULT_STORE_LOGO } from "../../utils/storeBrand";
 import { adminNavItems, ADMIN_BASE } from "./adminNav";
 import "./admin-dashboard.css";
 
@@ -45,6 +46,7 @@ export default function AdminSidebar() {
   const [openMenus, setOpenMenus] = useState({});
   const navigate = useNavigate();
   const context = useContext(MyContext);
+  const storeLogo = context?.storeLogo || DEFAULT_STORE_LOGO;
   const user = context?.user?.name ? context.user : getStoredUser();
   const displayName = user?.name?.trim() || user?.email || "Admin";
   const displayRole = (user?.role || "admin").charAt(0).toUpperCase() + (user?.role || "admin").slice(1);
@@ -63,7 +65,7 @@ export default function AdminSidebar() {
   return (
     <aside className="admin-dash__sidebar">
       <div className="admin-dash__brand">
-        <img src="/images/craftzlk.png" alt="CraftzLK" />
+        <img src={storeLogo} alt="CraftzLK" />
         <div>
           <p className="admin-dash__brand-name" title={displayName}>
             {displayName}

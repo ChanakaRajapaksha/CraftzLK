@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
+import { useContext } from "react";
 import { FaFacebookF, FaInstagram } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
+import { MyContext } from "../../App";
+import { DEFAULT_STORE_LOGO } from "../../utils/storeBrand";
 import "./HomePageFooter.css";
 
 const FOOTER_LINKS = [
@@ -35,6 +38,8 @@ const FOOTER_LINKS = [
 
 /** Site footer chrome only — ends at copyright row (no extra content below). */
 export default function HomePageFooter() {
+  const { storeLogo } = useContext(MyContext);
+
   return (
     <footer className="home-page-footer" aria-label="Site footer">
       <div className="home-page-footer__chrome">
@@ -42,7 +47,7 @@ export default function HomePageFooter() {
           <div className="home-page-footer__grid">
             <div className="home-page-footer__brand">
               <Link to="/" className="home-page-footer__logo">
-                <img src="/images/craftzlk.png" alt="CraftzLK" />
+                <img src={storeLogo || DEFAULT_STORE_LOGO} alt="CraftzLK" />
               </Link>
               <p className="home-page-footer__tagline">
                 Authentic handmade, eco-friendly, and premium homestyle products from

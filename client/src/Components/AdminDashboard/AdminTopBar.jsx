@@ -1,12 +1,15 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { MdDarkMode, MdLightMode, MdNotificationsNone } from "react-icons/md";
+import { MyContext } from "../../App";
 import { fetchDataFromApi } from "../../utils/api";
+import { DEFAULT_STORE_LOGO } from "../../utils/storeBrand";
 import AdminNotificationsPanel from "./AdminNotificationsPanel";
 import { useAdminTheme } from "./AdminThemeContext";
 import { getAdminNotificationSample } from "./adminNotificationUtils";
 
 export default function AdminTopBar() {
   const { isDark, toggleTheme } = useAdminTheme();
+  const { storeLogo } = useContext(MyContext);
   const [panelOpen, setPanelOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -32,8 +35,10 @@ export default function AdminTopBar() {
   return (
     <header className="admin-dash__topbar">
       <div className="admin-dash__topbar-start">
-        <p className="admin-dash__topbar-eyebrow">CraftzLK Admin</p>
-        <p className="admin-dash__topbar-tagline">Store management console</p>
+        <div>
+          <p className="admin-dash__topbar-eyebrow">CraftzLK Admin</p>
+          <p className="admin-dash__topbar-tagline">Store management console</p>
+        </div>
       </div>
 
       <div className="admin-dash__topbar-actions">

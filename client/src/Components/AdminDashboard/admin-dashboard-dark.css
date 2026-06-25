@@ -379,6 +379,14 @@ html.admin-dash-theme-dark {
   color: var(--adm-text-muted);
 }
 
+.admin-dash--dark .admin-dash__settings-asset-loading {
+  background: rgba(24, 20, 16, 0.72);
+}
+
+.admin-dash--dark .admin-dash__settings-asset-loading span {
+  color: var(--adm-text-muted);
+}
+
 .admin-dash--dark .admin-dash__shipping-zones,
 .admin-dash--dark .admin-dash__variant-group,
 .admin-dash--dark .admin-dash__checkbox-item,

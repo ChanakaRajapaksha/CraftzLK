@@ -109,6 +109,7 @@ import NotificationSettingsPage from "./Pages/AdminDashboard/Notifications/Notif
 import NotificationTemplateList from "./Pages/AdminDashboard/Notifications/NotificationTemplateList";
 import EditNotificationTemplate from "./Pages/AdminDashboard/Notifications/EditNotificationTemplate";
 import GeneralSettings from "./Pages/AdminDashboard/Settings/GeneralSettings";
+import { DEFAULT_STORE_LOGO, applyDocumentFavicon, applyStoreBrandFromSettings } from "./utils/storeBrand";
 
 // Default context value so consumers never get undefined (e.g. before Provider mounts or in edge cases)
 const defaultContextValue = {
@@ -116,6 +117,10 @@ const defaultContextValue = {
   setEnableFilterTab: () => {},
   setUser: () => {},
   setIsLogin: () => {},
+  storeLogo: DEFAULT_STORE_LOGO,
+  setStoreLogo: () => {},
+  storeFavicon: "",
+  setStoreFavicon: () => {},
 };
 const MyContext = createContext(defaultContextValue);
 
@@ -166,10 +171,31 @@ function AppContent() {
     error: false,
     open: false,
   });
+  const [storeLogo, setStoreLogo] = useState(DEFAULT_STORE_LOGO);
+  const [storeFavicon, setStoreFavicon] = useState("");
 
   useEffect(() => {
     OBSOLETE_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
   }, []);
+
+  useEffect(() => {
+    fetchDataFromApi("/api/settings")
+      .then((res) => {
+        const brand = applyStoreBrandFromSettings(res?.settings);
+        setStoreLogo(brand.storeLogo);
+        setStoreFavicon(brand.storeFavicon);
+        applyDocumentFavicon(brand.storeFavicon);
+      })
+      .catch(() => {
+        setStoreLogo(DEFAULT_STORE_LOGO);
+        setStoreFavicon("");
+        applyDocumentFavicon("");
+      });
+  }, []);
+
+  useEffect(() => {
+    applyDocumentFavicon(storeFavicon);
+  }, [storeFavicon]);
 
   useEffect(() => {
     dispatch(initializeAuth());
@@ -500,6 +526,10 @@ function AppContent() {
     isOpenFilters,
     setIsBottomShow,
     isBottomShow,
+    storeLogo,
+    setStoreLogo,
+    storeFavicon,
+    setStoreFavicon,
   };
 
   return (

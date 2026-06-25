@@ -4088,6 +4088,7 @@
 }
 
 .admin-dash__settings-asset-preview {
+  position: relative;
   width: 100%;
   height: 9rem;
   min-height: 9rem;
@@ -4110,6 +4111,38 @@
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+}
+
+.admin-dash__settings-asset-preview--uploading img {
+  opacity: 0.4;
+}
+
+.admin-dash__settings-asset-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  background: rgba(255, 253, 247, 0.78);
+  backdrop-filter: blur(2px);
+}
+
+.admin-dash__settings-asset-loading-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid rgba(201, 169, 97, 0.25);
+  border-top-color: #b8860b;
+  border-radius: 50%;
+  animation: admin-spin 0.8s linear infinite;
+}
+
+.admin-dash__settings-asset-loading span {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #8b6f47;
 }
 
 .admin-dash__settings-asset-empty {
@@ -4248,6 +4281,16 @@
 
 .admin-dash__topbar-start {
   min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-dash__topbar-logo {
+  width: 2.75rem;
+  height: 2.75rem;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .admin-dash__topbar-eyebrow {

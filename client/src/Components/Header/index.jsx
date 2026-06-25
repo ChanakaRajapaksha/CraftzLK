@@ -22,6 +22,7 @@ import { useAppDispatch } from "../../store/hooks";
 import { clearAuth } from "../../store/slices/authSlice";
 import SearchBox from "./SearchBox/index.jsx";
 import { getCartItemCount } from "../../utils/cartHelpers";
+import { DEFAULT_STORE_LOGO } from "../../utils/storeBrand";
 
 const TOP_STRIP_CLOSED_KEY = "craftzlk_top_strip_closed";
 const TOP_STRIP_HEIGHT_PX = 42;
@@ -342,7 +343,7 @@ const Header = () => {
                 <div className="header-nav-center d-flex align-items-center justify-content-center">
                     <Link to={"/"} className="logo logo-blur-bg">
                       <motion.img
-                        src="/images/craftzlk.png"
+                        src={context.storeLogo || DEFAULT_STORE_LOGO}
                         alt="CraftzLK logo"
                         initial={{ rotate: 0 }}
                         animate={{ rotate: 360 }}

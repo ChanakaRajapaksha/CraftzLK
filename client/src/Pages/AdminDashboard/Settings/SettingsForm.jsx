@@ -1,7 +1,9 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useContext } from "react";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import AdminThemeToggle from "../../../Components/AdminDashboard/AdminThemeToggle";
+import { MyContext } from "../../../App";
 import { uploadImage, deleteData } from "../../../utils/api";
+import { DEFAULT_STORE_LOGO, resolveStoreLogoUrl, resolveStoreFaviconUrl, withStoreAssetCacheBust } from "../../../utils/storeBrand";
 import {
   CURRENCY_OPTIONS,
   DECIMAL_FORMAT_OPTIONS,
@@ -28,19 +30,44 @@ function Field({ label, htmlFor, children, full = false, narrow = false, hint })
 
 function BrandAssetField({ label, asset, onChange, setAlertBox, accept = "image/*", variant = "logo" }) {
   const inputRef = useRef(null);
-  const [uploading, setUploading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
+  const context = useContext(MyContext);
   const imageUrl = asset?.url || "";
+  const [previewKey, setPreviewKey] = useState(0);
+  const previewSrc =
+    previewKey && imageUrl
+      ? `${imageUrl}${imageUrl.includes("?") ? "&" : "?"}v=${previewKey}`
+      : imageUrl;
+  const isBusy = isUploading || isRemoving;
+
+  const syncStoreBrand = (nextAsset) => {
+    if (variant === "logo") {
+      const logoUrl = nextAsset?.url
+        ? withStoreAssetCacheBust(resolveStoreLogoUrl(nextAsset))
+        : DEFAULT_STORE_LOGO;
+      context?.setStoreLogo?.(logoUrl);
+      return;
+    }
+
+    const faviconUrl = nextAsset?.url
+      ? withStoreAssetCacheBust(resolveStoreFaviconUrl(nextAsset))
+      : "";
+    context?.setStoreFavicon?.(faviconUrl);
+  };
 
   const handleUpload = async (file) => {
     if (!file) return;
     const formData = new FormData();
     formData.append("image", file);
-    setUploading(true);
+    setIsUploading(true);
     try {
       const res = await uploadImage(`/api/settings/upload/${variant}`, formData);
       const nextAsset = res?.asset || { url: res?.url || "", publicId: "" };
       if (nextAsset.url) {
         onChange(nextAsset);
+        setPreviewKey(Date.now());
+        syncStoreBrand(nextAsset);
         setAlertBox?.({ open: true, error: false, msg: `${label} uploaded and saved.` });
       } else {
         setAlertBox?.({ open: true, error: true, msg: "Upload failed." });
@@ -48,21 +75,24 @@ function BrandAssetField({ label, asset, onChange, setAlertBox, accept = "image/
     } catch {
       setAlertBox?.({ open: true, error: true, msg: "Upload failed." });
     } finally {
-      setUploading(false);
+      setIsUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
     }
   };
 
   const handleRemove = async () => {
-    setUploading(true);
+    setIsRemoving(true);
     try {
       const res = await deleteData(`/api/settings/assets/${variant}`);
       const clearedAsset = res?.asset || { url: "", publicId: "" };
       onChange(clearedAsset);
+      setPreviewKey(0);
+      syncStoreBrand(clearedAsset);
       setAlertBox?.({ open: true, error: false, msg: `${label} removed.` });
     } catch {
       setAlertBox?.({ open: true, error: true, msg: `Failed to remove ${label.toLowerCase()}.` });
     } finally {
-      setUploading(false);
+      setIsRemoving(false);
     }
   };
 
@@ -70,11 +100,21 @@ function BrandAssetField({ label, asset, onChange, setAlertBox, accept = "image/
     <div className={`admin-dash__field admin-dash__settings-asset-field admin-dash__settings-asset-field--${variant}`}>
       <span className="admin-dash__label">{label}</span>
       <div className="admin-dash__settings-asset">
-        <div className="admin-dash__settings-asset-preview">
+        <div
+          className={`admin-dash__settings-asset-preview${
+            isUploading ? " admin-dash__settings-asset-preview--uploading" : ""
+          }`}
+        >
           {imageUrl ? (
-            <img src={imageUrl} alt={label} />
+            <img src={previewSrc} alt={label} />
           ) : (
             <span className="admin-dash__settings-asset-empty">No image uploaded</span>
+          )}
+          {isUploading && (
+            <div className="admin-dash__settings-asset-loading" role="status" aria-live="polite">
+              <div className="admin-dash__settings-asset-loading-spinner" aria-hidden="true" />
+              <span>Uploading…</span>
+            </div>
           )}
         </div>
         <div className="admin-dash__settings-asset-actions">
@@ -88,17 +128,17 @@ function BrandAssetField({ label, asset, onChange, setAlertBox, accept = "image/
           <button
             type="button"
             className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
-            disabled={uploading}
+            disabled={isBusy}
             onClick={() => inputRef.current?.click()}
           >
             <FaCloudUploadAlt />
-            {uploading ? "Uploading…" : "Upload"}
+            {isUploading ? "Uploading…" : "Upload"}
           </button>
           {imageUrl && (
             <button
               type="button"
               className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
-              disabled={uploading}
+              disabled={isBusy}
               onClick={handleRemove}
             >
               Remove
