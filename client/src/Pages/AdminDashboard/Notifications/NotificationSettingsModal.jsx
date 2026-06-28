@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { MdEmail, MdSms } from "react-icons/md";
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
@@ -10,6 +10,7 @@ import {
   settingsFromRecord,
   settingsToPayload,
 } from "./notificationFormDefaults";
+import { useModalBodyLock, useModalFormInit } from "../../../hooks/useModalFormLifecycle";
 
 export default function NotificationSettingsModal({
   open,
@@ -21,9 +22,9 @@ export default function NotificationSettingsModal({
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (!open) return undefined;
+  useModalBodyLock(open, onClose);
 
+  useModalFormInit(open, "notification-settings", () => {
     setLoading(true);
     fetchDataFromApi("/api/notifications/settings")
       .then((res) => {
@@ -41,18 +42,7 @@ export default function NotificationSettingsModal({
         });
       })
       .finally(() => setLoading(false));
-
-    const handleEscape = (event) => {
-      if (event.key === "Escape") onClose?.();
-    };
-
-    document.body.style.overflow = "hidden";
-    document.addEventListener("keydown", handleEscape);
-    return () => {
-      document.body.style.overflow = "";
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [open, onClose, setAlertBox]);
+  });
 
   const handleSubmit = (e) => {
     e.preventDefault();

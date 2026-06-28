@@ -2,7 +2,9 @@ const { Artisan } = require('../models/artisan');
 const { Product } = require('../models/products');
 const { ImageUpload } = require('../models/imageUpload');
 const slugify = require('slugify');
-const fs = require('fs');
+const { destroyAsset, getPublicIdFromUrl, removeLocalFile } = require('../utils/cloudinaryAssets');
+const { isCloudinaryConfigured } = require('../utils/cloudinary');
+const { listArtisansForAdmin } = require('../utils/artisanAdmin');
 
 const cloudinary = require('cloudinary').v2;
 
@@ -34,7 +36,9 @@ async function getProductCountsByArtisan(artisans) {
   await Promise.all(
     artisans.map(async (artisan) => {
       const count = await Product.countDocuments({
-        brand: { $regex: new RegExp(`^${artisan.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') },
+        brand: {
+          $regex: new RegExp(`^${artisan.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'),
+        },
       });
       counts[String(artisan._id)] = count;
     })
@@ -43,36 +47,47 @@ async function getProductCountsByArtisan(artisans) {
   return counts;
 }
 
-function getImageNameFromUrl(imgUrl) {
-  const urlArr = imgUrl.split('/');
-  const image = urlArr[urlArr.length - 1];
-  return image.split('.')[0];
+async function destroyArtisanImages(images = []) {
+  await Promise.all(
+    images.map(async (imgUrl) => {
+      const publicId = getPublicIdFromUrl(imgUrl);
+      if (publicId) await destroyAsset(publicId);
+    })
+  );
 }
 
 class ArtisanService {
-  async upload(files) {
+  async uploadImages(files) {
     const imagesArr = [];
 
-    for (let i = 0; i < files?.length; i++) {
-      const options = {
+    for (let i = 0; i < (files?.length || 0); i++) {
+      const file = files[i];
+      const result = await cloudinary.uploader.upload(file.path, {
+        folder: 'craftzlk/artisans',
+        resource_type: 'image',
         use_filename: true,
-        unique_filename: false,
-        overwrite: false,
-      };
-
-      await cloudinary.uploader.upload(
-        files[i].path,
-        options,
-        function (error, result) {
-          imagesArr.push(result.secure_url);
-          fs.unlinkSync(`uploads/${files[i].filename}`);
-        }
-      );
+        unique_filename: true,
+      });
+      imagesArr.push(result.secure_url);
+      removeLocalFile(file.path);
     }
 
     const imagesUploaded = new ImageUpload({ images: imagesArr });
     await imagesUploaded.save();
     return imagesArr;
+  }
+
+  cleanupUploadFiles(files) {
+    (files || []).forEach((file) => removeLocalFile(file.path));
+  }
+
+  async adminList(query) {
+    return listArtisansForAdmin({
+      page: query.page,
+      perPage: query.perPage,
+      search: query.search,
+      status: query.status,
+    });
   }
 
   async list() {
@@ -105,39 +120,75 @@ class ArtisanService {
     if (!artisan) {
       const error = new Error('The artisan with the given ID was not found.');
       error.statusCode = 404;
-      error.payload = { message: error.message };
+      error.payload = { message: error.message, success: false };
       throw error;
     }
 
     const productCount = await Product.countDocuments({
-      brand: { $regex: new RegExp(`^${artisan.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') },
+      brand: {
+        $regex: new RegExp(`^${artisan.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'),
+      },
     });
 
-    return { artisanData: [mapArtisan(artisan, productCount)] };
+    return {
+      success: true,
+      artisan: mapArtisan(artisan, productCount),
+      artisanData: [mapArtisan(artisan, productCount)],
+    };
   }
 
-  async create(body, uploadedImages) {
-    const images =
-      Array.isArray(body.images) && body.images.length ? body.images : uploadedImages;
+  async create(body) {
+    const images = Array.isArray(body.images) ? body.images.filter(Boolean) : [];
 
-    let artisan = new Artisan({
-      name: body.name,
-      slug: body.slug || slugify(body.name, { lower: true }),
-      images,
-      bio: body.bio || '',
-      location: body.location || '',
-      story: body.story || '',
-      social: body.social || {},
-      status: body.status === 'inactive' ? 'inactive' : 'active',
-    });
+    if (!body.name?.trim()) {
+      const error = new Error('Artisan name is required.');
+      error.statusCode = 400;
+      error.payload = { success: false, message: error.message };
+      throw error;
+    }
 
-    artisan = await artisan.save();
-    return { artisan, clearedImages: [] };
+    if (!body.location?.trim()) {
+      const error = new Error('Location is required.');
+      error.statusCode = 400;
+      error.payload = { success: false, message: error.message };
+      throw error;
+    }
+
+    try {
+      const artisan = await Artisan.create({
+        name: body.name.trim(),
+        slug: body.slug || slugify(body.name, { lower: true }),
+        images,
+        bio: body.bio || '',
+        location: body.location.trim(),
+        story: body.story || '',
+        social: body.social || {},
+        status: body.status === 'inactive' ? 'inactive' : 'active',
+      });
+
+      return { success: true, artisan };
+    } catch (error) {
+      if (error?.code === 11000) {
+        const dupError = new Error('An artisan with this slug already exists.');
+        dupError.statusCode = 409;
+        dupError.payload = { success: false, message: dupError.message };
+        throw dupError;
+      }
+      throw error;
+    }
   }
 
   async deleteImage(imgUrl) {
-    const imageName = getImageNameFromUrl(imgUrl);
-    return cloudinary.uploader.destroy(imageName, () => {});
+    const publicId = getPublicIdFromUrl(imgUrl);
+
+    if (!publicId) {
+      const error = new Error('Invalid image URL.');
+      error.statusCode = 400;
+      error.payload = { success: false, message: error.message };
+      throw error;
+    }
+
+    return cloudinary.uploader.destroy(publicId);
   }
 
   async remove(id) {
@@ -150,40 +201,77 @@ class ArtisanService {
       throw error;
     }
 
-    for (const img of artisan.images || []) {
-      const imageName = getImageNameFromUrl(img);
-      cloudinary.uploader.destroy(imageName, () => {});
+    const productCount = await Product.countDocuments({
+      brand: {
+        $regex: new RegExp(`^${artisan.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'),
+      },
+    });
+
+    if (productCount > 0) {
+      const error = new Error('Cannot delete an artisan that has linked products.');
+      error.statusCode = 400;
+      error.payload = { success: false, message: error.message };
+      throw error;
     }
 
+    await destroyArtisanImages(artisan.images || []);
     await Artisan.findByIdAndDelete(id);
 
     return { success: true, message: 'Artisan deleted!' };
   }
 
   async update(id, body) {
-    const artisan = await Artisan.findByIdAndUpdate(
-      id,
-      {
-        name: body.name,
-        slug: body.slug || slugify(body.name || '', { lower: true }),
-        images: body.images,
-        bio: body.bio || '',
-        location: body.location || '',
-        story: body.story || '',
-        social: body.social || {},
-        status: body.status === 'inactive' ? 'inactive' : 'active',
-      },
-      { new: true }
-    );
+    const existing = await Artisan.findById(id);
 
-    if (!artisan) {
+    if (!existing) {
       const error = new Error('Artisan cannot be updated!');
-      error.statusCode = 500;
+      error.statusCode = 404;
       error.payload = { message: error.message, success: false };
       throw error;
     }
 
-    return { artisan, clearedImages: [] };
+    const images = Array.isArray(body.images) ? body.images.filter(Boolean) : existing.images;
+
+    if (!body.name?.trim()) {
+      const error = new Error('Artisan name is required.');
+      error.statusCode = 400;
+      error.payload = { success: false, message: error.message };
+      throw error;
+    }
+
+    if (!body.location?.trim()) {
+      const error = new Error('Location is required.');
+      error.statusCode = 400;
+      error.payload = { success: false, message: error.message };
+      throw error;
+    }
+
+    try {
+      const artisan = await Artisan.findByIdAndUpdate(
+        id,
+        {
+          name: body.name.trim(),
+          slug: body.slug || slugify(body.name || '', { lower: true }),
+          images,
+          bio: body.bio || '',
+          location: body.location.trim(),
+          story: body.story || '',
+          social: body.social || {},
+          status: body.status === 'inactive' ? 'inactive' : 'active',
+        },
+        { new: true }
+      );
+
+      return { success: true, artisan };
+    } catch (error) {
+      if (error?.code === 11000) {
+        const dupError = new Error('An artisan with this slug already exists.');
+        dupError.statusCode = 409;
+        dupError.payload = { success: false, message: dupError.message };
+        throw dupError;
+      }
+      throw error;
+    }
   }
 }
 

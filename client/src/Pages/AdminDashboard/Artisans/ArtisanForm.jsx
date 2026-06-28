@@ -2,7 +2,7 @@ import { useState } from "react";
 import ProductImageUploadField from "../../../Components/AdminDashboard/ProductImageUploadField";
 import { ARTISAN_FORM_TABS, slugify } from "./artisanFormDefaults";
 
-function Field({ label, htmlFor, children, full = false, size = "default" }) {
+function Field({ label, htmlFor, children, full = false, size = "default", required = false }) {
   const sizeClass = size === "full" || full
     ? " admin-dash__field--full"
     : size === "short"
@@ -11,7 +11,14 @@ function Field({ label, htmlFor, children, full = false, size = "default" }) {
 
   return (
     <div className={`admin-dash__field${sizeClass}`}>
-      <label className="admin-dash__label" htmlFor={htmlFor}>{label}</label>
+      <label className="admin-dash__label" htmlFor={htmlFor}>
+        {label}
+        {required && (
+          <span className="admin-dash__required" aria-hidden="true">
+            *
+          </span>
+        )}
+      </label>
       {children}
     </div>
   );
@@ -26,6 +33,7 @@ export default function ArtisanForm({
   isEdit = false,
   isLoading = false,
   submitLabel = "Save artisan",
+  variant = "page",
   onSubmit,
 }) {
   const [tab, setTab] = useState("basic");
@@ -58,16 +66,20 @@ export default function ArtisanForm({
       setTab("basic");
       return;
     }
-    if (previews.length === 0) {
-      setAlertBox?.({ open: true, error: true, msg: "Please upload a profile image." });
-      setTab("profile");
+    if (!formFields.location?.trim()) {
+      setAlertBox?.({ open: true, error: true, msg: "Location is required." });
+      setTab("basic");
       return;
     }
     onSubmit(e);
   };
 
   return (
-    <form className="admin-dash__product-form" onSubmit={handleSubmit}>
+    <form
+      id={variant === "modal" ? "artisan-form-modal" : undefined}
+      className="admin-dash__product-form"
+      onSubmit={handleSubmit}
+    >
       <nav className="admin-dash__product-tabs" aria-label="Artisan form sections">
         {ARTISAN_FORM_TABS.map((item) => (
           <button
@@ -84,7 +96,7 @@ export default function ArtisanForm({
       <section className="admin-dash__panel admin-dash__product-panel">
         {tab === "basic" && (
           <div className="admin-dash__form-grid admin-dash__form-grid--2">
-            <Field label="Artisan Name" htmlFor="name" full>
+            <Field label="Artisan Name" htmlFor="name" full required>
               <input
                 className="admin-dash__input"
                 id="name"
@@ -94,7 +106,7 @@ export default function ArtisanForm({
                 placeholder="e.g. Nimal Handcraft Studio"
               />
             </Field>
-            <Field label="Location" htmlFor="location">
+            <Field label="Location" htmlFor="location" required>
               <input
                 className="admin-dash__input"
                 id="location"
@@ -134,7 +146,7 @@ export default function ArtisanForm({
                 mainImageDescription="This image represents the artisan in listings and on product pages."
                 galleryTitle="Uploaded Images"
                 galleryDescription="Drag to reorder. The first image is used as the profile photo."
-                emptyMessage="No profile image uploaded yet. Add one to continue."
+                emptyMessage="No profile image uploaded yet. You can add one anytime."
                 entityLabel="artisan"
                 uploadHint="JPG, PNG, WebP · Profile photo recommended"
               />
@@ -209,9 +221,11 @@ export default function ArtisanForm({
         )}
 
         <div className="admin-dash__product-form-actions">
-          <button type="submit" className="admin-dash__btn" disabled={isLoading}>
-            {isLoading ? "Saving…" : submitLabel}
-          </button>
+          {variant !== "modal" && (
+            <button type="submit" className="admin-dash__btn" disabled={isLoading}>
+              {isLoading ? "Saving…" : submitLabel}
+            </button>
+          )}
         </div>
       </section>
     </form>

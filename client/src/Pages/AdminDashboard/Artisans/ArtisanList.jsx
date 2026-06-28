@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useOutletContext } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useOutletContext, useSearchParams } from "react-router-dom";
 import { FaPencilAlt, FaPlus } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
@@ -8,77 +8,101 @@ import { MdShoppingBag } from "react-icons/md";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import AdminPagination from "../../../Components/AdminDashboard/AdminPagination";
 import AdminConfirmDialog from "../../../Components/AdminDashboard/AdminConfirmDialog";
+import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
 import { deleteData, fetchDataFromApi } from "../../../utils/api";
-import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
-import {
-  getArtisanListSampleData,
-  isSampleArtisanId,
-} from "./artisanListUtils";
+import ArtisanFormModal from "./ArtisanFormModal";
+
+const DEFAULT_STATS = {
+  total: 0,
+  activeCount: 0,
+  inactiveCount: 0,
+  productTotal: 0,
+};
 
 export default function ArtisanList() {
   const { setAlertBox } = useOutletContext();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [artisans, setArtisans] = useState([]);
-  const [usingSampleData, setUsingSampleData] = useState(false);
+  const [stats, setStats] = useState(DEFAULT_STATS);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingArtisanId, setEditingArtisanId] = useState(null);
 
-  const applySampleArtisans = () => {
-    setArtisans(getArtisanListSampleData());
-    setUsingSampleData(true);
-  };
+  const hasActiveFilters = useMemo(
+    () => Boolean(searchKeyword.trim()) || statusFilter !== "all",
+    [searchKeyword, statusFilter]
+  );
 
-  const loadArtisans = () => {
-    fetchDataFromApi("/api/artisans")
+  const loadArtisans = useCallback(() => {
+    setLoading(true);
+    setLoadError(false);
+
+    const params = new URLSearchParams({
+      page: String(page + 1),
+      perPage: String(rowsPerPage),
+    });
+
+    if (searchKeyword.trim()) params.set("search", searchKeyword.trim());
+    if (statusFilter !== "all") params.set("status", statusFilter);
+
+    fetchDataFromApi(`/api/artisans/admin/list?${params.toString()}`)
       .then((res) => {
-        const list = res?.artisanList || [];
-        if (list.length) {
-          setArtisans(list);
-          setUsingSampleData(false);
-        } else {
-          applySampleArtisans();
+        if (res?.success === false) {
+          throw new Error(res?.message || "Failed to load artisans.");
         }
+
+        setArtisans(Array.isArray(res?.artisans) ? res.artisans : []);
+        setTotalItems(Number(res?.total) || 0);
+        setTotalPages(Math.max(1, Number(res?.totalPages) || 1));
+        setStats(res?.stats || DEFAULT_STATS);
       })
-      .catch(() => applySampleArtisans());
-  };
+      .catch(() => {
+        setArtisans([]);
+        setTotalItems(0);
+        setTotalPages(1);
+        setStats(DEFAULT_STATS);
+        setLoadError(true);
+      })
+      .finally(() => setLoading(false));
+  }, [page, rowsPerPage, searchKeyword, statusFilter]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    loadArtisans();
   }, []);
 
-  const stats = useMemo(() => {
-    const activeCount = artisans.filter((item) => (item.status || "active") === "active").length;
-    const productTotal = artisans.reduce((sum, item) => sum + (item.productCount || 0), 0);
-    return {
-      total: artisans.length,
-      activeCount,
-      inactiveCount: artisans.length - activeCount,
-      productTotal,
-    };
-  }, [artisans]);
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    const action = searchParams.get("action");
 
-  const filtered = useMemo(() => {
-    let list = [...artisans];
-
-    if (searchKeyword.trim()) {
-      const q = searchKeyword.toLowerCase();
-      list = list.filter((item) =>
-        [item.name, item.location, item.bio].some((v) => String(v || "").toLowerCase().includes(q))
-      );
+    if (editId) {
+      setEditingArtisanId(editId);
+      setModalOpen(true);
+    } else if (action === "add") {
+      setEditingArtisanId(null);
+      setModalOpen(true);
     }
+  }, [searchParams]);
 
-    if (statusFilter === "active") list = list.filter((item) => (item.status || "active") === "active");
-    if (statusFilter === "inactive") list = list.filter((item) => (item.status || "active") === "inactive");
+  const closeModal = () => {
+    setModalOpen(false);
+    setEditingArtisanId(null);
+    if (searchParams.get("edit") || searchParams.get("action")) {
+      setSearchParams({}, { replace: true });
+    }
+  };
 
-    return list;
-  }, [artisans, searchKeyword, statusFilter]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
-  const slice = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  useEffect(() => {
+    loadArtisans();
+  }, [loadArtisans]);
 
   useEffect(() => {
     if (page > 0 && page >= totalPages) {
@@ -86,16 +110,35 @@ export default function ArtisanList() {
     }
   }, [page, totalPages]);
 
+  const openCreateModal = () => {
+    setEditingArtisanId(null);
+    setModalOpen(true);
+  };
+
+  const openEditModal = (item) => {
+    setEditingArtisanId(item._id || item.id);
+    setModalOpen(true);
+  };
+
   const deleteArtisan = (id) => {
-    if (usingSampleData || isSampleArtisanId(id)) {
-      setArtisans((prev) => prev.filter((item) => (item._id || item.id) !== id));
-      setAlertBox?.({ open: true, error: false, msg: "Artisan removed from sample list." });
-      return;
-    }
-    deleteData(`/api/artisans/${id}`).then(() => {
-      setAlertBox?.({ open: true, error: false, msg: "Artisan deleted." });
-      loadArtisans();
-    });
+    deleteData(`/api/artisans/${id}`)
+      .then((res) => {
+        if (res?.success === false) {
+          setAlertBox?.({
+            open: true,
+            error: true,
+            msg: res?.message || "Failed to delete artisan.",
+          });
+          return;
+        }
+        setAlertBox?.({ open: true, error: false, msg: "Artisan deleted." });
+        loadArtisans();
+      })
+      .catch((error) => {
+        const message =
+          error?.response?.data?.message || "Failed to delete artisan.";
+        setAlertBox?.({ open: true, error: true, msg: message });
+      });
   };
 
   const requestDelete = (item) => {
@@ -108,6 +151,12 @@ export default function ArtisanList() {
     setDeleteTarget(null);
   };
 
+  const emptyMessage = loadError
+    ? "Unable to load artisans. Please try again."
+    : hasActiveFilters
+      ? "No artisans match your filters."
+      : "No artisans yet. Add your first artisan to feature makers on the storefront.";
+
   return (
     <>
       <AdminPageHeader
@@ -115,10 +164,10 @@ export default function ArtisanList() {
         subtitle="Manage makers and studios featured on your handmade marketplace."
         breadcrumbs={[{ label: "Brand / Artisan" }]}
         action={
-          <Link to={`${ADMIN_BASE}/artisans/add`} className="admin-dash__btn">
+          <button type="button" className="admin-dash__btn" onClick={openCreateModal}>
             <FaPlus />
             Add Artisan
-          </Link>
+          </button>
         }
       />
 
@@ -145,11 +194,6 @@ export default function ArtisanList() {
       </div>
 
       <section className="admin-dash__panel">
-        {usingSampleData && (
-          <p className="admin-dash__sample-banner">
-            Showing sample artisans — connect live data via Add Artisan or your API.
-          </p>
-        )}
         <div className="admin-dash__toolbar admin-dash__toolbar--wrap admin-dash__toolbar--filters">
           <input
             className="admin-dash__input"
@@ -192,14 +236,20 @@ export default function ArtisanList() {
                 </tr>
               </thead>
               <tbody>
-                {slice.length === 0 ? (
+                {loading ? (
                   <tr>
                     <td colSpan={6} className="admin-dash__table-empty">
-                      No artisans match your filters.
+                      <AdminLoadingState message="Loading artisans…" compact />
+                    </td>
+                  </tr>
+                ) : artisans.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="admin-dash__table-empty">
+                      {emptyMessage}
                     </td>
                   </tr>
                 ) : (
-                  slice.map((item) => {
+                  artisans.map((item) => {
                     const id = item._id || item.id;
                     const isActive = (item.status || "active") === "active";
                     const profileImage = item.images?.[0];
@@ -208,7 +258,11 @@ export default function ArtisanList() {
                       <tr key={id}>
                         <td>
                           {profileImage ? (
-                            <img src={profileImage} alt="" className="admin-dash__table-thumb admin-dash__table-thumb--round" />
+                            <img
+                              src={profileImage}
+                              alt=""
+                              className="admin-dash__table-thumb admin-dash__table-thumb--round"
+                            />
                           ) : (
                             <div className="admin-dash__product-placeholder admin-dash__table-thumb admin-dash__table-thumb--round" />
                           )}
@@ -232,13 +286,14 @@ export default function ArtisanList() {
                         </td>
                         <td>
                           <div className="admin-dash__actions">
-                            <Link
-                              to={`${ADMIN_BASE}/artisans/edit/${id}`}
+                            <button
+                              type="button"
                               className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
                               title="Edit"
+                              onClick={() => openEditModal(item)}
                             >
                               <FaPencilAlt />
-                            </Link>
+                            </button>
                             <button
                               type="button"
                               className="admin-dash__btn admin-dash__btn--danger admin-dash__btn--sm admin-dash__btn--icon"
@@ -260,7 +315,7 @@ export default function ArtisanList() {
           <AdminPagination
             page={page}
             totalPages={totalPages}
-            totalItems={filtered.length}
+            totalItems={totalItems}
             itemLabel="artisans"
             rowsPerPage={rowsPerPage}
             rowsPerPageOptions={[10, 25, 50]}
@@ -272,6 +327,14 @@ export default function ArtisanList() {
           />
         </div>
       </section>
+
+      <ArtisanFormModal
+        open={modalOpen}
+        artisanId={editingArtisanId}
+        onClose={closeModal}
+        onSaved={loadArtisans}
+        setAlertBox={setAlertBox}
+      />
 
       <AdminConfirmDialog
         open={Boolean(deleteTarget)}
