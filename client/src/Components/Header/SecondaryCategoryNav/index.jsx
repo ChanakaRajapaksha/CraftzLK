@@ -11,7 +11,6 @@ import {
 import { MyContext } from "../../../App";
 import { RiLogoutCircleRFill } from "react-icons/ri";
 import UserAvatarImgComponent from "../../userAvatarImg";
-import { MEGA_MENU_COLUMNS } from "../../../data/megaMenuCategories";
 import {
   getCategoryCollectionsPath,
   getSubcategoryCollectionsPath,
@@ -20,11 +19,15 @@ import {
 /** Path the "Shop" header link routes to (Collections / "All" landing page). */
 export const SHOP_PATH = "/collections/all";
 
-export { MEGA_MENU_COLUMNS };
-
 /** Resolve an API category path by display title; null when no match. */
 export function findCategoryPathByTitle(categoryList, title) {
-  return findCategoryPath(categoryList, title);
+  const needle = normalizeName(title);
+  for (const cat of categoryList || []) {
+    if (normalizeName(cat?.name) === needle) {
+      return getCategoryCollectionsPath(cat.name);
+    }
+  }
+  return null;
 }
 
 function normalizeName(s) {
@@ -33,28 +36,6 @@ function normalizeName(s) {
     .toLowerCase()
     .replace(/['’]/g, "'")
     .replace(/\s+/g, " ");
-}
-
-function findSubCatPath(categoryList, subName) {
-  const needle = normalizeName(subName);
-  for (const cat of categoryList || []) {
-    for (const child of cat?.children || []) {
-      if (normalizeName(child?.name) === needle) {
-        return `/products/subCat/${child._id}`;
-      }
-    }
-  }
-  return null;
-}
-
-function findCategoryPath(categoryList, title) {
-  const needle = normalizeName(title);
-  for (const cat of categoryList || []) {
-    if (normalizeName(cat?.name) === needle) {
-      return `/products/category/${cat._id}`;
-    }
-  }
-  return null;
 }
 
 function formatCartTotal(cartData) {
@@ -81,6 +62,7 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
   const wrapRef = useRef(null);
 
   const shopPath = SHOP_PATH;
+  const menuCategories = Array.isArray(navData) ? navData : [];
 
   const tailLinks = [
     { label: "Gifts", to: "/gifts" },
@@ -91,12 +73,9 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
   const isHomeActive = location.pathname === "/";
   const isShopActive = location.pathname === shopPath && !megaOpen;
 
-  const mainCategoryLink = (title) => getCategoryCollectionsPath(title);
-
-  const subCategoryLink = (parentTitle, subName) => {
-    const apiPath = findSubCatPath(navData, subName);
-    return apiPath || getSubcategoryCollectionsPath(parentTitle, subName);
-  };
+  const mainCategoryLink = (cat) => getCategoryCollectionsPath(cat.name);
+  const subCategoryLink = (parentCat, subCat) =>
+    getSubcategoryCollectionsPath(parentCat.name, subCat.name);
 
   const logout = () => {
     localStorage.removeItem("user");
@@ -150,7 +129,7 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
   const backToRoot = () => setDrawerPanel("root");
 
   const activeCategory =
-    activeCategoryIndex != null ? MEGA_MENU_COLUMNS[activeCategoryIndex] : null;
+    activeCategoryIndex != null ? menuCategories[activeCategoryIndex] : null;
 
   const cartTotalFormatted = formatCartTotal(context.cartData);
 
@@ -302,26 +281,28 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
                     <span>Categories</span>
                   </button>
                   <ul className="secondary-category-nav__drawer-panel-list">
-                    {MEGA_MENU_COLUMNS.map((col, index) => (
-                      <li key={col.title} className="secondary-category-nav__drawer-category-item">
+                    {menuCategories.map((cat, index) => (
+                      <li key={cat._id} className="secondary-category-nav__drawer-category-item">
                         <Link
-                          to={mainCategoryLink(col.title)}
+                          to={mainCategoryLink(cat)}
                           className="secondary-category-nav__drawer-row secondary-category-nav__drawer-row--link secondary-category-nav__drawer-row--category"
                           onClick={closeNav}
                         >
-                          <span>{col.title}</span>
+                          <span>{cat.name}</span>
                         </Link>
-                        <button
-                          type="button"
-                          className="secondary-category-nav__drawer-row-chev-btn"
-                          onClick={() => openCategoryItems(index)}
-                          aria-label={`Browse ${col.title} subcategories`}
-                        >
-                          <FaAngleRight
-                            className="secondary-category-nav__drawer-chev"
-                            aria-hidden
-                          />
-                        </button>
+                        {(cat.children?.length ?? 0) > 0 && (
+                          <button
+                            type="button"
+                            className="secondary-category-nav__drawer-row-chev-btn"
+                            onClick={() => openCategoryItems(index)}
+                            aria-label={`Browse ${cat.name} subcategories`}
+                          >
+                            <FaAngleRight
+                              className="secondary-category-nav__drawer-chev"
+                              aria-hidden
+                            />
+                          </button>
+                        )}
                       </li>
                     ))}
                   </ul>
@@ -331,7 +312,7 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
               <div
                 className="secondary-category-nav__drawer-slide"
                 role="navigation"
-                aria-label={activeCategory?.title || "Subcategories"}
+                aria-label={activeCategory?.name || "Subcategories"}
                 aria-hidden={drawerPanel !== "category-items"}
               >
                 <div className="secondary-category-nav__drawer-slide-inner">
@@ -341,17 +322,17 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
                     onClick={backToCategories}
                   >
                     <FaAngleLeft aria-hidden />
-                    <span>{activeCategory?.title}</span>
+                    <span>{activeCategory?.name}</span>
                   </button>
                   <ul className="secondary-category-nav__drawer-panel-list">
-                    {activeCategory?.items.map((item) => (
-                      <li key={item}>
+                    {activeCategory?.children?.map((item) => (
+                      <li key={item._id}>
                         <Link
-                          to={subCategoryLink(activeCategory.title, item)}
+                          to={subCategoryLink(activeCategory, item)}
                           className="secondary-category-nav__drawer-row secondary-category-nav__drawer-row--link"
                           onClick={closeNav}
                         >
-                          <span>{item}</span>
+                          <span>{item.name}</span>
                         </Link>
                       </li>
                     ))}
@@ -434,24 +415,24 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
         >
           <div className="container py-4">
             <div className="secondary-category-nav__mega-grid">
-              {MEGA_MENU_COLUMNS.map((col) => (
-                <div key={col.title} className="secondary-category-nav__mega-col">
+              {menuCategories.map((cat) => (
+                <div key={cat._id} className="secondary-category-nav__mega-col">
                   <Link
-                    to={mainCategoryLink(col.title)}
+                    to={mainCategoryLink(cat)}
                     onClick={() => setMegaOpen(false)}
                     className="secondary-category-nav__mega-heading secondary-category-nav__mega-heading-link"
                   >
-                    {col.title}
+                    {cat.name}
                   </Link>
                   <ul className="secondary-category-nav__mega-list">
-                    {col.items.map((item) => (
-                      <li key={item}>
+                    {(cat.children || []).map((item) => (
+                      <li key={item._id}>
                         <Link
-                          to={subCategoryLink(col.title, item)}
+                          to={subCategoryLink(cat, item)}
                           onClick={() => setMegaOpen(false)}
                           className="secondary-category-nav__mega-sublink"
                         >
-                          {item}
+                          {item.name}
                         </Link>
                       </li>
                     ))}

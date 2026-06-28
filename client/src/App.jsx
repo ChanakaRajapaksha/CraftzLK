@@ -5,11 +5,11 @@ import "./ChatBox.css";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import HomeGate from "./Pages/Home/HomeGate.jsx";
 import Collections from "./Pages/Collections/index.jsx";
-import Listing from "./Pages/Listing/index.jsx";
+import CategoryBrowseRedirect from "./Pages/CategoryBrowseRedirect/index.jsx";
 import ProductDetailsRouter from "./Pages/ProductDetailsRouter.jsx";
 import Header from "./Components/Header/index.jsx";
 import HomePageFooter from "./Components/HomePageFooter";
-import { createContext, useEffect, useState } from "react";
+import { createContext, useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import ProductModal from "./Components/ProductModal/index.jsx";
 import Cart from "./Pages/Cart/index.jsx";
@@ -154,6 +154,28 @@ function AppContent() {
 
   const [categoryData, setCategoryData] = useState([]);
   const [subCategoryData, setsubCategoryData] = useState([]);
+
+  const refreshCategoryData = useCallback(() => {
+    return fetchDataFromApi("/api/category/active")
+      .then((res) => {
+        const list = res?.categoryList || [];
+        setCategoryData(list);
+
+        const subCatArr = [];
+        list.forEach((cat) => {
+          if (cat?.children?.length) {
+            cat.children.forEach((subCat) => subCatArr.push(subCat));
+          }
+        });
+        setsubCategoryData(subCatArr);
+        return list;
+      })
+      .catch(() => {
+        setCategoryData([]);
+        setsubCategoryData([]);
+        return [];
+      });
+  }, []);
   const [addingInCart, setAddingInCart] = useState(false);
   const [addingCartProductId, setAddingCartProductId] = useState(null);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
@@ -260,22 +282,7 @@ function AppContent() {
   useEffect(() => {
     getCountry("https://countriesnow.space/api/v0.1/countries/");
 
-    fetchDataFromApi("/api/category").then((res) => {
-      setCategoryData(res.categoryList);
-
-      const subCatArr = [];
-
-      res.categoryList?.length !== 0 &&
-        res.categoryList?.map((cat, index) => {
-          if (cat?.children.length !== 0) {
-            cat?.children?.map((subCat) => {
-              subCatArr.push(subCat);
-            });
-          }
-        });
-
-      setsubCategoryData(subCatArr);
-    });
+    refreshCategoryData();
 
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
@@ -294,7 +301,7 @@ function AppContent() {
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, []);
+  }, [refreshCategoryData]);
 
   const getCartData = () => {
     const userStr = localStorage.getItem("user");
@@ -500,6 +507,7 @@ function AppContent() {
     setCategoryData,
     subCategoryData,
     setsubCategoryData,
+    refreshCategoryData,
     openProductDetailsModal,
     alertBox,
     setAlertBox,
@@ -553,12 +561,12 @@ function AppContent() {
         <Route
           path="/products/category/:id"
           exact={true}
-          element={<Listing />}
+          element={<CategoryBrowseRedirect />}
         />
         <Route
           path="/products/subCat/:id"
           exact={true}
-          element={<Listing />}
+          element={<CategoryBrowseRedirect />}
         />
         <Route
           exact={true}

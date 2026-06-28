@@ -30,18 +30,46 @@ export function categoryTitleToSlug(title) {
     .trim()
     .toLowerCase()
     .replace(/&/g, "and")
-    .replace(/['’]/g, "")
+    .replace(/['']/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
 
-/** Resolve a route slug back to the canonical category title, or null if unknown */
-export function resolveCategoryTitleFromSlug(slug) {
+const LEGACY_ICON_BY_SLUG = Object.fromEntries(
+  MEGA_MENU_COLUMNS.map((col) => [categoryTitleToSlug(col.title), col.icon])
+);
+
+export function findCategoryBySlug(slug, categoryList) {
   if (!slug || slug === COLLECTIONS_ALL_SLUG) return null;
-  const match = MEGA_MENU_COLUMNS.find(
+  return (
+    (categoryList || []).find(
+      (cat) => categoryTitleToSlug(cat?.name) === slug || cat?.slug === slug
+    ) ?? null
+  );
+}
+
+export function findSubcategoryBySlug(parentSlug, subSlug, categoryList) {
+  const parent = findCategoryBySlug(parentSlug, categoryList);
+  if (!parent || !subSlug) return null;
+  return (
+    (parent.children || []).find(
+      (child) =>
+        categoryTitleToSlug(child?.name) === subSlug || child?.slug === subSlug
+    ) ?? null
+  );
+}
+
+/** Resolve a route slug back to the canonical category title, or null if unknown */
+export function resolveCategoryTitleFromSlug(slug, categoryList = []) {
+  if (!slug || slug === COLLECTIONS_ALL_SLUG) return null;
+
+  const fromApi = findCategoryBySlug(slug, categoryList);
+  if (fromApi?.name) return fromApi.name;
+
+  const legacy = MEGA_MENU_COLUMNS.find(
     (col) => categoryTitleToSlug(col.title) === slug
   );
-  return match?.title ?? null;
+  return legacy?.title ?? null;
 }
 
 /** Path for a category collections page */
@@ -57,8 +85,13 @@ export function getSubcategoryCollectionsPath(parentTitle, subTitle) {
 }
 
 /** Resolve a subcategory slug to its display title within a parent category */
-export function resolveSubcategoryTitleFromSlug(categoryTitle, subSlug) {
+export function resolveSubcategoryTitleFromSlug(categoryTitle, subSlug, categoryList = []) {
   if (!categoryTitle || !subSlug) return null;
+
+  const parentSlug = categoryTitleToSlug(categoryTitle);
+  const fromApi = findSubcategoryBySlug(parentSlug, subSlug, categoryList);
+  if (fromApi?.name) return fromApi.name;
+
   const column = MEGA_MENU_COLUMNS.find((col) => col.title === categoryTitle);
   if (!column) return null;
   return (
@@ -66,9 +99,38 @@ export function resolveSubcategoryTitleFromSlug(categoryTitle, subSlug) {
   );
 }
 
-export const COLLECTIONS_CATEGORIES = MEGA_MENU_COLUMNS.map((col) => ({
-  title: col.title,
-  icon: col.icon,
-  slug: categoryTitleToSlug(col.title),
-  path: getCategoryCollectionsPath(col.title),
-}));
+export function getCategoryIcon(category) {
+  const slug = categoryTitleToSlug(category?.name);
+  return (
+    category?.images?.[0] ||
+    LEGACY_ICON_BY_SLUG[slug] ||
+    MEGA_MENU_COLUMNS[0]?.icon ||
+    "/icons/handmade_crafts.png"
+  );
+}
+
+/** Build browse pills from admin/API category tree (active categories from context). */
+export function buildCollectionsCategories(categoryList = []) {
+  if (!categoryList.length) {
+    return MEGA_MENU_COLUMNS.map((col) => ({
+      title: col.title,
+      icon: col.icon,
+      slug: categoryTitleToSlug(col.title),
+      path: getCategoryCollectionsPath(col.title),
+    }));
+  }
+
+  return categoryList.map((cat) => ({
+    title: cat.name,
+    icon: getCategoryIcon(cat),
+    slug: categoryTitleToSlug(cat.name),
+    path: getCategoryCollectionsPath(cat.name),
+    id: cat._id,
+    color: cat.color,
+    description: cat.description,
+    children: cat.children || [],
+  }));
+}
+
+/** @deprecated Prefer buildCollectionsCategories(context.categoryData) */
+export const COLLECTIONS_CATEGORIES = buildCollectionsCategories();

@@ -3,21 +3,33 @@ import { MEGA_MENU_COLUMNS } from "../../data/megaMenuCategories";
 import { COLLECTIONS_CATALOG_SIZE } from "./collectionsConstants";
 import { fetchDataFromApi } from "../../utils/api";
 
-const CATEGORY_TITLES = MEGA_MENU_COLUMNS.map((col) => col.title);
-
 function normalizeName(s) {
   return (s || "")
     .trim()
     .toLowerCase()
-    .replace(/['’]/g, "'")
+    .replace(/['']/g, "'")
     .replace(/\s+/g, " ");
 }
 
-function resolveCategoryColumn(catName, index) {
+function buildCategoryColumns(categoryList) {
+  if (Array.isArray(categoryList) && categoryList.length > 0) {
+    return categoryList.map((cat) => ({
+      title: cat.name,
+      items: (cat.children || []).map((child) => child.name).filter(Boolean),
+    }));
+  }
+
+  return MEGA_MENU_COLUMNS.map((col) => ({
+    title: col.title,
+    items: col.items,
+  }));
+}
+
+function resolveCategoryColumn(catName, index, categoryColumns) {
   const needle = normalizeName(catName);
   return (
-    MEGA_MENU_COLUMNS.find((col) => normalizeName(col.title) === needle) ??
-    MEGA_MENU_COLUMNS[index % MEGA_MENU_COLUMNS.length]
+    categoryColumns.find((col) => normalizeName(col.title) === needle) ??
+    categoryColumns[index % categoryColumns.length]
   );
 }
 
@@ -28,18 +40,23 @@ function extractProducts(res) {
 }
 
 /** Same catalog as Homepage rails — fills up to `count` products */
-export function getSampleCollectionsProducts(count = COLLECTIONS_CATALOG_SIZE) {
+export function getSampleCollectionsProducts(
+  count = COLLECTIONS_CATALOG_SIZE,
+  categoryList = []
+) {
   const catalog = Object.values(SAMPLE_PRODUCT_CATALOG);
   if (!catalog.length) return [];
 
+  const categoryColumns = buildCategoryColumns(categoryList);
+
   return Array.from({ length: count }, (_, index) => {
     const base = catalog[index % catalog.length];
-    const column = MEGA_MENU_COLUMNS[index % MEGA_MENU_COLUMNS.length];
+    const column = categoryColumns[index % categoryColumns.length];
     return {
       ...base,
       _gridIndex: index,
       catName: column.title,
-      subCatName: column.items[index % column.items.length],
+      subCatName: column.items[index % Math.max(column.items.length, 1)] || column.title,
     };
   });
 }
@@ -79,15 +96,20 @@ async function fetchProductBatch(withLocation) {
   return dedupeProducts(merged);
 }
 
-function assignCategoryLabels(list) {
+function assignCategoryLabels(list, categoryList) {
+  const categoryColumns = buildCategoryColumns(categoryList);
+  const categoryTitles = categoryColumns.map((col) => col.title);
+
   return (list || []).map((product, index) => {
     const catName =
-      product?.catName || product?.category?.name || CATEGORY_TITLES[index % CATEGORY_TITLES.length];
-    const column = resolveCategoryColumn(catName, index);
+      product?.catName ||
+      product?.category?.name ||
+      categoryTitles[index % Math.max(categoryTitles.length, 1)];
+    const column = resolveCategoryColumn(catName, index, categoryColumns);
     const subCatName =
       product?.subCatName ||
       product?.subcategory?.name ||
-      column.items[index % column.items.length];
+      column.items[index % Math.max(column.items.length, 1)];
 
     return {
       ...product,
@@ -97,17 +119,17 @@ function assignCategoryLabels(list) {
   });
 }
 
-function fillCatalogToSize(list, targetSize) {
+function fillCatalogToSize(list, targetSize, categoryList) {
   if (list.length >= targetSize) {
-    return assignCategoryLabels(list.slice(0, targetSize));
+    return assignCategoryLabels(list.slice(0, targetSize), categoryList);
   }
 
-  const samples = getSampleCollectionsProducts(targetSize);
+  const samples = getSampleCollectionsProducts(targetSize, categoryList);
   const merged = dedupeProducts([...list, ...samples]);
-  return assignCategoryLabels(merged.slice(0, targetSize));
+  return assignCategoryLabels(merged.slice(0, targetSize), categoryList);
 }
 
-export async function loadCollectionProducts() {
+export async function loadCollectionProducts(categoryList = []) {
   try {
     let apiList = await fetchProductBatch(true);
     if (apiList.length < COLLECTIONS_CATALOG_SIZE) {
@@ -116,7 +138,7 @@ export async function loadCollectionProducts() {
     }
 
     if (apiList.length > 0) {
-      return fillCatalogToSize(apiList, COLLECTIONS_CATALOG_SIZE);
+      return fillCatalogToSize(apiList, COLLECTIONS_CATALOG_SIZE, categoryList);
     }
   } catch {
     /* fall through */
@@ -126,11 +148,11 @@ export async function loadCollectionProducts() {
     const res = await fetchDataFromApi("/api/products");
     const all = dedupeProducts(extractProducts(res));
     if (all.length > 0) {
-      return fillCatalogToSize(all, COLLECTIONS_CATALOG_SIZE);
+      return fillCatalogToSize(all, COLLECTIONS_CATALOG_SIZE, categoryList);
     }
   } catch {
     /* fall through */
   }
 
-  return getSampleCollectionsProducts(COLLECTIONS_CATALOG_SIZE);
+  return getSampleCollectionsProducts(COLLECTIONS_CATALOG_SIZE, categoryList);
 }

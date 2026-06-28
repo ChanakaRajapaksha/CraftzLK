@@ -101,7 +101,7 @@ const homeBottomBannerSchema = require('./routes/homeBottomBanner');
 const paymentRoutes = require("./routes/payment");
 const compareListSchema = require('./routes/compareList');
 const customerRoutes = require('./routes/customers');
-const compareController = require('./routes/compareController');
+const compareRoutes = require('./routes/compare');
 const artisanRoutes = require('./routes/artisans');
 const couponRoutes = require('./routes/coupons');
 const promoDiscountRoutes = require('./routes/promoDiscounts');
@@ -148,7 +148,7 @@ app.use("/api/homeSideBanners", homeSideBannerSchema);
 app.use("/api/homeBottomBanners", homeBottomBannerSchema);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/compare-list", compareListSchema);
-app.use('/api', compareController);
+app.use('/api', compareRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

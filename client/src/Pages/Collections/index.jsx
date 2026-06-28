@@ -13,8 +13,8 @@ import CollectionsPagination from "./CollectionsPagination.jsx";
 import {
   COLLECTIONS_ALL_PATH,
   COLLECTIONS_ALL_SLUG,
-  COLLECTIONS_CATEGORIES,
   COLLECTIONS_PER_PAGE,
+  buildCollectionsCategories,
   getCategoryCollectionsPath,
   resolveCategoryTitleFromSlug,
   resolveSubcategoryTitleFromSlug,
@@ -52,14 +52,29 @@ const Collections = () => {
   const catalogViewRef = useRef(null);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
 
+  const categoryList = context?.categoryData || [];
+  const categoryIdsKey = useMemo(
+    () => categoryList.map((c) => c._id).join(","),
+    [categoryList]
+  );
+  const collectionsCategories = useMemo(
+    () => buildCollectionsCategories(categoryList),
+    [categoryIdsKey]
+  );
+
   const activeCategoryTitle = useMemo(
-    () => resolveCategoryTitleFromSlug(categorySlug),
-    [categorySlug]
+    () => resolveCategoryTitleFromSlug(categorySlug, categoryList),
+    [categorySlug, categoryList]
   );
 
   const activeSubcategoryTitle = useMemo(
-    () => resolveSubcategoryTitleFromSlug(activeCategoryTitle, subcategorySlug),
-    [activeCategoryTitle, subcategorySlug]
+    () =>
+      resolveSubcategoryTitleFromSlug(
+        activeCategoryTitle,
+        subcategorySlug,
+        categoryList
+      ),
+    [activeCategoryTitle, subcategorySlug, categoryList]
   );
 
   const pageHeading = activeSubcategoryTitle || activeCategoryTitle || "All";
@@ -101,7 +116,7 @@ const Collections = () => {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    loadCollectionProducts()
+    loadCollectionProducts(categoryList)
       .then((list) => {
         if (cancelled || !list.length) return;
         setProducts(list);
@@ -115,7 +130,7 @@ const Collections = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [categoryIdsKey]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -242,7 +257,7 @@ const Collections = () => {
 
         <div className="collections-categories-wrap">
           <ul className="collections-grid" aria-label="Shop by category">
-            {COLLECTIONS_CATEGORIES.map((collection) => {
+            {collectionsCategories.map((collection) => {
               const isActive =
                 categorySlug === collection.slug && !activeSubcategoryTitle;
               return (

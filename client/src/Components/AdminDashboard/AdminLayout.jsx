@@ -38,11 +38,14 @@ export default function AdminLayout() {
     document.documentElement.classList.toggle("admin-dash-theme-dark", isAdminDarkTheme(theme));
   }, [theme]);
 
-  const fetchCategory = () =>
-    fetchDataFromApi("/api/category").then((res) => {
+  const fetchCategory = useCallback(() => {
+    const adminFetch = fetchDataFromApi("/api/category").then((res) => {
       if (res?.categoryList) setCatData(res);
       return res;
     });
+    const storeFetch = context?.refreshCategoryData?.() ?? Promise.resolve([]);
+    return Promise.all([adminFetch, storeFetch]);
+  }, [context?.refreshCategoryData]);
 
   useEffect(() => {
     fetchCategory();
