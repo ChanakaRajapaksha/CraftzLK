@@ -5,7 +5,15 @@ import { FaPencilAlt } from "react-icons/fa";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import { fetchDataFromApi } from "../../../utils/api";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
-import { getSampleProductById, isSampleProductId } from "./productListSampleData";
+import { parseShortDescriptionBullets, parseDescriptionPoints } from "./productFormDefaults";
+
+function getShortDescriptionBullets(value) {
+  return parseShortDescriptionBullets(value).filter(Boolean);
+}
+
+function getDescriptionPoints(value) {
+  return parseDescriptionPoints(value).filter((point) => point.title || point.text);
+}
 
 function formatCurrency(value) {
   const amount = Number(value);
@@ -79,7 +87,6 @@ export default function ProductDetails() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [usingSampleData, setUsingSampleData] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
 
   useEffect(() => {
@@ -89,22 +96,7 @@ export default function ProductDetails() {
       setLoading(true);
       setNotFound(false);
       setProduct(null);
-      setUsingSampleData(false);
       setActiveImage(0);
-
-      if (isSampleProductId(id)) {
-        const sample = getSampleProductById(id);
-        if (!cancelled) {
-          if (sample) {
-            setProduct(sample);
-            setUsingSampleData(true);
-          } else {
-            setNotFound(true);
-          }
-          setLoading(false);
-        }
-        return;
-      }
 
       const res = await fetchDataFromApi(`/api/products/${id}`);
       if (cancelled) return;
@@ -168,7 +160,7 @@ export default function ProductDetails() {
     <>
       <AdminPageHeader
         title={product.name}
-        subtitle={product.shortDescription || product.sku || undefined}
+        subtitle={getShortDescriptionBullets(product.shortDescription)[0] || product.sku || undefined}
         breadcrumbs={[
           { label: "Products", to: `${ADMIN_BASE}/products` },
           { label: "Details" },
@@ -178,19 +170,13 @@ export default function ProductDetails() {
             <Link to={`${ADMIN_BASE}/products`} className="admin-dash__btn admin-dash__btn--ghost">
               Back to list
             </Link>
-            <Link to={`${ADMIN_BASE}/product/edit/${id}`} className="admin-dash__btn">
+            <Link to={`${ADMIN_BASE}/products?edit=${encodeURIComponent(id)}`} className="admin-dash__btn">
               <FaPencilAlt />
               Edit product
             </Link>
           </div>
         }
       />
-
-      {usingSampleData && (
-        <p className="admin-dash__sample-banner">
-          Showing demo product data from the sample catalog. Live products load from your database.
-        </p>
-      )}
 
       <div className="admin-dash__product-view-hero admin-dash__panel">
         <div className="admin-dash__product-view-gallery">
@@ -254,12 +240,36 @@ export default function ProductDetails() {
 
       <div className="admin-dash__product-view-grid">
         <DetailSection title="Description">
-          {product.shortDescription && (
-            <p className="admin-dash__product-view-lead">{product.shortDescription}</p>
+          {getShortDescriptionBullets(product.shortDescription).length > 0 && (
+            <div className="admin-dash__product-view-short-desc">
+              <h3 className="admin-dash__product-view-short-desc-title">Short Description</h3>
+              <ul className="admin-dash__product-view-short-desc-list">
+                {getShortDescriptionBullets(product.shortDescription).map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+              {typeof product.shortDescription === "object" && product.shortDescription?.disclaimer && (
+                <p className="admin-dash__product-view-short-desc-note">{product.shortDescription.disclaimer}</p>
+              )}
+            </div>
           )}
-          <p className="admin-dash__product-view-description">
-            {product.description || "No description provided."}
-          </p>
+          {getDescriptionPoints(product.description).length > 0 ? (
+            <ul className="admin-dash__product-view-full-desc-list">
+              {getDescriptionPoints(product.description).map((point, index) => (
+                <li key={`${point.title}-${index}`}>
+                  {point.title ? (
+                    <>
+                      <strong>{point.title}:</strong> {point.text}
+                    </>
+                  ) : (
+                    point.text
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="admin-dash__product-view-description">No description provided.</p>
+          )}
         </DetailSection>
 
         <DetailSection title="Pricing">

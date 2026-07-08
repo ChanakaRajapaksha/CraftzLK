@@ -14,8 +14,13 @@ export const defaultProductFields = {
   name: "",
   sku: "",
   slug: "",
-  shortDescription: "",
-  description: "",
+  shortDescription: {
+    bullets: [""],
+    disclaimer: "",
+  },
+  description: {
+    points: [{ title: "", text: "" }],
+  },
   brand: "",
   price: "",
   oldPrice: "",
@@ -64,6 +69,69 @@ export function slugify(text) {
     .replace(/-+/g, "-");
 }
 
+export function parseShortDescriptionBullets(value) {
+  if (!value) return [""];
+  if (typeof value === "object" && Array.isArray(value.bullets)) {
+    const bullets = value.bullets.map((line) => String(line || "").trim()).filter(Boolean);
+    return bullets.length ? bullets : [""];
+  }
+  if (typeof value === "string") {
+    const lines = value.split("\n").map((line) => line.trim()).filter(Boolean);
+    return lines.length ? lines : [""];
+  }
+  return [""];
+}
+
+export function parseDescriptionPoints(value) {
+  const emptyPoint = { title: "", text: "" };
+
+  if (!value) return [emptyPoint];
+
+  if (Array.isArray(value)) {
+    const points = value
+      .map((point) => ({
+        title: String(point?.title || "").trim(),
+        text: String(point?.text || "").trim(),
+      }))
+      .filter((point) => point.title || point.text);
+    return points.length ? points : [emptyPoint];
+  }
+
+  if (typeof value === "object" && Array.isArray(value.points)) {
+    const points = value.points
+      .map((point) => ({
+        title: String(point?.title || "").trim(),
+        text: String(point?.text || "").trim(),
+      }))
+      .filter((point) => point.title || point.text);
+    return points.length ? points : [emptyPoint];
+  }
+
+  if (typeof value === "string" && value.trim()) {
+    return [{ title: "", text: value.trim() }];
+  }
+
+  return [emptyPoint];
+}
+
+export function parseProductLocation(value) {
+  if (!value) return "All";
+  if (typeof value === "string") return value || "All";
+  if (Array.isArray(value)) {
+    if (!value.length) return "All";
+    if (value.length === 1) {
+      const item = value[0];
+      if (typeof item === "object") return item.label || item.value || "All";
+      return String(item);
+    }
+    return value
+      .map((item) => (typeof item === "object" ? item.label || item.value : String(item)))
+      .filter(Boolean)
+      .join(", ");
+  }
+  return "All";
+}
+
 export function productToForm(product) {
   if (!product) return { ...defaultProductFields };
 
@@ -75,8 +143,16 @@ export function productToForm(product) {
     name: product.name || "",
     sku: product.sku || "",
     slug: product.slug || "",
-    shortDescription: product.shortDescription || "",
-    description: product.description || "",
+    shortDescription: {
+      bullets: parseShortDescriptionBullets(product.shortDescription),
+      disclaimer:
+        typeof product.shortDescription === "object" && product.shortDescription?.disclaimer
+          ? product.shortDescription.disclaimer
+          : "",
+    },
+    description: {
+      points: parseDescriptionPoints(product.description),
+    },
     brand: product.brand || "",
     price: product.price ?? "",
     oldPrice: product.oldPrice ?? "",
@@ -98,7 +174,7 @@ export function productToForm(product) {
     productRam: firstRam || "",
     size: firstSize || "",
     productWeight: firstWeight || "",
-    location: product.location || "All",
+    location: parseProductLocation(product.location),
     variants: product.variants || [],
     customizationOptions: product.customizationOptions || [],
     shipping: {
@@ -118,8 +194,24 @@ export function productToForm(product) {
 }
 
 export function formToPayload(formFields) {
+  const bullets = (formFields.shortDescription?.bullets || [])
+    .map((line) => String(line || "").trim())
+    .filter(Boolean);
+
+  const descriptionPoints = (formFields.description?.points || [])
+    .map((point) => ({
+      title: String(point?.title || "").trim(),
+      text: String(point?.text || "").trim(),
+    }))
+    .filter((point) => point.title || point.text);
+
   return {
     ...formFields,
+    shortDescription: {
+      bullets,
+      disclaimer: formFields.shortDescription?.disclaimer?.trim() || "",
+    },
+    description: { points: descriptionPoints },
     price: Number(formFields.price) || 0,
     oldPrice: Number(formFields.oldPrice || formFields.price) || 0,
     discountPrice: Number(formFields.discountPrice) || 0,
@@ -145,5 +237,78 @@ export function formToPayload(formFields) {
       })),
     })),
     customizationOptions: formFields.customizationOptions || [],
+    location: formFields.location && formFields.location !== "All"
+      ? [{ value: String(formFields.location), label: String(formFields.location) }]
+      : [{ value: "All", label: "All" }],
+  };
+}
+
+export function validateProductForm(formFields, previews = []) {
+  const errors = {};
+
+  if (!formFields.name?.trim()) {
+    errors.name = "Product name is required.";
+  }
+
+  const shortBullets = (formFields.shortDescription?.bullets || [])
+    .map((line) => String(line || "").trim())
+    .filter(Boolean);
+  if (!shortBullets.length) {
+    errors.shortDescription = "Add at least one short description point.";
+  }
+
+  const descriptionPoints = (formFields.description?.points || []).filter(
+    (point) => point.title?.trim() && point.text?.trim()
+  );
+  if (!descriptionPoints.length) {
+    errors.description = "Add at least one full description point with a title and text.";
+  }
+
+  if (!previews.length) {
+    errors.images = "At least one product image is required.";
+  }
+
+  if (!formFields.catId) {
+    errors.catId = "Main category is required.";
+  }
+
+  const price = Number(formFields.price);
+  if (
+    formFields.price === "" ||
+    formFields.price === null ||
+    formFields.price === undefined ||
+    !Number.isFinite(price) ||
+    price < 0
+  ) {
+    errors.price = "Regular price is required.";
+  }
+
+  const stock = Number(formFields.countInStock);
+  if (
+    formFields.countInStock === "" ||
+    formFields.countInStock === null ||
+    formFields.countInStock === undefined ||
+    !Number.isFinite(stock) ||
+    stock < 0
+  ) {
+    errors.countInStock = "Stock quantity is required.";
+  }
+
+  const firstErrorKey = Object.keys(errors)[0];
+  const tabByField = {
+    name: "basic",
+    shortDescription: "basic",
+    description: "basic",
+    images: "images",
+    catId: "category",
+    price: "pricing",
+    countInStock: "inventory",
+  };
+
+  return {
+    valid: !firstErrorKey,
+    errors,
+    message: firstErrorKey ? errors[firstErrorKey] : "",
+    tab: firstErrorKey ? tabByField[firstErrorKey] || "basic" : "basic",
   };
 }

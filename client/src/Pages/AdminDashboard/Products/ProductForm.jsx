@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FaPlus, FaTrash } from "react-icons/fa";
 import ProductImageUploadField from "../../../Components/AdminDashboard/ProductImageUploadField";
-import { fetchDataFromApi } from "../../../utils/api";
-import { defaultProductFields, PRODUCT_FORM_TABS, slugify } from "./productFormDefaults";
+import { defaultProductFields, PRODUCT_FORM_TABS, slugify, validateProductForm } from "./productFormDefaults";
 
-function Field({ label, htmlFor, children, full = false, size = "default" }) {
+function Field({ label, htmlFor, children, full = false, size = "default", required = false, error = "" }) {
   const sizeClass = size === "full" || full
     ? " admin-dash__field--full"
     : size === "wide"
@@ -14,11 +13,23 @@ function Field({ label, htmlFor, children, full = false, size = "default" }) {
         : "";
 
   return (
-    <div className={`admin-dash__field${sizeClass}`}>
-      <label className="admin-dash__label" htmlFor={htmlFor}>{label}</label>
+    <div className={`admin-dash__field${sizeClass}${error ? " admin-dash__field--error" : ""}`}>
+      <label className="admin-dash__label" htmlFor={htmlFor}>
+        {label}
+        {required && (
+          <span className="admin-dash__required" aria-hidden="true">
+            *
+          </span>
+        )}
+      </label>
       {children}
+      {error ? <p className="admin-dash__field-error">{error}</p> : null}
     </div>
   );
+}
+
+function fieldClass(baseClass, hasError) {
+  return `${baseClass}${hasError ? ` ${baseClass}--error` : ""}`;
 }
 
 export default function ProductForm({
@@ -31,19 +42,22 @@ export default function ProductForm({
   isEdit = false,
   submitLabel = "Save product",
   isLoading = false,
+  variant = "page",
   onSubmit,
 }) {
-  const [tab, setTab] = useState("basic");
-  const [subCategories, setSubCategories] = useState([]);
-  const [rams, setRams] = useState([]);
-  const [sizes, setSizes] = useState([]);
-  const [weights, setWeights] = useState([]);
+  const ERROR_TAB_MAP = {
+    name: "basic",
+    shortDescription: "basic",
+    description: "basic",
+    images: "images",
+    catId: "category",
+    price: "pricing",
+    countInStock: "inventory",
+  };
 
-  useEffect(() => {
-    fetchDataFromApi("/api/productRAMS").then((res) => setRams(Array.isArray(res) ? res : []));
-    fetchDataFromApi("/api/productSIZE").then((res) => setSizes(Array.isArray(res) ? res : []));
-    fetchDataFromApi("/api/productWeight").then((res) => setWeights(Array.isArray(res) ? res : []));
-  }, []);
+  const [tab, setTab] = useState("basic");
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [subCategories, setSubCategories] = useState([]);
 
   useEffect(() => {
     if (formFields.catId && catData?.categoryList) {
@@ -52,8 +66,37 @@ export default function ProductForm({
     }
   }, [formFields.catId, catData]);
 
+  useEffect(() => {
+    if (previews.length > 0) {
+      setFieldErrors((prev) => {
+        if (!prev.images) return prev;
+        const next = { ...prev };
+        delete next.images;
+        return next;
+      });
+    }
+  }, [previews]);
+
+  const tabsWithErrors = useMemo(() => {
+    const tabs = new Set();
+    Object.keys(fieldErrors).forEach((key) => {
+      if (ERROR_TAB_MAP[key]) tabs.add(ERROR_TAB_MAP[key]);
+    });
+    return tabs;
+  }, [fieldErrors]);
+
+  const clearFieldError = (key) => {
+    setFieldErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  };
+
   const changeInput = (e) => {
     const { name, value, type, checked } = e.target;
+    clearFieldError(name);
     setFormFields((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
   };
 
@@ -66,6 +109,7 @@ export default function ProductForm({
 
   const onNameChange = (e) => {
     const name = e.target.value;
+    clearFieldError("name");
     setFormFields((prev) => ({
       ...prev,
       name,
@@ -79,6 +123,7 @@ export default function ProductForm({
 
   const onCategoryChange = (e) => {
     const catId = e.target.value;
+    clearFieldError("catId");
     const cat = catData?.categoryList?.find((c) => c._id === catId);
     setSubCategories(cat?.children || []);
     setFormFields((prev) => ({
@@ -174,24 +219,103 @@ export default function ProductForm({
     }));
   };
 
+  const addShortDescriptionPoint = () => {
+    setFormFields((prev) => ({
+      ...prev,
+      shortDescription: {
+        ...prev.shortDescription,
+        bullets: [...(prev.shortDescription?.bullets || []), ""],
+      },
+    }));
+  };
+
+  const updateShortDescriptionPoint = (index, value) => {
+    clearFieldError("shortDescription");
+    setFormFields((prev) => {
+      const bullets = [...(prev.shortDescription?.bullets || [])];
+      bullets[index] = value;
+      return {
+        ...prev,
+        shortDescription: { ...prev.shortDescription, bullets },
+      };
+    });
+  };
+
+  const removeShortDescriptionPoint = (index) => {
+    setFormFields((prev) => {
+      const bullets = (prev.shortDescription?.bullets || []).filter((_, i) => i !== index);
+      return {
+        ...prev,
+        shortDescription: {
+          ...prev.shortDescription,
+          bullets: bullets.length ? bullets : [""],
+        },
+      };
+    });
+  };
+
+  const addDescriptionPoint = () => {
+    setFormFields((prev) => ({
+      ...prev,
+      description: {
+        ...prev.description,
+        points: [...(prev.description?.points || []), { title: "", text: "" }],
+      },
+    }));
+  };
+
+  const updateDescriptionPoint = (index, field, value) => {
+    clearFieldError("description");
+    setFormFields((prev) => {
+      const points = [...(prev.description?.points || [])];
+      points[index] = { ...points[index], [field]: value };
+      return {
+        ...prev,
+        description: { ...prev.description, points },
+      };
+    });
+  };
+
+  const removeDescriptionPoint = (index) => {
+    setFormFields((prev) => {
+      const points = (prev.description?.points || []).filter((_, i) => i !== index);
+      return {
+        ...prev,
+        description: {
+          ...prev.description,
+          points: points.length ? points : [{ title: "", text: "" }],
+        },
+      };
+    });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formFields.name?.trim() || !formFields.price || !formFields.catId || previews.length === 0) {
-      setAlertBox?.({ open: true, error: true, msg: "Name, price, category, and images are required." });
-      setTab(previews.length === 0 ? "images" : !formFields.catId ? "category" : "basic");
+    const validation = validateProductForm(formFields, previews);
+
+    if (!validation.valid) {
+      setFieldErrors(validation.errors);
+      setTab(validation.tab);
+      setAlertBox?.({ open: true, error: true, msg: validation.message });
       return;
     }
+
+    setFieldErrors({});
     onSubmit(e);
   };
 
   return (
-    <form className="admin-dash__product-form" onSubmit={handleSubmit}>
+    <form
+      id={variant === "modal" ? "product-form-modal" : undefined}
+      className="admin-dash__product-form"
+      onSubmit={handleSubmit}
+    >
       <nav className="admin-dash__product-tabs" aria-label="Product form sections">
         {PRODUCT_FORM_TABS.map((t) => (
           <button
             key={t.id}
             type="button"
-            className={`admin-dash__product-tab${tab === t.id ? " admin-dash__product-tab--active" : ""}`}
+            className={`admin-dash__product-tab${tab === t.id ? " admin-dash__product-tab--active" : ""}${tabsWithErrors.has(t.id) ? " admin-dash__product-tab--error" : ""}`}
             onClick={() => setTab(t.id)}
           >
             {t.label}
@@ -202,8 +326,16 @@ export default function ProductForm({
       <section className="admin-dash__panel admin-dash__product-panel">
         {tab === "basic" && (
           <div className="admin-dash__form-grid admin-dash__form-grid--2">
-            <Field label="Product Name" htmlFor="name" size="wide">
-              <input className="admin-dash__input" id="name" name="name" value={formFields.name} onChange={onNameChange} />
+            <Field label="Product Name" htmlFor="name" size="wide" required error={fieldErrors.name}>
+              <input
+                className={fieldClass("admin-dash__input", fieldErrors.name)}
+                id="name"
+                name="name"
+                value={formFields.name}
+                onChange={onNameChange}
+                required
+                aria-required="true"
+              />
             </Field>
             <Field label="Product Code / SKU" htmlFor="sku" size="short">
               <input className="admin-dash__input" id="sku" name="sku" value={formFields.sku} onChange={changeInput} />
@@ -214,8 +346,40 @@ export default function ProductForm({
             <Field label="Brand" htmlFor="brand" size="short">
               <input className="admin-dash__input" id="brand" name="brand" value={formFields.brand} onChange={changeInput} />
             </Field>
-            <Field label="Short Description" htmlFor="shortDescription" full>
-              <input className="admin-dash__input" id="shortDescription" name="shortDescription" value={formFields.shortDescription} onChange={changeInput} />
+            <Field label="Short Description" htmlFor="shortDescription-0" full required error={fieldErrors.shortDescription}>
+              <div className="admin-dash__short-desc-points">
+                <p className="admin-dash__panel-desc">
+                  Add one highlight per line — shown as bullet points on the product page.
+                </p>
+                {(formFields.shortDescription?.bullets || [""]).map((point, index) => (
+                  <div key={index} className="admin-dash__short-desc-point">
+                    <input
+                      className={fieldClass("admin-dash__input", fieldErrors.shortDescription)}
+                      id={`shortDescription-${index}`}
+                      value={point}
+                      onChange={(e) => updateShortDescriptionPoint(index, e.target.value)}
+                      placeholder={`Point ${index + 1}`}
+                      aria-required={index === 0 ? "true" : undefined}
+                    />
+                    <button
+                      type="button"
+                      className="admin-dash__btn admin-dash__btn--danger admin-dash__btn--sm admin-dash__btn--icon admin-dash__short-desc-point-delete"
+                      onClick={() => removeShortDescriptionPoint(index)}
+                      aria-label={`Remove point ${index + 1}`}
+                      disabled={(formFields.shortDescription?.bullets || []).length <= 1 && !point.trim()}
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
+                  onClick={addShortDescriptionPoint}
+                >
+                  <FaPlus /> Add point
+                </button>
+              </div>
             </Field>
             <Field label="Status" htmlFor="status" size="short">
               <select className="admin-dash__select" id="status" name="status" value={formFields.status} onChange={changeInput}>
@@ -223,8 +387,55 @@ export default function ProductForm({
                 <option value="inactive">Inactive</option>
               </select>
             </Field>
-            <Field label="Full Description" htmlFor="description" full>
-              <textarea className="admin-dash__textarea" id="description" name="description" value={formFields.description} onChange={changeInput} />
+            <Field label="Full Description" htmlFor="description-title-0" full required error={fieldErrors.description}>
+              <div className="admin-dash__full-desc-points">
+                <p className="admin-dash__panel-desc">
+                  Add feature points with a bold title and supporting text, shown on the product page.
+                </p>
+                {(formFields.description?.points || [{ title: "", text: "" }]).map((point, index) => (
+                  <div key={index} className="admin-dash__full-desc-point">
+                    <div className="admin-dash__full-desc-point-head">
+                      <input
+                        className={fieldClass("admin-dash__input", fieldErrors.description)}
+                        id={`description-title-${index}`}
+                        value={point.title}
+                        onChange={(e) => updateDescriptionPoint(index, "title", e.target.value)}
+                        placeholder="e.g. Handcrafted Artisan Quality"
+                        aria-required={index === 0 ? "true" : undefined}
+                      />
+                      <button
+                        type="button"
+                        className="admin-dash__btn admin-dash__btn--danger admin-dash__btn--sm admin-dash__btn--icon admin-dash__full-desc-point-delete"
+                        onClick={() => removeDescriptionPoint(index)}
+                        aria-label={`Remove description point ${index + 1}`}
+                        disabled={
+                          (formFields.description?.points || []).length <= 1 &&
+                          !point.title.trim() &&
+                          !point.text.trim()
+                        }
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
+                    <textarea
+                      className={fieldClass("admin-dash__textarea", fieldErrors.description)}
+                      id={`description-text-${index}`}
+                      value={point.text}
+                      onChange={(e) => updateDescriptionPoint(index, "text", e.target.value)}
+                      placeholder="Describe this feature in one or two sentences."
+                      rows={3}
+                      aria-required={index === 0 ? "true" : undefined}
+                    />
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
+                  onClick={addDescriptionPoint}
+                >
+                  <FaPlus /> Add description point
+                </button>
+              </div>
             </Field>
             <div className="admin-dash__field admin-dash__field--checkbox">
               <label className="admin-dash__label admin-dash__label--inline">
@@ -237,7 +448,7 @@ export default function ProductForm({
 
         {tab === "images" && (
           <div className="admin-dash__product-images-tab">
-            <Field label="Product Images" full>
+            <Field label="Product Images" full required error={fieldErrors.images}>
               <ProductImageUploadField
                 uploadEndpoint="/api/products/upload"
                 deleteImageEndpoint="/api/products/deleteImage"
@@ -252,8 +463,16 @@ export default function ProductForm({
 
         {tab === "category" && (
           <div className="admin-dash__form-grid admin-dash__form-grid--2">
-            <Field label="Main Category" htmlFor="catId" size="wide">
-              <select className="admin-dash__select" id="catId" name="catId" value={formFields.catId} onChange={onCategoryChange}>
+            <Field label="Main Category" htmlFor="catId" size="wide" required error={fieldErrors.catId}>
+              <select
+                className={fieldClass("admin-dash__select", fieldErrors.catId)}
+                id="catId"
+                name="catId"
+                value={formFields.catId}
+                onChange={onCategoryChange}
+                required
+                aria-required="true"
+              >
                 <option value="">Select category</option>
                 {catData?.categoryList?.map((cat) => (
                   <option key={cat._id} value={cat._id}>{cat.name}</option>
@@ -273,8 +492,19 @@ export default function ProductForm({
 
         {tab === "pricing" && (
           <div className="admin-dash__form-grid admin-dash__form-grid--2">
-            <Field label="Regular Price (Rs)" htmlFor="price" size="short">
-              <input className="admin-dash__input" id="price" name="price" type="number" value={formFields.price} onChange={changeInput} />
+            <Field label="Regular Price (Rs)" htmlFor="price" size="short" required error={fieldErrors.price}>
+              <input
+                className={fieldClass("admin-dash__input", fieldErrors.price)}
+                id="price"
+                name="price"
+                type="number"
+                min="0"
+                step="0.01"
+                value={formFields.price}
+                onChange={changeInput}
+                required
+                aria-required="true"
+              />
             </Field>
             <Field label="Compare Price (Rs)" htmlFor="oldPrice" size="short">
               <input className="admin-dash__input" id="oldPrice" name="oldPrice" type="number" value={formFields.oldPrice} onChange={changeInput} />
@@ -296,8 +526,19 @@ export default function ProductForm({
 
         {tab === "inventory" && (
           <div className="admin-dash__form-grid admin-dash__form-grid--2">
-            <Field label="Stock Quantity" htmlFor="countInStock" size="short">
-              <input className="admin-dash__input" id="countInStock" name="countInStock" type="number" value={formFields.countInStock} onChange={changeInput} />
+            <Field label="Stock Quantity" htmlFor="countInStock" size="short" required error={fieldErrors.countInStock}>
+              <input
+                className={fieldClass("admin-dash__input", fieldErrors.countInStock)}
+                id="countInStock"
+                name="countInStock"
+                type="number"
+                min="0"
+                step="1"
+                value={formFields.countInStock}
+                onChange={changeInput}
+                required
+                aria-required="true"
+              />
             </Field>
             <Field label="Stock Status" htmlFor="stockStatus" size="short">
               <select className="admin-dash__select" id="stockStatus" name="stockStatus" value={formFields.stockStatus} onChange={changeInput}>
@@ -308,14 +549,6 @@ export default function ProductForm({
             </Field>
             <Field label="Minimum Stock Alert" htmlFor="minStockAlert" size="short">
               <input className="admin-dash__input" id="minStockAlert" name="minStockAlert" type="number" value={formFields.minStockAlert} onChange={changeInput} placeholder="Notify when stock &lt;= 5" />
-            </Field>
-            <Field label="Legacy size option" htmlFor="size" size="wide">
-              <select className="admin-dash__select" id="size" name="size" value={formFields.size} onChange={changeInput}>
-                <option value="">Select size</option>
-                {sizes.map((s) => (
-                  <option key={s._id} value={s.size}>{s.size}</option>
-                ))}
-              </select>
             </Field>
           </div>
         )}
@@ -468,11 +701,13 @@ export default function ProductForm({
           </div>
         )}
 
-        <div className="admin-dash__product-form-actions">
-          <button type="submit" className="admin-dash__btn" disabled={isLoading}>
-            {isLoading ? "Saving…" : submitLabel}
-          </button>
-        </div>
+        {variant !== "modal" && (
+          <div className="admin-dash__product-form-actions">
+            <button type="submit" className="admin-dash__btn" disabled={isLoading}>
+              {isLoading ? "Saving…" : submitLabel}
+            </button>
+          </div>
+        )}
       </section>
     </form>
   );

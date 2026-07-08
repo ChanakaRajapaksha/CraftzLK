@@ -15,6 +15,18 @@ class ProductController {
     }
   }
 
+  async adminList(req, res) {
+    try {
+      const data = await productService.adminList(req.query);
+      return res.status(200).json({ success: true, ...data });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to load products.',
+      });
+    }
+  }
+
   async list(req, res) {
     try {
       const result = await productService.list(req.query);
@@ -137,6 +149,9 @@ class ProductController {
 
       res.status(201).json(product);
     } catch (error) {
+      if (error.statusCode === 400) {
+        return res.status(400).json(error.payload);
+      }
       if (error.statusCode === 404) {
         if (error.isPlainText) {
           return res.status(404).send(error.payload);
@@ -214,21 +229,34 @@ class ProductController {
   }
 
   async update(req, res) {
-    const { product, isFalsy } = await productService.update(req.params.id, req.body);
+    try {
+      const { product, isFalsy } = await productService.update(req.params.id, req.body);
 
-    if (isFalsy) {
-      res.status(404).json({
-        message: 'the product can not be updated!',
-        status: false,
+      if (isFalsy) {
+        return res.status(404).json({
+          message: 'the product can not be updated!',
+          status: false,
+        });
+      }
+
+      imagesArr = [];
+
+      return res.status(200).json({
+        message: 'the product is updated!',
+        status: true,
       });
+    } catch (error) {
+      if (error.statusCode === 400) {
+        return res.status(400).json(error.payload);
+      }
+      if (error.statusCode === 404) {
+        if (error.isPlainText) {
+          return res.status(404).send(error.payload);
+        }
+        return res.status(404).json(error.payload);
+      }
+      throw error;
     }
-
-    imagesArr = [];
-
-    res.status(200).json({
-      message: 'the product is updated!',
-      status: true,
-    });
   }
 }
 

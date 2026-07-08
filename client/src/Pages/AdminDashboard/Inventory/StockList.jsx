@@ -14,37 +14,27 @@ import {
   getStockPillClass,
   STOCK_FILTERS,
 } from "./stockUtils";
-import { getStockListSampleData, getStockListSampleStats } from "./stockListUtils";
+import { getStockListStats } from "./stockListUtils";
 
 export default function StockList() {
   const [stockList, setStockList] = useState([]);
   const [stats, setStats] = useState({ total: 0, inStock: 0, lowStock: 0, outOfStock: 0 });
-  const [usingSampleData, setUsingSampleData] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [stockFilter, setStockFilter] = useState("all");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const applySample = () => {
-    const sample = getStockListSampleData();
-    setStockList(sample);
-    setStats(getStockListSampleStats(sample));
-    setUsingSampleData(true);
-  };
-
   const loadStock = () => {
     fetchDataFromApi("/api/inventory/stock")
       .then((res) => {
         const list = res?.stockList || [];
-        if (list.length) {
-          setStockList(list);
-          setStats(res?.stats || getStockListSampleStats(list));
-          setUsingSampleData(false);
-        } else {
-          applySample();
-        }
+        setStockList(list);
+        setStats(res?.stats || getStockListStats(list));
       })
-      .catch(() => applySample());
+      .catch(() => {
+        setStockList([]);
+        setStats({ total: 0, inStock: 0, lowStock: 0, outOfStock: 0 });
+      });
   };
 
   useEffect(() => {
@@ -145,12 +135,6 @@ export default function StockList() {
       )}
 
       <section className="admin-dash__panel">
-        {usingSampleData && (
-          <p className="admin-dash__sample-banner">
-            Showing sample stock data — connect live inventory via your products API.
-          </p>
-        )}
-
         <div className="admin-dash__toolbar admin-dash__toolbar--wrap admin-dash__toolbar--filters">
           <input
             className="admin-dash__input"

@@ -1,17 +1,28 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useOutletContext } from "react-router-dom";
-import { FaEye, FaFileExport, FaPencilAlt } from "react-icons/fa";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link, useOutletContext, useSearchParams } from "react-router-dom";
+import { FaEye, FaFileExport, FaPencilAlt, FaPlus } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import AdminPagination from "../../../Components/AdminDashboard/AdminPagination";
 import AdminConfirmDialog from "../../../Components/AdminDashboard/AdminConfirmDialog";
+import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
 import { MdShoppingBag, MdCategory } from "react-icons/md";
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
 import { deleteData, fetchDataFromApi, postData } from "../../../utils/api";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
-import { getProductListSampleData, isSampleProductId } from "./productListSampleData";
 import PriceRangeFilter, { getProductPriceBounds } from "../../../Components/AdminDashboard/PriceRangeFilter";
+import ProductFormModal from "./ProductFormModal";
+
+const DEFAULT_STATS = {
+  total: 0,
+  activeCount: 0,
+  inactiveCount: 0,
+  lowStockCount: 0,
+  outOfStockCount: 0,
+  featuredCount: 0,
+  priceBounds: { min: 500, max: 25000 },
+};
 
 function formatDate(value) {
   if (!value) return "—";
@@ -40,12 +51,36 @@ function exportCsv(products) {
   URL.revokeObjectURL(url);
 }
 
+function buildListParams({ page, rowsPerPage, searchKeyword, categoryVal, priceRange, stockFilter, statusFilter, perPageOverride }) {
+  const params = new URLSearchParams({
+    page: String(page + 1),
+    perPage: String(perPageOverride ?? rowsPerPage),
+  });
+
+  if (searchKeyword.trim()) params.set("search", searchKeyword.trim());
+  if (categoryVal !== "all") params.set("catId", categoryVal);
+  if (stockFilter !== "all") params.set("stock", stockFilter);
+  if (statusFilter !== "all") params.set("status", statusFilter);
+  if (priceRange) {
+    params.set("minPrice", String(priceRange[0]));
+    params.set("maxPrice", String(priceRange[1]));
+  }
+
+  return params;
+}
+
 export default function ProductList() {
   const { catData, setAlertBox } = useOutletContext();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
-  const [totalProducts, setTotalProducts] = useState(0);
+  const [stats, setStats] = useState(DEFAULT_STATS);
   const [totalCategory, setTotalCategory] = useState(0);
   const [totalSubCategory, setTotalSubCategory] = useState(0);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [selected, setSelected] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [categoryVal, setCategoryVal] = useState("all");
@@ -54,79 +89,102 @@ export default function ProductList() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [usingSampleData, setUsingSampleData] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingProductId, setEditingProductId] = useState(null);
 
-  const applySampleProducts = () => {
-    setProducts(getProductListSampleData());
-    setUsingSampleData(true);
-    setTotalProducts(getProductListSampleData().length);
-  };
+  const hasActiveFilters = useMemo(
+    () =>
+      Boolean(searchKeyword.trim()) ||
+      categoryVal !== "all" ||
+      Boolean(priceRange) ||
+      stockFilter !== "all" ||
+      statusFilter !== "all",
+    [searchKeyword, categoryVal, priceRange, stockFilter, statusFilter]
+  );
 
-  const loadProducts = () => {
-    fetchDataFromApi("/api/products")
+  const priceBounds = useMemo(
+    () => getProductPriceBounds([], stats.priceBounds),
+    [stats.priceBounds]
+  );
+
+  const loadProducts = useCallback(() => {
+    setLoading(true);
+    setLoadError(false);
+
+    const params = buildListParams({
+      page,
+      rowsPerPage,
+      searchKeyword,
+      categoryVal,
+      priceRange,
+      stockFilter,
+      statusFilter,
+    });
+
+    fetchDataFromApi(`/api/products/admin/list?${params.toString()}`)
       .then((res) => {
-        const list = res?.products || [];
-        if (list.length) {
-          setProducts(list);
-          setUsingSampleData(false);
-        } else {
-          applySampleProducts();
+        if (res?.success === false) {
+          throw new Error(res?.message || "Failed to load products.");
         }
+
+        setProducts(Array.isArray(res?.products) ? res.products : []);
+        setTotalItems(Number(res?.total) || 0);
+        setTotalPages(Math.max(1, Number(res?.totalPages) || 1));
+        setStats(res?.stats || DEFAULT_STATS);
+        setSelected([]);
       })
-      .catch(() => applySampleProducts());
-  };
+      .catch(() => {
+        setProducts([]);
+        setTotalItems(0);
+        setTotalPages(1);
+        setStats(DEFAULT_STATS);
+        setLoadError(true);
+        setSelected([]);
+      })
+      .finally(() => setLoading(false));
+  }, [page, rowsPerPage, searchKeyword, categoryVal, priceRange, stockFilter, statusFilter]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    loadProducts();
-    fetchDataFromApi("/api/products/get/count")
-      .then((res) => {
-        const count = res?.productsCount ?? 0;
-        if (count > 0) setTotalProducts(count);
-      })
-      .catch(() => {});
     fetchDataFromApi("/api/category/get/count").then((res) => setTotalCategory(res?.categoryCount ?? 0));
     fetchDataFromApi("/api/category/subCat/get/count").then((res) => setTotalSubCategory(res?.categoryCount ?? 0));
   }, []);
 
-  const priceBounds = useMemo(() => getProductPriceBounds(products), [products]);
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    const action = searchParams.get("action");
 
-  const filtered = useMemo(() => {
-    let list = [...products];
-
-    if (searchKeyword.trim()) {
-      const q = searchKeyword.toLowerCase();
-      list = list.filter((p) =>
-        [p.name, p.sku, p.catName, p.brand].some((v) => String(v || "").toLowerCase().includes(q))
-      );
+    if (editId) {
+      setEditingProductId(editId);
+      setModalOpen(true);
+    } else if (action === "add") {
+      setEditingProductId(null);
+      setModalOpen(true);
     }
+  }, [searchParams]);
 
-    if (categoryVal !== "all") {
-      const catName = catData?.categoryList?.find((c) => c._id === categoryVal)?.name;
-      list = list.filter(
-        (p) => p.catId === categoryVal || (usingSampleData && catName && p.catName === catName)
-      );
+  const closeModal = () => {
+    setModalOpen(false);
+    setEditingProductId(null);
+    if (searchParams.get("edit") || searchParams.get("action")) {
+      setSearchParams({}, { replace: true });
     }
+  };
 
-    if (priceRange) {
-      list = list.filter(
-        (p) => Number(p.price) >= priceRange[0] && Number(p.price) <= priceRange[1]
-      );
-    }
+  const openCreateModal = () => {
+    setEditingProductId(null);
+    setModalOpen(true);
+  };
 
-    if (stockFilter === "in_stock") list = list.filter((p) => Number(p.countInStock) > 0);
-    if (stockFilter === "low_stock") list = list.filter((p) => Number(p.countInStock) > 0 && Number(p.countInStock) <= Number(p.minStockAlert || 5));
-    if (stockFilter === "out_of_stock") list = list.filter((p) => Number(p.countInStock) <= 0);
+  const openEditModal = (item) => {
+    setEditingProductId(item._id || item.id);
+    setModalOpen(true);
+  };
 
-    if (statusFilter === "active") list = list.filter((p) => (p.status || "active") === "active");
-    if (statusFilter === "inactive") list = list.filter((p) => (p.status || "active") === "inactive");
-
-    return list;
-  }, [products, searchKeyword, categoryVal, priceRange, stockFilter, statusFilter, catData, usingSampleData]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
-  const slice = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
 
   useEffect(() => {
     if (page > 0 && page >= totalPages) {
@@ -135,7 +193,7 @@ export default function ProductList() {
   }, [page, totalPages]);
 
   const toggleSelectAll = (checked) => {
-    setSelected(checked ? slice.map((p) => p.id || p._id) : []);
+    setSelected(checked ? products.map((p) => p.id || p._id) : []);
   };
 
   const toggleSelect = (id) => {
@@ -143,18 +201,24 @@ export default function ProductList() {
   };
 
   const deleteProduct = (id) => {
-    if (usingSampleData || isSampleProductId(id)) {
-      setProducts((prev) => prev.filter((p) => (p.id || p._id) !== id));
-      setTotalProducts((n) => Math.max(0, n - 1));
-      setSelected((prev) => prev.filter((x) => x !== id));
-      setAlertBox?.({ open: true, error: false, msg: "Product removed from sample list." });
-      return;
-    }
-    deleteData(`/api/products/${id}`).then(() => {
-      setAlertBox?.({ open: true, error: false, msg: "Product deleted." });
-      setSelected((prev) => prev.filter((x) => x !== id));
-      loadProducts();
-    });
+    deleteData(`/api/products/${id}`)
+      .then((res) => {
+        if (res?.success === false) {
+          setAlertBox?.({
+            open: true,
+            error: true,
+            msg: res?.message || "Failed to delete product.",
+          });
+          return;
+        }
+        setAlertBox?.({ open: true, error: false, msg: "Product deleted." });
+        setSelected((prev) => prev.filter((x) => x !== id));
+        loadProducts();
+      })
+      .catch((error) => {
+        const message = error?.response?.data?.message || "Failed to delete product.";
+        setAlertBox?.({ open: true, error: true, msg: message });
+      });
   };
 
   const requestDeleteProduct = (item) => {
@@ -169,40 +233,85 @@ export default function ProductList() {
 
   const bulkDelete = () => {
     if (!selected.length) return;
-    if (usingSampleData || selected.every(isSampleProductId)) {
-      setProducts((prev) => prev.filter((p) => !selected.includes(p.id || p._id)));
-      setTotalProducts((n) => Math.max(0, n - selected.length));
-      setAlertBox?.({ open: true, error: false, msg: "Selected sample products removed." });
-      setSelected([]);
-      return;
-    }
-    postData("/api/products/bulk/delete", { ids: selected }).then(() => {
-      setAlertBox?.({ open: true, error: false, msg: "Selected products deleted." });
-      setSelected([]);
-      loadProducts();
-    });
+    postData("/api/products/bulk/delete", { ids: selected })
+      .then((res) => {
+        if (res?.success === false) {
+          setAlertBox?.({
+            open: true,
+            error: true,
+            msg: res?.message || "Failed to delete selected products.",
+          });
+          return;
+        }
+        setAlertBox?.({ open: true, error: false, msg: "Selected products deleted." });
+        setSelected([]);
+        loadProducts();
+      })
+      .catch(() => {
+        setAlertBox?.({ open: true, error: true, msg: "Failed to delete selected products." });
+      });
   };
 
   const bulkStatus = (status) => {
     if (!selected.length) return;
-    if (usingSampleData || selected.every(isSampleProductId)) {
-      setProducts((prev) =>
-        prev.map((p) => (selected.includes(p.id || p._id) ? { ...p, status } : p))
-      );
-      setAlertBox?.({
-        open: true,
-        error: false,
-        msg: status === "active" ? "Sample products activated." : "Sample products disabled.",
+    postData("/api/products/bulk/status", { ids: selected, status })
+      .then((res) => {
+        if (res?.success === false) {
+          setAlertBox?.({
+            open: true,
+            error: true,
+            msg: res?.message || "Failed to update product status.",
+          });
+          return;
+        }
+        setAlertBox?.({
+          open: true,
+          error: false,
+          msg: status === "active" ? "Products activated." : "Products disabled.",
+        });
+        setSelected([]);
+        loadProducts();
+      })
+      .catch(() => {
+        setAlertBox?.({ open: true, error: true, msg: "Failed to update product status." });
       });
-      setSelected([]);
-      return;
-    }
-    postData("/api/products/bulk/status", { ids: selected, status }).then(() => {
-      setAlertBox?.({ open: true, error: false, msg: status === "active" ? "Products activated." : "Products disabled." });
-      setSelected([]);
-      loadProducts();
-    });
   };
+
+  const handleExport = () => {
+    if (exporting) return;
+    setExporting(true);
+
+    const params = buildListParams({
+      page: 0,
+      rowsPerPage,
+      searchKeyword,
+      categoryVal,
+      priceRange,
+      stockFilter,
+      statusFilter,
+      perPageOverride: Math.max(totalItems, 1),
+    });
+
+    fetchDataFromApi(`/api/products/admin/list?${params.toString()}`)
+      .then((res) => {
+        const list = Array.isArray(res?.products) ? res.products : [];
+        if (!list.length) {
+          setAlertBox?.({ open: true, error: true, msg: "No products to export." });
+          return;
+        }
+        exportCsv(list);
+      })
+      .catch(() => {
+        setAlertBox?.({ open: true, error: true, msg: "Failed to export products." });
+      })
+      .finally(() => setExporting(false));
+  };
+
+  const emptyMessage = loadError
+    ? "Unable to load products. Please try again."
+    : hasActiveFilters
+      ? "No products match your filters."
+      : "No products yet. Add your first product to start selling.";
 
   return (
     <>
@@ -210,22 +319,20 @@ export default function ProductList() {
         title="Product List"
         breadcrumbs={[{ label: "Products" }]}
         action={
-          <Link to={`${ADMIN_BASE}/product/upload`} className="admin-dash__btn">
+          <button type="button" className="admin-dash__btn" onClick={openCreateModal}>
+            <FaPlus />
             Add Product
-          </Link>
+          </button>
         }
       />
 
       <div className="admin-dash__stats">
-        <StatCard icon={<MdShoppingBag />} label="Products" value={totalProducts} />
+        <StatCard icon={<MdShoppingBag />} label="Products" value={stats.total} />
         <StatCard icon={<MdCategory />} label="Categories" value={totalCategory} gradient={["#a67c52", "#c9a961"]} />
         <StatCard icon={<IoShieldCheckmarkSharp />} label="Sub categories" value={totalSubCategory} gradient={["#6b5344", "#d4a574"]} />
       </div>
 
       <section className="admin-dash__panel">
-        {usingSampleData && (
-          <p className="admin-dash__sample-banner">Showing sample handmade products — connect live data via Add Product or your API.</p>
-        )}
         <div className="admin-dash__toolbar admin-dash__toolbar--wrap admin-dash__toolbar--filters">
           <input
             className="admin-dash__input"
@@ -263,10 +370,11 @@ export default function ProductList() {
           <button
             type="button"
             className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm admin-dash__toolbar-end"
-            onClick={() => exportCsv(filtered)}
+            onClick={handleExport}
+            disabled={exporting || loading}
           >
             <FaFileExport aria-hidden />
-            Export
+            {exporting ? "Exporting…" : "Export"}
           </button>
         </div>
 
@@ -287,9 +395,10 @@ export default function ProductList() {
                 <th>
                   <input
                     type="checkbox"
-                    checked={slice.length > 0 && slice.every((p) => selected.includes(p.id || p._id))}
+                    checked={products.length > 0 && products.every((p) => selected.includes(p.id || p._id))}
                     onChange={(e) => toggleSelectAll(e.target.checked)}
                     aria-label="Select all"
+                    disabled={loading || products.length === 0}
                   />
                 </th>
                 <th>Image</th>
@@ -305,12 +414,18 @@ export default function ProductList() {
               </tr>
             </thead>
             <tbody>
-              {slice.length === 0 ? (
+              {loading ? (
                 <tr>
-                  <td colSpan={11} className="admin-dash__table-empty">No products match your filters.</td>
+                  <td colSpan={11} className="admin-dash__table-empty">
+                    <AdminLoadingState message="Loading products…" compact />
+                  </td>
+                </tr>
+              ) : products.length === 0 ? (
+                <tr>
+                  <td colSpan={11} className="admin-dash__table-empty">{emptyMessage}</td>
                 </tr>
               ) : (
-                slice.map((item) => {
+                products.map((item) => {
                 const id = item.id || item._id;
                 const isActive = (item.status || "active") === "active";
                 return (
@@ -344,7 +459,7 @@ export default function ProductList() {
                     <td>
                       <div className="admin-dash__actions">
                         <Link to={`${ADMIN_BASE}/product/details/${id}`} className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm" title="View"><FaEye /></Link>
-                        <Link to={`${ADMIN_BASE}/product/edit/${id}`} className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm" title="Edit"><FaPencilAlt /></Link>
+                        <button type="button" className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm" title="Edit" onClick={() => openEditModal(item)}><FaPencilAlt /></button>
                         <button type="button" className="admin-dash__btn admin-dash__btn--danger admin-dash__btn--sm" onClick={() => requestDeleteProduct(item)} title="Delete"><MdDelete /></button>
                       </div>
                     </td>
@@ -359,7 +474,7 @@ export default function ProductList() {
           <AdminPagination
             page={page}
             totalPages={totalPages}
-            totalItems={filtered.length}
+            totalItems={totalItems}
             itemLabel="products"
             rowsPerPage={rowsPerPage}
             rowsPerPageOptions={[10, 25, 50]}
@@ -371,6 +486,15 @@ export default function ProductList() {
           />
         </div>
       </section>
+
+      <ProductFormModal
+        open={modalOpen}
+        productId={editingProductId}
+        onClose={closeModal}
+        onSaved={loadProducts}
+        setAlertBox={setAlertBox}
+        catData={catData}
+      />
 
       <AdminConfirmDialog
         open={Boolean(deleteTarget)}

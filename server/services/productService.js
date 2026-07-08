@@ -1,5 +1,6 @@
 const { Category } = require('../models/category.js');
 const { Product } = require('../models/products.js');
+const { listProductsForAdmin } = require('../utils/productAdmin');
 const { MyList } = require('../models/myList');
 const { Cart } = require('../models/cart');
 const { RecentlyViewd } = require('../models/recentlyViewd.js');
@@ -21,13 +22,135 @@ function toStringArray(value) {
   return [String(value)];
 }
 
+function normalizeShortDescription(value) {
+  if (value && typeof value === 'object' && Array.isArray(value.bullets)) {
+    return {
+      bullets: value.bullets.map((line) => String(line || '').trim()).filter(Boolean),
+      disclaimer: value.disclaimer || '',
+    };
+  }
+  if (typeof value === 'string' && value.trim()) {
+    return {
+      bullets: value.split('\n').map((line) => line.trim()).filter(Boolean),
+      disclaimer: '',
+    };
+  }
+  return { bullets: [], disclaimer: '' };
+}
+
+function normalizeDescription(value) {
+  if (Array.isArray(value)) {
+    return {
+      points: value
+        .map((point) => ({
+          title: String(point?.title || '').trim(),
+          text: String(point?.text || '').trim(),
+        }))
+        .filter((point) => point.title || point.text),
+    };
+  }
+
+  if (value && typeof value === 'object' && Array.isArray(value.points)) {
+    return {
+      points: value.points
+        .map((point) => ({
+          title: String(point?.title || '').trim(),
+          text: String(point?.text || '').trim(),
+        }))
+        .filter((point) => point.title || point.text),
+    };
+  }
+
+  if (typeof value === 'string' && value.trim()) {
+    return { points: [{ title: '', text: value.trim() }] };
+  }
+
+  return { points: [] };
+}
+
+function normalizeProductLocation(value) {
+  if (!value || value === 'All') {
+    return [{ value: 'All', label: 'All' }];
+  }
+
+  if (Array.isArray(value)) {
+    const locations = value
+      .map((item) => {
+        if (typeof item === 'object' && item !== null) {
+          const locValue = String(item.value || item.label || '').trim();
+          const label = String(item.label || item.value || locValue).trim();
+          if (!locValue) return null;
+          return { value: locValue, label: label || locValue };
+        }
+
+        const text = String(item || '').trim();
+        if (!text) return null;
+        return { value: text, label: text };
+      })
+      .filter(Boolean);
+
+    return locations.length ? locations : [{ value: 'All', label: 'All' }];
+  }
+
+  if (typeof value === 'string') {
+    const text = value.trim();
+    if (!text || text === 'All') {
+      return [{ value: 'All', label: 'All' }];
+    }
+    return [{ value: text, label: text }];
+  }
+
+  return [{ value: 'All', label: 'All' }];
+}
+
+function validateProductPayload(body, images = []) {
+  const errors = [];
+
+  if (!body.name?.trim()) errors.push('Product name is required.');
+
+  const shortBullets = normalizeShortDescription(body.shortDescription).bullets;
+  if (!shortBullets.length) errors.push('Add at least one short description point.');
+
+  const descriptionPoints = normalizeDescription(body.description).points.filter(
+    (point) => point.title && point.text
+  );
+  if (!descriptionPoints.length) {
+    errors.push('Add at least one full description point with a title and text.');
+  }
+
+  if (!Array.isArray(images) || !images.length) {
+    errors.push('At least one product image is required.');
+  }
+
+  if (!body.category && !body.catId) {
+    errors.push('Main category is required.');
+  }
+
+  const price = Number(body.price);
+  if (!Number.isFinite(price) || price < 0) {
+    errors.push('Regular price is required.');
+  }
+
+  const stock = Number(body.countInStock);
+  if (!Number.isFinite(stock) || stock < 0) {
+    errors.push('Stock quantity is required.');
+  }
+
+  if (errors.length) {
+    const error = new Error(errors[0]);
+    error.statusCode = 400;
+    error.payload = { success: false, message: errors[0], errors };
+    throw error;
+  }
+}
+
 function mapProductBody(body, images = []) {
   return {
     name: body.name,
     sku: body.sku || '',
     slug: body.slug || '',
-    shortDescription: body.shortDescription || '',
-    description: body.description,
+    shortDescription: normalizeShortDescription(body.shortDescription),
+    description: normalizeDescription(body.description),
     images,
     brand: body.brand || '',
     price: Number(body.price) || 0,
@@ -50,7 +173,7 @@ function mapProductBody(body, images = []) {
     productRam: toStringArray(body.productRam),
     size: toStringArray(body.size),
     productWeight: toStringArray(body.productWeight),
-    location: body.location !== '' ? body.location : 'All',
+    location: normalizeProductLocation(body.location),
     variants: Array.isArray(body.variants) ? body.variants : [],
     customizationOptions: Array.isArray(body.customizationOptions) ? body.customizationOptions : [],
     shipping: body.shipping || {},
@@ -88,6 +211,10 @@ class ProductService {
     const imagesUploaded = new ImageUpload({ images: imagesArr });
     await imagesUploaded.save();
     return imagesArr;
+  }
+
+  async adminList(query) {
+    return listProductsForAdmin(query);
   }
 
   async list(query) {
@@ -484,9 +611,10 @@ class ProductService {
     uploadedImages?.map((item) => {
       item.images?.map((image) => {
         images_Array.push(image);
-        console.log(image);
       });
     });
+
+    validateProductPayload(body, images_Array);
 
     let product = new Product(mapProductBody(body, images_Array));
     product = await product.save();
@@ -574,6 +702,20 @@ class ProductService {
   }
 
   async update(id, body) {
+    if (body.category || body.catId) {
+      const categoryId = body.category || body.catId;
+      const category = await Category.findById(categoryId);
+      if (!category) {
+        const error = new Error('invalid Category!');
+        error.statusCode = 404;
+        error.payload = 'invalid Category!';
+        error.isPlainText = true;
+        throw error;
+      }
+    }
+
+    validateProductPayload(body, body.images || []);
+
     const product = await Product.findByIdAndUpdate(
       id,
       mapProductBody(body, body.images || []),

@@ -8,7 +8,6 @@ import {
   STOCK_ACTIONS,
   getStockPillClass,
 } from "./stockUtils";
-import { getStockListSampleData, isSampleStockId } from "./stockListUtils";
 
 function Field({ label, htmlFor, children, full = false }) {
   return (
@@ -37,14 +36,9 @@ export default function StockAdjustment() {
 
     fetchDataFromApi("/api/inventory/stock")
       .then((res) => {
-        const list = res?.stockList || [];
-        if (list.length) {
-          setProducts(list);
-        } else {
-          setProducts(getStockListSampleData());
-        }
+        setProducts(res?.stockList || []);
       })
-      .catch(() => setProducts(getStockListSampleData()));
+      .catch(() => setProducts([]));
 
     fetchDataFromApi("/api/inventory/adjustments")
       .then((res) => setRecentAdjustments(res?.adjustmentList || []))
@@ -74,23 +68,6 @@ export default function StockAdjustment() {
     }
     if (!formFields.reason?.trim()) {
       setAlertBox?.({ open: true, error: true, msg: "Reason is required." });
-      return;
-    }
-
-    if (isSampleStockId(formFields.productId)) {
-      const qty = Number(formFields.quantity);
-      const current = Number(selectedProduct?.countInStock ?? 0);
-      const next =
-        formFields.action === "add" ? current + qty : Math.max(0, current - qty);
-      setProducts((prev) =>
-        prev.map((item) =>
-          (item._id || item.id) === formFields.productId
-            ? { ...item, countInStock: next }
-            : item
-        )
-      );
-      setAlertBox?.({ open: true, error: false, msg: "Stock adjusted (sample mode)." });
-      navigate(`${ADMIN_BASE}/inventory/stock`);
       return;
     }
 

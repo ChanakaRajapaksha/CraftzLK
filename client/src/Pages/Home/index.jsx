@@ -9,7 +9,6 @@ import HomeCustomerReviewSummary from "../../Components/HomeCustomerReviewSummar
 import HomeProductImagesSection from "../../Components/HomeProductImagesSection";
 import PopularCategoriesGrid from "../../Components/PopularCategoriesGrid";
 import React, { useContext, useEffect, useState } from "react";
-import HomeCat from "../../Components/HomeCat";
 
 import { MyContext } from "../../App";
 import { fetchDataFromApi } from "../../utils/api";
@@ -94,10 +93,6 @@ const Home = () => {
         />
 
         <div className="homeContentAfterRails">
-          {Array.isArray(context?.categoryData) && context.categoryData.length > 0 && (
-            <HomeCat catData={context.categoryData} />
-          )}
-
           {(homeSideBanners?.length !== 0 ||
             bannerList?.length !== 0 ||
             homeBottomBanners?.length !== 0) && (

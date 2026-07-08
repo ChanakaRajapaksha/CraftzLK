@@ -20,12 +20,22 @@ const customizationOptionSchema = mongoose.Schema({
   required: { type: Boolean, default: false },
 });
 
+const descriptionPointSchema = mongoose.Schema({
+  title: { type: String, default: "" },
+  text: { type: String, default: "" },
+});
+
 const productSchema = mongoose.Schema({
   name: { type: String, required: true },
   sku: { type: String, default: "" },
   slug: { type: String, default: "" },
-  shortDescription: { type: String, default: "" },
-  description: { type: String, required: true },
+  shortDescription: {
+    bullets: [{ type: String }],
+    disclaimer: { type: String, default: "" },
+  },
+  description: {
+    points: [descriptionPointSchema],
+  },
   images: [{ type: String, required: true }],
   brand: { type: String, default: "" },
   price: { type: Number, default: 0 },
