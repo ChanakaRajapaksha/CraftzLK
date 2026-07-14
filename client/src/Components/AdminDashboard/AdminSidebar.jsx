@@ -1,17 +1,17 @@
 import { useState, useContext } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import { MdDashboard } from "react-icons/md";
 import { BiSolidCategory } from "react-icons/bi";
 import { FaProductHunt, FaClipboardCheck } from "react-icons/fa";
 import { FaAngleRight, FaAngleDown } from "react-icons/fa6";
 import { HiOutlineUserGroup } from "react-icons/hi";
 import { IoMdPeople, IoMdLogOut } from "react-icons/io";
-import { MdCampaign, MdHome, MdInventory, MdLocalShipping, MdPayments, MdRateReview, MdAssessment, MdArticle, MdNotifications, MdSettings } from "react-icons/md";
+import { MdCampaign, MdHome, MdInventory, MdLocalShipping, MdPayments, MdRateReview, MdAssessment, MdArticle, MdNotifications, MdSettings, MdStorefront } from "react-icons/md";
 import { toast } from "sonner";
 import AuthController from "../../controllers/auth.controller";
 import { MyContext } from "../../App";
 import { DEFAULT_STORE_LOGO } from "../../utils/storeBrand";
-import { adminNavItems, ADMIN_BASE } from "./adminNav";
+import { adminNavItems, ADMIN_BASE, STOREFRONT_HOME_PATH } from "./adminNav";
 import "./admin-dashboard.css";
 
 const ICONS = {
@@ -124,6 +124,11 @@ export default function AdminSidebar() {
           );
         })}
       </nav>
+
+      <Link to={STOREFRONT_HOME_PATH} className="admin-dash__store-link">
+        <MdStorefront />
+        View Home Page
+      </Link>
 
       <button type="button" className="admin-dash__logout" onClick={logout}>
         <IoMdLogOut />

@@ -1,8 +1,10 @@
 import { useCallback, useContext, useEffect, useState } from "react";
-import { MdDarkMode, MdLightMode, MdNotificationsNone } from "react-icons/md";
+import { Link } from "react-router-dom";
+import { MdDarkMode, MdLightMode, MdNotificationsNone, MdStorefront } from "react-icons/md";
 import { MyContext } from "../../App";
 import { fetchDataFromApi } from "../../utils/api";
 import { DEFAULT_STORE_LOGO } from "../../utils/storeBrand";
+import { STOREFRONT_HOME_PATH } from "./adminNav";
 import AdminNotificationsPanel from "./AdminNotificationsPanel";
 import { useAdminTheme } from "./AdminThemeContext";
 import { getAdminNotificationSample } from "./adminNotificationUtils";
@@ -42,6 +44,11 @@ export default function AdminTopBar() {
       </div>
 
       <div className="admin-dash__topbar-actions">
+        <Link to={STOREFRONT_HOME_PATH} className="admin-dash__topbar-store">
+          <MdStorefront className="admin-dash__topbar-store-icon" aria-hidden />
+          <span className="admin-dash__topbar-store-text">View Home Page</span>
+        </Link>
+
         <button
           type="button"
           className="admin-dash__topbar-theme"

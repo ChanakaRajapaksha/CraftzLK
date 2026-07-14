@@ -173,6 +173,18 @@ html.admin-dash-theme-dark {
   border-color: var(--adm-border);
 }
 
+.admin-dash--dark .admin-dash__store-link {
+  background: var(--adm-surface-alt);
+  border-color: var(--adm-border);
+  color: var(--adm-nav-text) !important;
+}
+
+.admin-dash--dark .admin-dash__store-link:hover {
+  background: rgba(201, 169, 97, 0.14);
+  border-color: rgba(201, 169, 97, 0.45);
+  color: var(--adm-nav-active-text) !important;
+}
+
 .admin-dash--dark .admin-dash__logout:hover {
   background: rgba(220, 53, 69, 0.16);
   color: #f5a5ad !important;
@@ -899,6 +911,7 @@ html.admin-dash-theme-dark {
 }
 
 .admin-dash--dark .admin-dash__topbar-theme,
+.admin-dash--dark .admin-dash__topbar-store,
 .admin-dash--dark .admin-dash__topbar-bell {
   background: var(--adm-surface-alt);
   border-color: var(--adm-border);
@@ -907,6 +920,8 @@ html.admin-dash-theme-dark {
 
 .admin-dash--dark .admin-dash__topbar-theme:hover,
 .admin-dash--dark .admin-dash__topbar-theme:focus-visible,
+.admin-dash--dark .admin-dash__topbar-store:hover,
+.admin-dash--dark .admin-dash__topbar-store:focus-visible,
 .admin-dash--dark .admin-dash__topbar-bell:hover,
 .admin-dash--dark .admin-dash__topbar-bell:focus-visible,
 .admin-dash--dark .admin-dash__topbar-bell--active {
@@ -915,7 +930,8 @@ html.admin-dash-theme-dark {
   color: var(--adm-text) !important;
 }
 
-.admin-dash--dark .admin-dash__topbar-theme-icon {
+.admin-dash--dark .admin-dash__topbar-theme-icon,
+.admin-dash--dark .admin-dash__topbar-store-icon {
   color: var(--adm-accent);
 }
 

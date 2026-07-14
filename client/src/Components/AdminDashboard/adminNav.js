@@ -1,5 +1,8 @@
 export const ADMIN_BASE = "/dashboard";
 
+/** Ecommerce storefront home (customer-facing site) */
+export const STOREFRONT_HOME_PATH = "/";
+
 export const adminNavItems = [
   {
     key: "dashboard",
