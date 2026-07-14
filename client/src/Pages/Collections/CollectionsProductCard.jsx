@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
 import Rating from "@mui/material/Rating";
-import { formatRsLabel, getProductDetailPath, getVariantCount } from "./collectionsUtils";
+import { formatRsLabel, getProductDetailPath } from "./collectionsUtils";
 
 const IMG_FALLBACK = "/images/product_images/wooden_wine_glass.png";
+/** Dummy rating for shop cards until live reviews are connected */
+const DUMMY_RATING = 4;
 
 export default function CollectionsProductCard({ product }) {
   const detailPath = getProductDetailPath(product);
@@ -10,11 +12,13 @@ export default function CollectionsProductCard({ product }) {
   const primaryImage = images[0];
   const hoverImage = images[1] || primaryImage;
   const inStock = Number(product?.countInStock) > 0;
+  const availableCount = Math.max(0, Number(product?.countInStock) || 0);
   const price = Number(product?.price);
   const oldPrice = Number(product?.oldPrice);
+  const discount = Number(product?.discount);
+  const hasDiscount = Number.isFinite(discount) && discount > 0;
   const onSale = Number.isFinite(oldPrice) && oldPrice > price;
-  const rating = Number(product?.rating) || 0;
-  const variantCount = getVariantCount(product);
+  const rating = DUMMY_RATING;
 
   return (
     <article className="collections-card group">
@@ -27,11 +31,9 @@ export default function CollectionsProductCard({ product }) {
               aria-label={`View ${product?.name}`}
             >
               <div className="collections-card__image-well">
-                {onSale && (
+                {hasDiscount && (
                   <span className="collections-card__save-badge">
-                    {product?.discount > 0
-                      ? `Save ${product.discount}%`
-                      : `Save ${Math.round(((oldPrice - price) / oldPrice) * 100)}%`}
+                    Save {Math.round(discount)}%
                   </span>
                 )}
                 <img
@@ -72,7 +74,7 @@ export default function CollectionsProductCard({ product }) {
 
             {inStock && (
               <p className="collections-card__variants">
-                Available in {variantCount} item{variantCount === 1 ? "" : "s"}
+                Available in {availableCount} item{availableCount === 1 ? "" : "s"}
               </p>
             )}
 

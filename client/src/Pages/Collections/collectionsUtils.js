@@ -1,14 +1,8 @@
-import { getSampleProductById } from "../../data/sampleProductDetails";
-
-/** Route param for /product/:id — resolves legacy collections grid ids. */
+/** Route param for /product/:id */
 export function resolveProductDetailId(product) {
   const raw = product?.id ?? product?._id;
   if (!raw) return null;
-  const id = String(raw);
-  if (getSampleProductById(id)) return id;
-  const stripped = id.replace(/-col-\d+$/, "");
-  if (stripped !== id && getSampleProductById(stripped)) return stripped;
-  return id;
+  return String(raw);
 }
 
 export function getProductDetailPath(product) {

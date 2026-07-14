@@ -19,13 +19,15 @@ import {
   resolveCategoryTitleFromSlug,
   resolveSubcategoryTitleFromSlug,
 } from "./collectionsConstants";
-import { getSampleCollectionsProducts, loadCollectionProducts } from "./collectionsProducts";
+import { loadCollectionProducts } from "./collectionsProducts";
 import {
   applyProductFilters,
   getPriceBounds,
   sortProducts,
 } from "./collectionsUtils";
 import "./Collections.css";
+
+const EMPTY_BOUNDS = { min: 0, max: 100000 };
 
 const gridTransition = {
   initial: { opacity: 0, y: 14, filter: "blur(4px)" },
@@ -79,17 +81,14 @@ const Collections = () => {
 
   const pageHeading = activeSubcategoryTitle || activeCategoryTitle || "All";
 
-  const [products, setProducts] = useState(() => getSampleCollectionsProducts());
-  const [loading, setLoading] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [filtersActive, setFiltersActive] = useState(false);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [sortBy, setSortBy] = useState("featured");
-  const [priceBounds, setPriceBounds] = useState(() => getPriceBounds(getSampleCollectionsProducts()));
-  const [priceRange, setPriceRange] = useState(() => {
-    const bounds = getPriceBounds(getSampleCollectionsProducts());
-    return [bounds.min, bounds.max];
-  });
+  const [priceBounds, setPriceBounds] = useState(EMPTY_BOUNDS);
+  const [priceRange, setPriceRange] = useState([EMPTY_BOUNDS.min, EMPTY_BOUNDS.max]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -116,13 +115,20 @@ const Collections = () => {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    loadCollectionProducts(categoryList)
+    loadCollectionProducts()
       .then((list) => {
-        if (cancelled || !list.length) return;
-        setProducts(list);
-        const bounds = getPriceBounds(list);
+        if (cancelled) return;
+        const items = Array.isArray(list) ? list : [];
+        setProducts(items);
+        const bounds = getPriceBounds(items);
         setPriceBounds(bounds);
         setPriceRange([bounds.min, bounds.max]);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setProducts([]);
+        setPriceBounds(EMPTY_BOUNDS);
+        setPriceRange([EMPTY_BOUNDS.min, EMPTY_BOUNDS.max]);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);

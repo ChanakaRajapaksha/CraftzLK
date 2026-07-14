@@ -1,10 +1,10 @@
 import { MEGA_MENU_COLUMNS } from "../../data/megaMenuCategories";
 
-/** Products shown per page (4 columns × 10 rows) */
-export const COLLECTIONS_PER_PAGE = 40;
+/** Products shown per page (matches storefront GET /api/products page limit) */
+export const COLLECTIONS_PER_PAGE = 12;
 
-/** Total products in the collections catalog (~140 across all pages) */
-export const COLLECTIONS_CATALOG_SIZE = 140;
+/** @deprecated Catalog is loaded from the live products API */
+export const COLLECTIONS_CATALOG_SIZE = 12;
 
 /** @deprecated Use COLLECTIONS_PER_PAGE */
 export const COLLECTIONS_PAGE_SIZE = COLLECTIONS_PER_PAGE;

@@ -6,15 +6,19 @@ import { FaMinus, FaPlus } from "react-icons/fa6";
 import { BsCartFill } from "react-icons/bs";
 import { HiOutlineShieldCheck, HiOutlineTruck, HiSparkles } from "react-icons/hi2";
 import { IoChevronDown, IoChevronUp, IoExpandOutline } from "react-icons/io5";
-import { getSampleProductById } from "../../data/sampleProductDetails";
-import { isSampleProductId } from "../../utils/cartHelpers";
+import { getSampleProductById, isSampleProductId } from "../../data/sampleProductDetails";
 import { MyContext } from "../../App";
 import FixedSizeLoadingButton from "../../Components/FixedSizeLoadingButton";
 import HomeCustomerReviewSummary from "../../Components/HomeCustomerReviewSummary";
 import WriteReviewModal from "../../Components/WriteReviewModal";
 import AskQuestionModal from "../../Components/AskQuestionModal";
 import YouMayAlsoLike from "../../Components/YouMayAlsoLike";
+import { fetchDataFromApi } from "../../utils/api";
 import ProductReviewsFeed from "./ProductReviewsFeed";
+import {
+  isValidApiProduct,
+  mapApiProductToDetailsView,
+} from "./mapApiProductToDetailsView";
 import "./SampleProductDetails.css";
 
 function TrustIcon({ id }) {
@@ -64,8 +68,10 @@ export default function SampleProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const context = useContext(MyContext);
-  const product = getSampleProductById(id);
 
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
   const [activeColor, setActiveColor] = useState(null);
   const [quantity, setQuantity] = useState(1);
@@ -79,6 +85,60 @@ export default function SampleProductDetails() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, [id]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      setLoading(true);
+      setNotFound(false);
+      setProduct(null);
+      setActiveImage(0);
+      setActiveColor(null);
+      setQuantity(1);
+
+      if (isSampleProductId(id)) {
+        const sample = getSampleProductById(id);
+        if (!cancelled) {
+          if (sample) {
+            setProduct({
+              ...sample,
+              hasVariants: Array.isArray(sample.colors) && sample.colors.length > 0,
+            });
+          } else {
+            setNotFound(true);
+          }
+          setLoading(false);
+        }
+        return;
+      }
+
+      try {
+        const res = await fetchDataFromApi(`/api/products/${id}`);
+        if (cancelled) return;
+
+        if (isValidApiProduct(res)) {
+          const mapped = mapApiProductToDetailsView(res);
+          if (mapped) {
+            setProduct(mapped);
+          } else {
+            setNotFound(true);
+          }
+        } else {
+          setNotFound(true);
+        }
+      } catch {
+        if (!cancelled) setNotFound(true);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   useEffect(() => {
@@ -121,20 +181,35 @@ export default function SampleProductDetails() {
 
     observer.observe(section);
     return () => observer.disconnect();
-  }, []);
+  }, [product]);
 
-  const inStock = product?.countInStock > 0;
-  const images = product?.images ?? [];
-
-  if (!product) {
+  if (loading) {
     return (
-      <div className="spd-not-found">
-        <h1>Product not found</h1>
-        <p>This sample product does not exist.</p>
-        <Link to="/">Back to home</Link>
+      <div className="spd-page">
+        <div className="spd-page__inner">
+          <p className="spd-not-found" style={{ padding: "3rem 1rem" }}>
+            Loading product…
+          </p>
+        </div>
       </div>
     );
   }
+
+  if (notFound || !product) {
+    return (
+      <div className="spd-not-found">
+        <h1>Product not found</h1>
+        <p>This product does not exist or is no longer available.</p>
+        <Link to="/collections/all">Back to shop</Link>
+      </div>
+    );
+  }
+
+  const inStock = product.countInStock > 0;
+  const images = product.images ?? [];
+  const shortBullets = product.shortDescription?.bullets || [];
+  const detailedDescription = product.detailedDescription || [];
+  const showVariants = Boolean(product.hasVariants) && (product.colors?.length || 0) > 0;
 
   const handleThumbnailSelect = (index) => {
     setActiveImage(index);
@@ -230,7 +305,7 @@ export default function SampleProductDetails() {
             </div>
 
             <ul className="spd-trust" aria-label="Product guarantees">
-              {product.trustBadges.map((badge) => (
+              {(product.trustBadges || []).map((badge) => (
                 <li key={badge.id} className="spd-trust__item">
                   <span className="spd-trust__icon">
                     <TrustIcon id={badge.id} />
@@ -272,17 +347,23 @@ export default function SampleProductDetails() {
 
               {descOpen && (
                 <div className="spd-desc__body">
-                  <ul>
-                    {product.shortDescription.bullets.map((line) => (
-                      <li key={line}>{line}</li>
-                    ))}
-                  </ul>
-                  <p className="spd-desc__note">{product.shortDescription.disclaimer}</p>
+                  {shortBullets.length > 0 ? (
+                    <ul>
+                      {shortBullets.map((line) => (
+                        <li key={line}>{line}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>No short description available.</p>
+                  )}
+                  {product.shortDescription?.disclaimer && (
+                    <p className="spd-desc__note">{product.shortDescription.disclaimer}</p>
+                  )}
                 </div>
               )}
             </section>
 
-            {product.colors?.length > 1 && (
+            {showVariants && (
               <div className="spd-colors">
                 <p className="spd-colors__label">
                   Color:{" "}
@@ -353,13 +434,23 @@ export default function SampleProductDetails() {
           </div>
 
           <div className="spd-details__panel" role="tabpanel" aria-labelledby="spd-details-tab-desc">
-            <ul className="spd-details__list">
-              {product.detailedDescription.map(({ title, text }) => (
-                <li key={title}>
-                  <strong>{title}:</strong> {text}
-                </li>
-              ))}
-            </ul>
+            {detailedDescription.length > 0 ? (
+              <ul className="spd-details__list">
+                {detailedDescription.map(({ title, text }, index) => (
+                  <li key={`${title}-${index}`}>
+                    {title ? (
+                      <>
+                        <strong>{title}:</strong> {text}
+                      </>
+                    ) : (
+                      text
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No description available.</p>
+            )}
           </div>
         </section>
 

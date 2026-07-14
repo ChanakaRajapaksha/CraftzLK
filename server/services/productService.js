@@ -220,10 +220,11 @@ class ProductService {
   async list(query) {
     const page = parseInt(query.page) || 1;
     const perPage = parseInt(query.perPage);
-    const totalPosts = await Product.countDocuments();
-    const totalPages = Math.ceil(totalPosts / perPage);
+    const filter = { status: { $ne: 'inactive' } };
+    const totalPosts = await Product.countDocuments(filter);
+    const totalPages = Math.max(1, Math.ceil(totalPosts / (perPage || totalPosts || 1)));
 
-    if (totalPosts > 0 && page > totalPages) {
+    if (totalPosts > 0 && perPage && page > totalPages) {
       const error = new Error('Page not found');
       error.statusCode = 404;
       error.payload = { message: error.message };
@@ -234,7 +235,8 @@ class ProductService {
 
     if (query.page !== undefined && query.perPage !== undefined) {
       if (query.location !== undefined) {
-        const productListArr = await Product.find()
+        const productListArr = await Product.find(filter)
+          .sort({ dateCreated: -1 })
           .populate('category')
           .skip((page - 1) * perPage)
           .limit(perPage)
@@ -248,20 +250,23 @@ class ProductService {
           }
         }
       } else {
-        productList = await Product.find()
+        productList = await Product.find(filter)
+          .sort({ dateCreated: -1 })
           .populate('category')
           .skip((page - 1) * perPage)
           .limit(perPage)
           .exec();
       }
     } else {
-      productList = await Product.find();
+      productList = await Product.find(filter).sort({ dateCreated: -1 });
     }
 
     return {
       products: productList,
       totalPages: totalPages,
       page: page,
+      total: totalPosts,
+      perPage: perPage || productList.length,
     };
   }
 
