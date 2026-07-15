@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { FaPlus, FaTrash } from "react-icons/fa";
 import ProductImageUploadField from "../../../Components/AdminDashboard/ProductImageUploadField";
+import VariantImageUploadField from "../../../Components/AdminDashboard/VariantImageUploadField";
+import { deleteData, deleteImages, fetchDataFromApi } from "../../../utils/api";
 import { defaultProductFields, PRODUCT_FORM_TABS, slugify, validateProductForm } from "./productFormDefaults";
 
 function Field({ label, htmlFor, children, full = false, size = "default", required = false, error = "" }) {
@@ -58,6 +60,26 @@ export default function ProductForm({
   const [tab, setTab] = useState("basic");
   const [fieldErrors, setFieldErrors] = useState({});
   const [subCategories, setSubCategories] = useState([]);
+
+  // Clear leftover staged uploads once per form session (not on every Images
+  // tab visit) so images uploaded in this session — including variant images,
+  // which share the same staging collection — are not destroyed on Cloudinary
+  // when the Images tab remounts.
+  useEffect(() => {
+    if (isEdit) return;
+    fetchDataFromApi("/api/imageUpload").then((res) => {
+      if (res?.length) {
+        res.forEach((item) => {
+          item?.images?.forEach((img) => {
+            deleteImages(`/api/products/deleteImage?img=${encodeURIComponent(img)}`).then(() => {
+              deleteData("/api/imageUpload/deleteAllImages");
+            });
+          });
+        });
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (formFields.catId && catData?.categoryList) {
@@ -455,7 +477,7 @@ export default function ProductForm({
                 previews={previews}
                 setPreviews={setPreviews}
                 setAlertBox={setAlertBox}
-                clearStagingOnMount={!isEdit}
+                clearStagingOnMount={false}
               />
             </Field>
           </div>
@@ -583,7 +605,7 @@ export default function ProductForm({
                     <span>SKU</span>
                     <span>Price</span>
                     <span>Stock</span>
-                    <span>Image URL</span>
+                    <span>Image</span>
                   </div>
                   {(group.options || []).map((opt, oi) => (
                     <div key={oi} className="admin-dash__variant-option-row">
@@ -591,7 +613,12 @@ export default function ProductForm({
                       <input className="admin-dash__input" placeholder="SKU" value={opt.sku} onChange={(e) => updateVariantOption(gi, oi, "sku", e.target.value)} />
                       <input className="admin-dash__input" type="number" placeholder="Price" value={opt.price} onChange={(e) => updateVariantOption(gi, oi, "price", e.target.value)} />
                       <input className="admin-dash__input" type="number" placeholder="Stock" value={opt.stock} onChange={(e) => updateVariantOption(gi, oi, "stock", e.target.value)} />
-                      <input className="admin-dash__input" placeholder="Image URL" value={opt.image} onChange={(e) => updateVariantOption(gi, oi, "image", e.target.value)} />
+                      <VariantImageUploadField
+                        value={opt.image}
+                        onChange={(url) => updateVariantOption(gi, oi, "image", url)}
+                        setAlertBox={setAlertBox}
+                        label={`image for ${group.variantName || "variant"} option ${oi + 1}`}
+                      />
                     </div>
                   ))}
                 </div>

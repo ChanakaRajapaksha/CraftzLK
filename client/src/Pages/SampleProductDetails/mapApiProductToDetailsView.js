@@ -16,7 +16,7 @@ const DEFAULT_DISCLAIMER =
 export const DUMMY_PRODUCT_RATING = 4;
 export const DUMMY_REVIEW_COUNT = 128;
 
-function formatPriceDisplay(price) {
+export function formatPriceDisplay(price) {
   const amount = Number(price);
   if (!Number.isFinite(amount)) return "Rs 0.00";
   return `Rs ${amount.toLocaleString("en-US", {
@@ -49,16 +49,16 @@ function parseDescriptionPoints(value) {
   return [];
 }
 
-function buildColorsFromVariants(product) {
+function buildVariantGroupFromVariants(product) {
+  const empty = { name: "", options: [] };
   const variants = Array.isArray(product?.variants) ? product.variants : [];
-  if (!variants.length) return [];
+  if (!variants.length) return empty;
 
-  const colorGroup =
-    variants.find((group) => /color/i.test(String(group?.variantName || ""))) ||
+  const group =
+    variants.find((g) => /color/i.test(String(g?.variantName || ""))) ||
     variants[0];
 
-  const options = Array.isArray(colorGroup?.options) ? colorGroup.options : [];
-  return options
+  const options = (Array.isArray(group?.options) ? group.options : [])
     .map((opt, index) => {
       const label = String(opt?.label || "").trim();
       const image = String(opt?.image || "").trim() || product?.images?.[index] || product?.images?.[0];
@@ -67,9 +67,16 @@ function buildColorsFromVariants(product) {
         id: String(opt?.sku || label || `option-${index}`),
         label: label || `Option ${index + 1}`,
         image: image || "",
+        price: Number(opt?.price) || 0,
+        stock: Number(opt?.stock) || 0,
       };
     })
     .filter(Boolean);
+
+  return {
+    name: String(group?.variantName || "").trim(),
+    options,
+  };
 }
 
 function hasVariants(product) {
@@ -115,7 +122,9 @@ export function mapApiProductToDetailsView(apiProduct) {
     shortFromField.length > 0 ? shortFromField : shortFromFullDescription;
 
   const variantsExist = hasVariants(apiProduct);
-  const colors = variantsExist ? buildColorsFromVariants(apiProduct) : [];
+  const variantGroup = variantsExist
+    ? buildVariantGroupFromVariants(apiProduct)
+    : { name: "", options: [] };
 
   return {
     id,
@@ -133,7 +142,8 @@ export function mapApiProductToDetailsView(apiProduct) {
       disclaimer: DEFAULT_DISCLAIMER,
     },
     detailedDescription,
-    colors,
+    colors: variantGroup.options,
+    variantGroupName: variantGroup.name,
     hasVariants: variantsExist,
     trustBadges: DEFAULT_TRUST_BADGES,
     variants: apiProduct.variants || [],

@@ -16,6 +16,7 @@ import YouMayAlsoLike from "../../Components/YouMayAlsoLike";
 import { fetchDataFromApi } from "../../utils/api";
 import ProductReviewsFeed from "./ProductReviewsFeed";
 import {
+  formatPriceDisplay,
   isValidApiProduct,
   mapApiProductToDetailsView,
 } from "./mapApiProductToDetailsView";
@@ -205,7 +206,6 @@ export default function SampleProductDetails() {
     );
   }
 
-  const inStock = product.countInStock > 0;
   const images = product.images ?? [];
   const shortBullets = product.shortDescription?.bullets || [];
   const detailedDescription = product.detailedDescription || [];
@@ -221,13 +221,28 @@ export default function SampleProductDetails() {
     if (matchIndex >= 0) {
       setActiveImage(matchIndex);
     }
+    const nextStock =
+      color.stock !== undefined ? Number(color.stock) : product.countInStock;
+    setQuantity((q) => (nextStock > 0 ? Math.min(q, nextStock) : 1));
   };
 
   const mainImage = images[activeImage] || images[0];
 
+  const selectedVariant = showVariants
+    ? product.colors.find((c) => c.id === activeColor) || null
+    : null;
+  const hasVariantPrice = Number(selectedVariant?.price) > 0;
+  const activePrice = hasVariantPrice ? Number(selectedVariant.price) : product.price;
+  const activePriceDisplay = hasVariantPrice
+    ? formatPriceDisplay(activePrice)
+    : product.priceDisplay;
+  const useVariantStock = showVariants && selectedVariant && selectedVariant.stock !== undefined;
+  const activeStock = useVariantStock ? Number(selectedVariant.stock) : product.countInStock;
+  const inStock = activeStock > 0;
+
   const decreaseQty = () => setQuantity((q) => Math.max(1, q - 1));
   const increaseQty = () => {
-    if (quantity < product.countInStock) {
+    if (quantity < activeStock) {
       setQuantity((q) => q + 1);
     } else {
       context.setAlertBox({
@@ -246,14 +261,16 @@ export default function SampleProductDetails() {
     const user = JSON.parse(localStorage.getItem("user"));
     context.addToCart(
       {
-        productTitle: product.name,
+        productTitle: selectedVariant?.label
+          ? `${product.name} — ${selectedVariant.label}`
+          : product.name,
         image: mainImage,
         rating: product.rating,
-        price: product.price,
+        price: activePrice,
         quantity,
-        subTotal: product.price * quantity,
+        subTotal: activePrice * quantity,
         productId: product.id,
-        countInStock: product.countInStock,
+        countInStock: activeStock,
         userId: user?.userId,
       },
       { openDrawer: true, localOnly: isSampleProductId(product.id) }
@@ -319,13 +336,13 @@ export default function SampleProductDetails() {
           <div className="spd-info">
             <h1 className="spd-info__title">{product.name}</h1>
 
-            <p className="spd-info__price">{product.priceDisplay}</p>
+            <p className="spd-info__price">{activePriceDisplay}</p>
 
             <span className="spd-info__cash-pill">{product.cashPriceLabel}</span>
 
             <p className={`spd-info__stock${inStock ? "" : " spd-info__stock--out"}`}>
               {inStock
-                ? `In stock — ${product.countInStock} available`
+                ? `In stock — ${activeStock} available`
                 : "Out of stock"}
             </p>
 
@@ -366,10 +383,8 @@ export default function SampleProductDetails() {
             {showVariants && (
               <div className="spd-colors">
                 <p className="spd-colors__label">
-                  Color:{" "}
-                  <strong>
-                    {product.colors.find((c) => c.id === activeColor)?.label ?? "Default"}
-                  </strong>
+                  {product.variantGroupName || "Color"}:{" "}
+                  <strong>{selectedVariant?.label ?? "Default"}</strong>
                 </p>
                 <ul className="spd-colors__list">
                   {product.colors.map((color) => (
@@ -534,13 +549,13 @@ export default function SampleProductDetails() {
           >
             <div className="spd-review-sticky__head">
               <img
-                src={mainImage}
+                src={selectedVariant?.image || mainImage}
                 alt={product.name}
                 className="spd-review-sticky__img"
               />
               <div className="spd-review-sticky__meta">
                 <p className="spd-review-sticky__name">{product.name}</p>
-                <p className="spd-review-sticky__price">{product.priceDisplay}</p>
+                <p className="spd-review-sticky__price">{activePriceDisplay}</p>
               </div>
               <button
                 type="button"
@@ -554,15 +569,45 @@ export default function SampleProductDetails() {
             </div>
 
             <div
-              className={`spd-review-sticky__body${reviewStickyExpanded ? " is-open" : ""}`}
+              className={`spd-review-sticky__body${reviewStickyExpanded ? " is-open" : ""}${showVariants ? " spd-review-sticky__body--with-variants" : ""}`}
+              aria-hidden={!reviewStickyExpanded}
             >
+              {showVariants && (
+                <div className="spd-review-sticky__variants">
+                  <p className="spd-review-sticky__variants-label">
+                    {product.variantGroupName || "Color"}:{" "}
+                    <strong>{selectedVariant?.label ?? "Default"}</strong>
+                  </p>
+                  <ul className="spd-review-sticky__variants-list" aria-label="Product variants">
+                    {product.colors.map((color) => {
+                      const optionPrice =
+                        Number(color.price) > 0
+                          ? formatPriceDisplay(color.price)
+                          : product.priceDisplay;
+                      return (
+                        <li key={color.id}>
+                          <button
+                            type="button"
+                            className={`spd-review-sticky__swatch${activeColor === color.id ? " spd-review-sticky__swatch--active" : ""}`}
+                            onClick={() => handleColorSelect(color)}
+                            tabIndex={reviewStickyExpanded ? 0 : -1}
+                            aria-label={`${color.label}, ${optionPrice}`}
+                            title={`${color.label} — ${optionPrice}`}
+                          >
+                            <img src={color.image} alt="" />
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
               <FixedSizeLoadingButton
                 className="spd-review-sticky__add-cart"
                 isLoading={isAddingToCart}
                 onClick={addToCart}
                 disabled={!inStock}
                 tabIndex={reviewStickyExpanded ? 0 : -1}
-                aria-hidden={!reviewStickyExpanded}
                 leading={<BsCartFill aria-hidden="true" />}
                 label="Add to cart"
                 aria-label={isAddingToCart ? "Adding to cart" : "Add to cart"}
