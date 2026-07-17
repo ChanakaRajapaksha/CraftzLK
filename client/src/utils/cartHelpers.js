@@ -49,13 +49,23 @@ export function buildCartPayloadFromSample(product, quantity = 1) {
     quantity: qty,
     subTotal: price * qty,
     productId: product.id,
+    variantLabel: "",
+    variantSku: "",
     countInStock: product.countInStock ?? 99,
   };
 }
 
+export function cartLineKey(item) {
+  const productId = String(item?.productId ?? "");
+  const variantSku = String(item?.variantSku ?? "");
+  const variantLabel = String(item?.variantLabel ?? "");
+  return `${productId}:${variantSku}:${variantLabel}`;
+}
+
 export function addToLocalCart(items, payload) {
   const list = Array.isArray(items) ? [...items] : [];
-  const idx = list.findIndex((i) => i.productId === payload.productId);
+  const incomingKey = cartLineKey(payload);
+  const idx = list.findIndex((i) => cartLineKey(i) === incomingKey);
   if (idx >= 0) {
     const nextQty = list[idx].quantity + payload.quantity;
     list[idx] = {
@@ -66,8 +76,8 @@ export function addToLocalCart(items, payload) {
   } else {
     list.push({
       ...payload,
-      id: `local-${payload.productId}`,
-      _id: `local-${payload.productId}`,
+      id: `local-${incomingKey}`,
+      _id: `local-${incomingKey}`,
     });
   }
   return list;

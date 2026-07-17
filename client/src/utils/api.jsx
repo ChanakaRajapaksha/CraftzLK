@@ -25,15 +25,6 @@ export function clearAccessToken() {
     accessTokenMemory = null;
 }
 
-apiClient.interceptors.request.use((config) => {
-    const token = getAccessToken();
-    if (token) {
-        config.headers = config.headers || {};
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-});
-
 // Public endpoints that don't need token refresh
 const publicEndpoints = [
     '/api/auth/login',
@@ -44,44 +35,83 @@ const publicEndpoints = [
     '/api/auth/refresh-token'
 ];
 
+const AUTH_PAGES = ['/signIn', '/signUp', '/forgot-password', '/reset-password'];
+
+function isPublicEndpoint(url = '') {
+    return publicEndpoints.some((endpoint) => url.includes(endpoint));
+}
+
+let refreshTokenPromise = null;
+
+async function refreshAccessToken() {
+    if (!refreshTokenPromise) {
+        refreshTokenPromise = apiClient.post("/api/auth/refresh-token")
+            .then((response) => {
+                if (response.data?.success && response.data?.data?.accessToken) {
+                    setAccessToken(response.data.data.accessToken);
+                    return true;
+                }
+                return false;
+            })
+            .catch(() => false)
+            .finally(() => {
+                refreshTokenPromise = null;
+            });
+    }
+    return refreshTokenPromise;
+}
+
+async function ensureAccessToken() {
+    if (getAccessToken()) return true;
+    const restored = await restoreSession({ bypassCache: true });
+    return restored === true;
+}
+
+function redirectToSignIn() {
+    const currentPath = window.location.pathname;
+    if (AUTH_PAGES.includes(currentPath)) return;
+    window.location.href = "/signIn";
+}
+
+apiClient.interceptors.request.use(async (config) => {
+    if (!isPublicEndpoint(config.url)) {
+        await ensureAccessToken();
+    }
+
+    const token = getAccessToken();
+    if (token) {
+        config.headers = config.headers || {};
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
 // Response interceptor to handle token refresh (cookie sent automatically)
 apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
-        
-        const isPublicEndpoint = publicEndpoints.some(endpoint => 
-            originalRequest.url?.includes(endpoint)
-        );
-        
-        if (isPublicEndpoint) {
+
+        if (!originalRequest || isPublicEndpoint(originalRequest.url)) {
             return Promise.reject(error);
         }
-        
+
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
-            
-            try {
-                const response = await apiClient.post("/api/auth/refresh-token");
-                
-                if (response.data.success && response.data.data?.accessToken) {
-                    const accessToken = response.data.data.accessToken;
-                    setAccessToken(accessToken);
-                    originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-                    return apiClient(originalRequest);
-                }
-            } catch (refreshError) {
-                clearAccessToken();
-                clearPersistedAuthUser();
-                notifySessionExpired();
-                
-                const currentPath = window.location.pathname;
-                if (!['/signIn', '/signUp', '/forgot-password', '/reset-password'].includes(currentPath)) {
-                    window.location.href = "/signIn";
-                }
+
+            const refreshed = await refreshAccessToken();
+            if (refreshed) {
+                originalRequest.headers = originalRequest.headers || {};
+                originalRequest.headers.Authorization = `Bearer ${getAccessToken()}`;
+                return apiClient(originalRequest);
             }
+
+            clearAccessToken();
+            clearPersistedAuthUser();
+            notifySessionExpired();
+            redirectToSignIn();
         }
-        
+
         return Promise.reject(error);
     }
 );

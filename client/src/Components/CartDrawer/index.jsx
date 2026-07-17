@@ -1,22 +1,17 @@
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { HiOutlineGift, HiOutlinePencil, HiOutlineTruck } from "react-icons/hi2";
 import { FiTrash2 } from "react-icons/fi";
 import { MyContext } from "../../App";
 import { SAMPLE_PRODUCT_CATALOG } from "../../data/sampleProductDetails";
 import {
-  CRAFT_MILESTONES,
   formatRs,
   getCartSubtotal,
-  getMilestoneProgress,
   parsePriceValue,
 } from "../../utils/cartHelpers";
 import FixedSizeLoadingButton from "../FixedSizeLoadingButton";
 import { COLLECTIONS_ALL_PATH } from "../../Pages/Collections/collectionsConstants";
 import EmptyCartIcon from "./EmptyCartIcon";
 import "./CartDrawer.css";
-
-const MILESTONE_ICONS = [HiOutlinePencil, HiOutlineGift, HiOutlineTruck];
 
 function getRecommendations(cartItems, limit = 6) {
   const inCart = new Set((cartItems ?? []).map((i) => i.productId));
@@ -31,7 +26,6 @@ export default function CartDrawer() {
   const items = Array.isArray(context.cartData) ? context.cartData : [];
   const itemCount = items.length;
   const subtotal = getCartSubtotal(items);
-  const progress = getMilestoneProgress(subtotal);
   const recommendations = useMemo(() => getRecommendations(items), [items]);
   const recTrackRef = useRef(null);
   const [recCanPrev, setRecCanPrev] = useState(false);
@@ -112,36 +106,6 @@ export default function CartDrawer() {
           >
             ×
           </button>
-        </div>
-
-        <div className="cart-drawer__milestones" aria-label="Order perks progress">
-          <div className="cart-drawer__progress-track">
-            <div
-              className="cart-drawer__progress-fill"
-              style={{ width: `${progress}%` }}
-              role="progressbar"
-              aria-valuenow={Math.round(progress)}
-              aria-valuemin={0}
-              aria-valuemax={100}
-            />
-          </div>
-          <ul className="cart-drawer__milestones-row">
-            {CRAFT_MILESTONES.map((milestone, index) => {
-              const reached = subtotal >= milestone.threshold;
-              const Icon = MILESTONE_ICONS[index] ?? HiOutlineGift;
-              return (
-                <li
-                  key={milestone.label}
-                  className={`cart-drawer__milestone${reached ? " cart-drawer__milestone--reached" : ""}`}
-                >
-                  <span className="cart-drawer__milestone-icon">
-                    <Icon aria-hidden />
-                  </span>
-                  <span className="cart-drawer__milestone-label">{milestone.shortLabel}</span>
-                </li>
-              );
-            })}
-          </ul>
         </div>
 
         <div className="cart-drawer__body">

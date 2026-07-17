@@ -16,7 +16,6 @@ import {
   normalizeOrder,
   printOrderInvoice,
 } from "./orderUtils";
-import { getSampleOrderById, isSampleOrderId } from "./orderListUtils";
 
 function DetailItem({ label, value }) {
   return (
@@ -42,9 +41,8 @@ export default function OrderDetails() {
   const { setAlertBox } = useOutletContext();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [usingSampleData, setUsingSampleData] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
-  const [nextStatus, setNextStatus] = useState("placed");
+  const [nextStatus, setNextStatus] = useState("confirmed");
   const [savingStatus, setSavingStatus] = useState(false);
 
   useEffect(() => {
@@ -53,29 +51,24 @@ export default function OrderDetails() {
     const load = async () => {
       setLoading(true);
 
-      if (isSampleOrderId(id)) {
-        const sample = getSampleOrderById(id);
-        if (!cancelled) {
-          setOrder(sample ? normalizeOrder(sample) : null);
-          setUsingSampleData(Boolean(sample));
-          setLoading(false);
-        }
-        return;
-      }
-
       const res = await fetchDataFromApi(`/api/orders/${id}`);
       if (cancelled) return;
 
       if (res && (res._id || res.id)) {
         setOrder(normalizeOrder(res));
-        setUsingSampleData(false);
       } else {
         setOrder(null);
       }
       setLoading(false);
     };
 
-    load();
+    load().catch(() => {
+      if (!cancelled) {
+        setOrder(null);
+        setLoading(false);
+      }
+    });
+
     return () => {
       cancelled = true;
     };
@@ -84,32 +77,17 @@ export default function OrderDetails() {
   const timeline = useMemo(() => (order ? getTimelineSteps(order.status) : []), [order]);
 
   const openStatusDialog = () => {
-    setNextStatus(order?.status || "placed");
+    setNextStatus(order?.status || "confirmed");
     setStatusDialogOpen(true);
   };
 
   const saveStatus = () => {
     if (!order) return;
 
-    if (usingSampleData || isSampleOrderId(id)) {
-      const updated = normalizeOrder({
-        ...order,
-        status: nextStatus,
-        statusHistory: [
-          ...(order.statusHistory || []),
-          { status: nextStatus, date: new Date().toISOString() },
-        ],
-      });
-      setOrder(updated);
-      setStatusDialogOpen(false);
-      setAlertBox?.({ open: true, error: false, msg: "Order status updated (sample)." });
-      return;
-    }
-
     setSavingStatus(true);
     editData(`/api/orders/${id}`, { status: nextStatus })
       .then((res) => {
-        setOrder(normalizeOrder(res));
+        setOrder(normalizeOrder(res?.order || res));
         setStatusDialogOpen(false);
         setAlertBox?.({ open: true, error: false, msg: "Order status updated." });
       })
@@ -173,17 +151,19 @@ export default function OrderDetails() {
         }
       />
 
-      {usingSampleData && (
-        <p className="admin-dash__sample-banner">Showing sample order details for preview.</p>
-      )}
-
       <div className="admin-dash__order-detail-grid">
         <DetailSection title="Customer">
           <dl className="admin-dash__detail-grid">
             <DetailItem label="Name" value={order.name} />
             <DetailItem label="Phone" value={order.phoneNumber} />
             <DetailItem label="Email" value={order.email} />
-            <DetailItem label="Address" value={`${order.address}${order.pincode ? `, ${order.pincode}` : ""}`} />
+            <DetailItem label="Billing address" value={`${order.address}${order.pincode ? `, ${order.pincode}` : ""}`} />
+            {order.shippingAddress ? (
+              <DetailItem label="Shipping address" value={order.shippingAddress} />
+            ) : null}
+            {order.orderNotes ? (
+              <DetailItem label="Order notes" value={order.orderNotes} />
+            ) : null}
           </dl>
         </DetailSection>
 

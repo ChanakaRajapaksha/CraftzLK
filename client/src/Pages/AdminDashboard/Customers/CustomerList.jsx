@@ -15,33 +15,21 @@ import {
   getCustomerStatusBadgeClass,
   normalizeCustomer,
 } from "./customerUtils";
-import { getCustomerListSampleData } from "./customerListUtils";
 
 export default function CustomerList() {
   const [customers, setCustomers] = useState([]);
-  const [usingSampleData, setUsingSampleData] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const applySampleCustomers = () => {
-    setCustomers(getCustomerListSampleData().map(normalizeCustomer));
-    setUsingSampleData(true);
-  };
-
   const loadCustomers = () => {
     fetchDataFromApi("/api/customers")
       .then((res) => {
         const list = res?.customerList || [];
-        if (list.length) {
-          setCustomers(list.map(normalizeCustomer));
-          setUsingSampleData(false);
-        } else {
-          applySampleCustomers();
-        }
+        setCustomers(list.map(normalizeCustomer));
       })
-      .catch(() => applySampleCustomers());
+      .catch(() => setCustomers([]));
   };
 
   useEffect(() => {
@@ -117,11 +105,6 @@ export default function CustomerList() {
       </div>
 
       <section className="admin-dash__panel">
-        {usingSampleData && (
-          <p className="admin-dash__sample-banner">
-            Showing sample customers — connect live data when users register and place orders.
-          </p>
-        )}
         <div className="admin-dash__toolbar admin-dash__toolbar--wrap admin-dash__toolbar--filters">
           <input
             className="admin-dash__input"

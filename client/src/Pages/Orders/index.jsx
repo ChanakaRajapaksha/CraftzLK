@@ -5,7 +5,11 @@ import { COLLECTIONS_ALL_PATH } from "../Collections/collectionsConstants";
 import { parsePriceValue } from "../../utils/cartHelpers";
 import {
   fetchUserOrders,
+  getOrderBadgeClass,
   getOrderItemCount,
+  getOrderStatusLabel,
+  getPaymentStatusLabel,
+  getTimelineDoneCount,
 } from "../../utils/orderHelpers";
 import "./Orders.css";
 
@@ -14,7 +18,7 @@ const PAYMENT_LABELS = {
   bank_transfer: "Direct Bank Transfer",
 };
 
-const TIMELINE_STEPS = ["Order placed", "Handcrafting", "Shipped", "Delivered"];
+const TIMELINE_STEPS = ["Order confirmed", "Handcrafting", "Shipped", "Delivered"];
 
 function formatRs(amount) {
   const n = parsePriceValue(amount);
@@ -32,38 +36,32 @@ function getItemPreview(order) {
   return extra > 0 ? `${first} and ${extra} more item${extra > 1 ? "s" : ""}` : first;
 }
 
-function getStoredUser() {
-  try {
-    return JSON.parse(localStorage.getItem("user") || "null");
-  } catch {
-    return null;
-  }
-}
-
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
+  const [loading, setLoading] = useState(true);
   const context = useContext(MyContext);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     context.setEnableFilterTab?.(false);
 
-    const user = getStoredUser();
-    if (!user?.userId) {
+    if (context.isLogin !== true) {
       setOrders([]);
+      setLoading(false);
       return;
     }
 
-    fetchUserOrders(user.userId)
+    fetchUserOrders()
       .then((stored) => {
         setOrders(stored);
         if (stored.length > 0) {
           setExpandedId(stored[0].orderId);
         }
       })
-      .catch(() => setOrders([]));
-  }, []);
+      .catch(() => setOrders([]))
+      .finally(() => setLoading(false));
+  }, [context.isLogin]);
 
   const stats = useMemo(() => {
     const totalSpent = orders.reduce(
@@ -80,6 +78,16 @@ const Orders = () => {
   const toggleExpanded = (orderId) => {
     setExpandedId((current) => (current === orderId ? null : orderId));
   };
+
+  if (loading) {
+    return (
+      <div className="my-orders">
+        <div className="my-orders__container">
+          <p className="my-orders__subtitle">Loading your orders…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="my-orders">
@@ -161,7 +169,9 @@ const Orders = () => {
               const isExpanded = expandedId === order.orderId;
               const items = Array.isArray(order.items) ? order.items : [];
               const itemCount = getOrderItemCount(order);
-              const status = order.status || "confirmed";
+              const statusLabel = getOrderStatusLabel(order.status);
+              const badgeClass = getOrderBadgeClass(order.status);
+              const timelineDone = getTimelineDoneCount(order.status);
 
               return (
                 <article
@@ -178,13 +188,9 @@ const Orders = () => {
                     <div className="my-orders__card-main">
                       <div className="my-orders__card-top">
                         <span className="my-orders__order-id">{order.orderId}</span>
-                        <span
-                          className={`my-orders__badge my-orders__badge--${
-                            status === "processing" ? "processing" : "confirmed"
-                          }`}
-                        >
+                        <span className={`my-orders__badge my-orders__badge--${badgeClass}`}>
                           <span className="my-orders__badge-dot" aria-hidden="true" />
-                          {status === "processing" ? "Processing" : "Confirmed"}
+                          {statusLabel}
                         </span>
                       </div>
                       <p className="my-orders__card-date">{order.date}</p>
@@ -212,29 +218,32 @@ const Orders = () => {
                     <div className="my-orders__card-body-inner">
                       <div className="my-orders__card-details">
                         <ol className="my-orders__timeline" aria-label="Order progress">
-                          {TIMELINE_STEPS.map((label, stepIndex) => (
-                            <li
-                              key={label}
-                              className={`my-orders__timeline-step${
-                                stepIndex === 0 ? " my-orders__timeline-step--done" : ""
-                              }`}
-                            >
-                              <span className="my-orders__timeline-dot">
-                                {stepIndex === 0 && (
-                                  <svg viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                                    <path
-                                      d="M2.5 6 5 8.5 9.5 3.5"
-                                      stroke="currentColor"
-                                      strokeWidth="1.75"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    />
-                                  </svg>
-                                )}
-                              </span>
-                              <span className="my-orders__timeline-label">{label}</span>
-                            </li>
-                          ))}
+                          {TIMELINE_STEPS.map((label, stepIndex) => {
+                            const isDone = stepIndex < timelineDone;
+                            return (
+                              <li
+                                key={label}
+                                className={`my-orders__timeline-step${
+                                  isDone ? " my-orders__timeline-step--done" : ""
+                                }`}
+                              >
+                                <span className="my-orders__timeline-dot">
+                                  {isDone && (
+                                    <svg viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                                      <path
+                                        d="M2.5 6 5 8.5 9.5 3.5"
+                                        stroke="currentColor"
+                                        strokeWidth="1.75"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                      />
+                                    </svg>
+                                  )}
+                                </span>
+                                <span className="my-orders__timeline-label">{label}</span>
+                              </li>
+                            );
+                          })}
                         </ol>
 
                         <div className="my-orders__meta-row">
@@ -253,6 +262,22 @@ const Orders = () => {
                             </svg>
                             {PAYMENT_LABELS[order.paymentMethod] || order.paymentMethod || "—"}
                           </span>
+                          <span className="my-orders__pill">
+                            Payment: {getPaymentStatusLabel(order.paymentStatus)}
+                          </span>
+                          {order.phoneNumber && (
+                            <span className="my-orders__pill">
+                              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path
+                                  d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"
+                                  stroke="currentColor"
+                                  strokeWidth="1.75"
+                                  strokeLinecap="round"
+                                />
+                              </svg>
+                              {order.phoneNumber}
+                            </span>
+                          )}
                           {order.email && (
                             <span className="my-orders__pill">
                               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -291,12 +316,28 @@ const Orders = () => {
                           )}
                         </div>
 
+                        {(order.address || order.shippingAddress) && (
+                          <div className="my-orders__meta-row">
+                            {order.address && (
+                              <span className="my-orders__pill">
+                                Billing: {order.address}
+                              </span>
+                            )}
+                            {order.shippingAddress && (
+                              <span className="my-orders__pill">
+                                Shipping: {order.shippingAddress}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
                         <h3 className="my-orders__items-title">Items in this order</h3>
                         <ul className="my-orders__items">
                           {items.map((item, itemIndex) => (
                             <li key={item.id || itemIndex} className="my-orders__item">
                               <span className="my-orders__item-name">
                                 {item.title}
+                                {item.variant ? ` (${item.variant})` : ""}
                                 <span className="my-orders__item-qty"> × {item.quantity}</span>
                               </span>
                               <span className="my-orders__item-price">
@@ -323,12 +364,18 @@ const Orders = () => {
 
                         {order.paymentMethod === "bank_transfer" && (
                           <div className="my-orders__bank-note">
-                            Payment pending — transfer {formatRs(order.total)} and send your slip
+                            Please transfer {formatRs(order.total)} and send your payment slip
                             with order <strong>{order.orderId}</strong> to{" "}
                             <a href="https://wa.me/94715264449" target="_blank" rel="noreferrer">
                               0715264449
                             </a>
-                            .
+                            . Your order ships once the funds have cleared.
+                          </div>
+                        )}
+
+                        {order.paymentMethod === "cod" && (
+                          <div className="my-orders__bank-note">
+                            Payment status: Pending — pay with cash when your order is delivered.
                           </div>
                         )}
                       </div>

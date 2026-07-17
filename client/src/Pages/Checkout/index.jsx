@@ -23,6 +23,7 @@ const Checkout = () => {
     streetAddressLine1: "",
     streetAddressLine2: "",
     city: "",
+    pincode: "",
     phoneNumber: "",
     email: "",
     shipFirstName: "",
@@ -98,31 +99,88 @@ const Checkout = () => {
     }
   };
 
-  const submitOrder = (orderId) => {
-    const fullName = `${formFields.firstName.trim()} ${formFields.lastName.trim()}`.trim();
-    const orderDate = new Date().toLocaleString("en-US", {
+  const buildAddressLine = (...parts) =>
+    parts
+      .map((part) => String(part || "").trim())
+      .filter(Boolean)
+      .join(", ");
+
+  const validateForm = () => {
+    const required = [
+      ["firstName", "First name"],
+      ["lastName", "Last name"],
+      ["streetAddressLine1", "Street address"],
+      ["city", "Town / City"],
+      ["pincode", "Postal code"],
+      ["phoneNumber", "Phone number"],
+      ["email", "Email address"],
+    ];
+
+    for (const [field, label] of required) {
+      if (!formFields[field]?.trim()) {
+        toast.error(`${label} is required.`);
+        return false;
+      }
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formFields.email.trim())) {
+      toast.error("Please enter a valid email address.");
+      return false;
+    }
+
+    if (shipToDifferent) {
+      const shipRequired = [
+        ["shipFirstName", "Shipping first name"],
+        ["shipLastName", "Shipping last name"],
+        ["shipStreetAddressLine1", "Shipping street address"],
+        ["shipCity", "Shipping town / city"],
+      ];
+
+      for (const [field, label] of shipRequired) {
+        if (!formFields[field]?.trim()) {
+          toast.error(`${label} is required.`);
+          return false;
+        }
+      }
+    }
+
+    return true;
+  };
+
+  const submitOrder = (createdOrder) => {
+    const orderDate = new Date(createdOrder.date || Date.now()).toLocaleString("en-US", {
       month: "short",
       day: "2-digit",
       year: "numeric",
     });
 
     const orderDetails = {
-      orderId,
+      orderId: createdOrder.orderNumber || createdOrder.paymentId,
+      orderNumber: createdOrder.orderNumber || "",
       firstName: formFields.firstName.trim(),
-      name: fullName,
-      email: formFields.email,
-      paymentMethod,
-      subtotal,
-      shipping,
-      total: orderTotal,
+      name: createdOrder.name,
+      email: createdOrder.email,
+      phoneNumber: createdOrder.phoneNumber,
+      address: createdOrder.address,
+      shippingAddress: createdOrder.shippingAddress || "",
+      paymentMethod: createdOrder.paymentMethod,
+      paymentStatus: createdOrder.paymentStatus,
+      status: createdOrder.status || "confirmed",
+      subtotal: createdOrder.subtotal ?? subtotal,
+      shipping: createdOrder.shipping ?? shipping,
+      total: parsePriceValue(createdOrder.amount) || orderTotal,
       date: orderDate,
-      items: cartItems.map((item) => ({
-        id: item._id || item.id || item.productId,
-        title: item.productTitle,
-        quantity: item.quantity || 1,
-        lineTotal:
-          item.subTotal ?? parsePriceValue(item.price) * (item.quantity || 1),
-      })),
+      orderNotes: createdOrder.orderNotes || "",
+      items: (Array.isArray(createdOrder.products) ? createdOrder.products : cartItems).map(
+        (item) => ({
+          id: item.productId || item._id || item.id,
+          title: item.productTitle,
+          variant: item.variant || item.variantLabel || "",
+          quantity: item.quantity || 1,
+          lineTotal:
+            item.subTotal ?? parsePriceValue(item.price) * (item.quantity || 1),
+        })
+      ),
     };
 
     setOrderPlaced(true);
@@ -165,35 +223,40 @@ const Checkout = () => {
       return;
     }
 
+    if (!validateForm()) return;
+
     setIsSubmitting(true);
 
-    const user = JSON.parse(localStorage.getItem("user") || "null");
-    const orderPrefix = paymentMethod === "cod" ? "COD" : "BANK";
-    const userSuffix = user?.userId || "guest";
-    const orderId = `${orderPrefix}_${Date.now()}_${userSuffix}`;
     const fullName = `${formFields.firstName.trim()} ${formFields.lastName.trim()}`.trim();
-    const address = [
+    const address = buildAddressLine(
       formFields.streetAddressLine1,
       formFields.streetAddressLine2,
       formFields.city,
-    ]
-      .map((part) => part.trim())
-      .filter(Boolean)
-      .join(", ");
+      formFields.pincode
+    );
+    const shippingAddress = shipToDifferent
+      ? buildAddressLine(
+          `${formFields.shipFirstName.trim()} ${formFields.shipLastName.trim()}`.trim(),
+          formFields.shipStreetAddressLine1,
+          formFields.shipStreetAddressLine2,
+          formFields.shipCity
+        )
+      : "";
 
     try {
-      await postData("/api/orders/create", {
+      const res = await postData("/api/orders/create", {
         name: fullName || "Customer",
-        phoneNumber: formFields.phoneNumber.trim() || "—",
-        address: address || "—",
-        pincode: formFields.city.trim() || "00000",
+        phoneNumber: formFields.phoneNumber.trim(),
+        address,
+        shippingAddress,
+        pincode: formFields.pincode.trim(),
         amount: String(orderTotal),
-        paymentId: orderId,
-        email: formFields.email,
-        userid: user?.userId,
+        email: formFields.email.trim(),
+        orderNotes: formFields.orderNotes.trim(),
         products: cartItems.map((item) => ({
           productId: item.productId,
           productTitle: item.productTitle,
+          variant: item.variantLabel || "",
           quantity: item.quantity || 1,
           price: parsePriceValue(item.price),
           image: item.image,
@@ -206,8 +269,13 @@ const Checkout = () => {
         shipping,
       });
 
+      const createdOrder = res?.order;
+      if (!createdOrder) {
+        throw new Error("Invalid order response");
+      }
+
       await clearBackendCart(cartItems);
-      submitOrder(orderId);
+      submitOrder(createdOrder);
     } catch {
       toast.error("Failed to place order. Please try again.");
       setIsSubmitting(false);
@@ -338,7 +406,7 @@ const Checkout = () => {
               </div>
             </div>
 
-            <div className="checkout-page__row">
+            <div className="checkout-page__row checkout-page__row--half">
               <div className="checkout-page__field">
                 <label className="checkout-page__label" htmlFor="city">
                   Town / City
@@ -351,6 +419,22 @@ const Checkout = () => {
                   autoComplete="address-level2"
                   value={formFields.city}
                   onChange={onChangeInput}
+                  required
+                />
+              </div>
+              <div className="checkout-page__field">
+                <label className="checkout-page__label" htmlFor="pincode">
+                  Postal code
+                </label>
+                <input
+                  id="pincode"
+                  name="pincode"
+                  type="text"
+                  className="checkout-page__input"
+                  autoComplete="postal-code"
+                  value={formFields.pincode}
+                  onChange={onChangeInput}
+                  required
                 />
               </div>
             </div>
@@ -527,7 +611,9 @@ const Checkout = () => {
                     <tr key={key}>
                       <td>
                         <span className="checkout-page__product-name">
-                          {item.productTitle} × {item.quantity || 1}
+                          {item.productTitle}
+                          {item.variantLabel ? ` (${item.variantLabel})` : ""} ×{" "}
+                          {item.quantity || 1}
                         </span>
                       </td>
                       <td>{formatRsDecimal(lineTotal)}</td>

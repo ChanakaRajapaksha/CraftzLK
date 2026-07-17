@@ -14,6 +14,7 @@ import WriteReviewModal from "../../Components/WriteReviewModal";
 import AskQuestionModal from "../../Components/AskQuestionModal";
 import YouMayAlsoLike from "../../Components/YouMayAlsoLike";
 import { fetchDataFromApi } from "../../utils/api";
+import { useAppSelector } from "../../store/hooks";
 import ProductReviewsFeed from "./ProductReviewsFeed";
 import {
   formatPriceDisplay,
@@ -21,6 +22,14 @@ import {
   mapApiProductToDetailsView,
 } from "./mapApiProductToDetailsView";
 import "./SampleProductDetails.css";
+
+function isVariantOutOfStock(variant) {
+  const status = variant?.stockStatus || "in_stock";
+  if (status === "out_of_stock") return true;
+  if (status === "pre_order") return false;
+  if (variant?.stock !== undefined) return Number(variant.stock) <= 0;
+  return false;
+}
 
 function TrustIcon({ id }) {
   if (id === "authentic") return <HiOutlineShieldCheck aria-hidden="true" />;
@@ -69,6 +78,7 @@ export default function SampleProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const context = useContext(MyContext);
+  const isAuthInitialized = useAppSelector((state) => state.auth.isAuthInitialized);
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -89,6 +99,8 @@ export default function SampleProductDetails() {
   }, [id]);
 
   useEffect(() => {
+    if (!isAuthInitialized) return undefined;
+
     let cancelled = false;
 
     const load = async () => {
@@ -140,7 +152,7 @@ export default function SampleProductDetails() {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, isAuthInitialized]);
 
   useEffect(() => {
     if (product?.colors?.length) {
@@ -238,7 +250,21 @@ export default function SampleProductDetails() {
     : product.priceDisplay;
   const useVariantStock = showVariants && selectedVariant && selectedVariant.stock !== undefined;
   const activeStock = useVariantStock ? Number(selectedVariant.stock) : product.countInStock;
-  const inStock = activeStock > 0;
+  const activeStockStatus = showVariants && selectedVariant
+    ? selectedVariant.stockStatus || "in_stock"
+    : product.stockStatus || "in_stock";
+  const inStock =
+    activeStockStatus === "pre_order"
+      ? true
+      : activeStockStatus === "out_of_stock"
+        ? false
+        : activeStock > 0;
+  const stockLabel =
+    activeStockStatus === "pre_order"
+      ? "Pre order"
+      : inStock
+        ? `In stock — ${activeStock} available`
+        : "Out of stock";
 
   const decreaseQty = () => setQuantity((q) => Math.max(1, q - 1));
   const increaseQty = () => {
@@ -258,20 +284,21 @@ export default function SampleProductDetails() {
     (context.addingCartProductId == null || context.addingCartProductId === product.id);
 
   const addToCart = () => {
-    const user = JSON.parse(localStorage.getItem("user"));
     context.addToCart(
       {
         productTitle: selectedVariant?.label
           ? `${product.name} — ${selectedVariant.label}`
           : product.name,
-        image: mainImage,
+        image: selectedVariant?.image || mainImage,
         rating: product.rating,
         price: activePrice,
         quantity,
         subTotal: activePrice * quantity,
         productId: product.id,
+        variantLabel: selectedVariant?.label || "",
+        variantSku: selectedVariant?.id || "",
         countInStock: activeStock,
-        userId: user?.userId,
+        userId: context.user?.userId,
       },
       { openDrawer: true, localOnly: isSampleProductId(product.id) }
     );
@@ -341,9 +368,7 @@ export default function SampleProductDetails() {
             <span className="spd-info__cash-pill">{product.cashPriceLabel}</span>
 
             <p className={`spd-info__stock${inStock ? "" : " spd-info__stock--out"}`}>
-              {inStock
-                ? `In stock — ${activeStock} available`
-                : "Out of stock"}
+              {stockLabel}
             </p>
 
             <StarRating value={product.rating} count={product.reviewCount} />
@@ -387,18 +412,21 @@ export default function SampleProductDetails() {
                   <strong>{selectedVariant?.label ?? "Default"}</strong>
                 </p>
                 <ul className="spd-colors__list">
-                  {product.colors.map((color) => (
+                  {product.colors.map((color) => {
+                    const outOfStock = isVariantOutOfStock(color);
+                    return (
                     <li key={color.id}>
                       <button
                         type="button"
-                        className={`spd-colors__swatch${activeColor === color.id ? " spd-colors__swatch--active" : ""}`}
+                        className={`spd-colors__swatch${activeColor === color.id ? " spd-colors__swatch--active" : ""}${outOfStock ? " spd-colors__swatch--out-of-stock" : ""}`}
                         onClick={() => handleColorSelect(color)}
-                        aria-label={color.label}
+                        aria-label={outOfStock ? `${color.label} (out of stock)` : color.label}
                       >
                         <img src={color.image} alt="" />
                       </button>
                     </li>
-                  ))}
+                    );
+                  })}
                 </ul>
               </div>
             )}
@@ -584,15 +612,16 @@ export default function SampleProductDetails() {
                         Number(color.price) > 0
                           ? formatPriceDisplay(color.price)
                           : product.priceDisplay;
+                      const outOfStock = isVariantOutOfStock(color);
                       return (
                         <li key={color.id}>
                           <button
                             type="button"
-                            className={`spd-review-sticky__swatch${activeColor === color.id ? " spd-review-sticky__swatch--active" : ""}`}
+                            className={`spd-review-sticky__swatch${activeColor === color.id ? " spd-review-sticky__swatch--active" : ""}${outOfStock ? " spd-review-sticky__swatch--out-of-stock" : ""}`}
                             onClick={() => handleColorSelect(color)}
                             tabIndex={reviewStickyExpanded ? 0 : -1}
-                            aria-label={`${color.label}, ${optionPrice}`}
-                            title={`${color.label} — ${optionPrice}`}
+                            aria-label={outOfStock ? `${color.label}, ${optionPrice} (out of stock)` : `${color.label}, ${optionPrice}`}
+                            title={outOfStock ? `${color.label} — ${optionPrice} (out of stock)` : `${color.label} — ${optionPrice}`}
                           >
                             <img src={color.image} alt="" />
                           </button>

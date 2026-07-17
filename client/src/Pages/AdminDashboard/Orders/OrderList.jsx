@@ -25,12 +25,10 @@ import {
   PAYMENT_STATUSES,
   printOrderInvoice,
 } from "./orderUtils";
-import { getOrderListSampleData, isSampleOrderId } from "./orderListUtils";
 
 export default function OrderList() {
   const { setAlertBox } = useOutletContext();
   const [orders, setOrders] = useState([]);
-  const [usingSampleData, setUsingSampleData] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [paymentFilter, setPaymentFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -41,26 +39,16 @@ export default function OrderList() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [statusTarget, setStatusTarget] = useState(null);
-  const [nextStatus, setNextStatus] = useState("placed");
+  const [nextStatus, setNextStatus] = useState("confirmed");
   const [savingStatus, setSavingStatus] = useState(false);
-
-  const applySampleOrders = () => {
-    setOrders(getOrderListSampleData().map(normalizeOrder));
-    setUsingSampleData(true);
-  };
 
   const loadOrders = () => {
     fetchDataFromApi("/api/orders/")
       .then((res) => {
         const list = Array.isArray(res) ? res : res?.orderList || [];
-        if (list.length) {
-          setOrders(list.map(normalizeOrder));
-          setUsingSampleData(false);
-        } else {
-          applySampleOrders();
-        }
+        setOrders(list.map(normalizeOrder));
       })
-      .catch(() => applySampleOrders());
+      .catch(() => setOrders([]));
   };
 
   useEffect(() => {
@@ -121,7 +109,7 @@ export default function OrderList() {
 
   const openStatusDialog = (order) => {
     setStatusTarget(order);
-    setNextStatus(order.status || "placed");
+    setNextStatus(order.status || "confirmed");
   };
 
   const closeStatusDialog = () => {
@@ -133,30 +121,12 @@ export default function OrderList() {
 
     const id = statusTarget._id || statusTarget.id;
 
-    if (usingSampleData || isSampleOrderId(id)) {
-      setOrders((prev) =>
-        prev.map((order) => {
-          if ((order._id || order.id) !== id) return order;
-          return normalizeOrder({
-            ...order,
-            status: nextStatus,
-            statusHistory: [
-              ...(order.statusHistory || []),
-              { status: nextStatus, date: new Date().toISOString() },
-            ],
-          });
-        })
-      );
-      closeStatusDialog();
-      setAlertBox?.({ open: true, error: false, msg: "Order status updated (sample)." });
-      return;
-    }
-
     setSavingStatus(true);
     editData(`/api/orders/${id}`, { status: nextStatus })
       .then((res) => {
+        const updated = normalizeOrder(res?.order || res);
         setOrders((prev) =>
-          prev.map((order) => ((order._id || order.id) === id ? normalizeOrder(res) : order))
+          prev.map((order) => ((order._id || order.id) === id ? updated : order))
         );
         closeStatusDialog();
         setAlertBox?.({ open: true, error: false, msg: "Order status updated." });
@@ -198,11 +168,6 @@ export default function OrderList() {
       </div>
 
       <section className="admin-dash__panel">
-        {usingSampleData && (
-          <p className="admin-dash__sample-banner">
-            Showing sample orders — connect live data when customers place orders via checkout.
-          </p>
-        )}
         <div className="admin-dash__toolbar admin-dash__toolbar--wrap admin-dash__toolbar--filters">
           <input
             className="admin-dash__input"

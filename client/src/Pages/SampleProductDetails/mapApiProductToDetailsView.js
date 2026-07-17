@@ -69,6 +69,7 @@ function buildVariantGroupFromVariants(product) {
         image: image || "",
         price: Number(opt?.price) || 0,
         stock: Number(opt?.stock) || 0,
+        stockStatus: opt?.stockStatus || "in_stock",
       };
     })
     .filter(Boolean);
@@ -133,6 +134,7 @@ export function mapApiProductToDetailsView(apiProduct) {
     rating: DUMMY_PRODUCT_RATING,
     reviewCount: DUMMY_REVIEW_COUNT,
     countInStock: Number(apiProduct.countInStock) || 0,
+    stockStatus: apiProduct.stockStatus || "in_stock",
     price: Number(apiProduct.price) || 0,
     oldPrice: Number(apiProduct.oldPrice) || 0,
     priceDisplay: formatPriceDisplay(apiProduct.price),

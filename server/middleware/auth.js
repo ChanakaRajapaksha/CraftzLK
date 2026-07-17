@@ -1,6 +1,29 @@
-const jwt = require('jsonwebtoken');
 const { verifyAccessToken } = require('../config/jwt');
 const User = require('../models/user');
+
+const LOGIN_REQUIRED_MESSAGE = 'Login again to access this page.';
+
+const PUBLIC_API_ROUTES = new Set([
+  'POST /api/auth/register',
+  'POST /api/auth/login',
+  'POST /api/auth/google',
+  'POST /api/auth/refresh-token',
+  'POST /api/auth/request-password-reset',
+  'POST /api/auth/reset-password',
+]);
+
+function isPublicApiRoute(req) {
+  const path = req.originalUrl.split('?')[0];
+  return PUBLIC_API_ROUTES.has(`${req.method.toUpperCase()} ${path}`);
+}
+
+function sendLoginRequired(res, extra = {}) {
+  return res.status(401).json({
+    success: false,
+    message: LOGIN_REQUIRED_MESSAGE,
+    ...extra,
+  });
+}
 
 // Authentication middleware
 const authenticateToken = async (req, res, next) => {
@@ -9,43 +32,28 @@ const authenticateToken = async (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
     if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: 'Access token required'
-      });
+      return sendLoginRequired(res);
     }
 
     const decoded = verifyAccessToken(token);
     const user = await User.findById(decoded.userId).select('-password');
     
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid token - user not found'
-      });
+      return sendLoginRequired(res);
     }
 
     if (!user.isActive) {
-      return res.status(401).json({
-        success: false,
-        message: 'Account is deactivated'
-      });
+      return sendLoginRequired(res);
     }
 
     req.user = user;
     next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({
-        success: false,
-        message: 'Token expired',
-        code: 'TOKEN_EXPIRED'
-      });
-    } else if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid token'
-      });
+      return sendLoginRequired(res, { code: 'TOKEN_EXPIRED' });
+    }
+    if (error.name === 'JsonWebTokenError') {
+      return sendLoginRequired(res);
     }
     
     console.error('Auth middleware error:', error);
@@ -54,6 +62,14 @@ const authenticateToken = async (req, res, next) => {
       message: 'Authentication error'
     });
   }
+};
+
+// Global guard for all /api routes except explicit public auth entry points.
+const apiAuthGuard = (req, res, next) => {
+  if (isPublicApiRoute(req)) {
+    return next();
+  }
+  return authenticateToken(req, res, next);
 };
 
 // Optional authentication middleware (doesn't fail if no token)
@@ -80,10 +96,7 @@ const optionalAuth = async (req, res, next) => {
 const authorize = (...roles) => {
   return (req, res, next) => {
     if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Authentication required'
-      });
+      return sendLoginRequired(res);
     }
 
     if (!roles.includes(req.user.role)) {
@@ -98,6 +111,10 @@ const authorize = (...roles) => {
 };
 
 module.exports = {
+  LOGIN_REQUIRED_MESSAGE,
+  PUBLIC_API_ROUTES,
+  isPublicApiRoute,
+  apiAuthGuard,
   authenticateToken,
   optionalAuth,
   authorize

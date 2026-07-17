@@ -6,86 +6,87 @@ class OrderController {
       const result = await orderService.getSales();
       return res.status(200).json(result);
     } catch (error) {
-      console.log(error);
+      return res.status(500).json({ success: false, message: error.message });
     }
   }
 
   async list(req, res) {
     try {
-      const ordersList = await orderService.list(req.query);
-
-      if (!ordersList) {
-        res.status(500).json({ success: false });
-      }
-
+      const ordersList = await orderService.list(req.user, req.query);
       return res.status(200).json(ordersList);
     } catch (error) {
-      res.status(500).json({ success: false });
+      return res.status(error.statusCode || 500).json(
+        error.payload || { success: false, message: error.message }
+      );
     }
   }
 
   async getById(req, res) {
-    const order = await orderService.getById(req.params.id);
-
-    if (!order) {
-      res.status(500).json({ message: 'The order with the given ID was not found.' });
+    try {
+      const order = await orderService.getById(req.params.id, req.user);
+      return res.status(200).json(order);
+    } catch (error) {
+      return res.status(error.statusCode || 500).json(
+        error.payload || { success: false, message: error.message }
+      );
     }
-    return res.status(200).send(order);
   }
 
   async getCount(req, res) {
-    const orderCount = await orderService.getCount();
-
-    if (!orderCount) {
-      res.status(500).json({ success: false });
-    } else {
-      res.send({
-        orderCount: orderCount,
-      });
+    try {
+      const orderCount = await orderService.getCount();
+      return res.status(200).json({ orderCount });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: error.message });
     }
   }
 
   async create(req, res) {
-    const order = await orderService.create(req.body);
-
-    if (!order) {
-      res.status(500).json({
-        error: err,
-        success: false,
+    try {
+      const order = await orderService.create(req.body, req.user);
+      return res.status(201).json({
+        success: true,
+        message: 'Order placed successfully.',
+        order,
       });
+    } catch (error) {
+      return res.status(error.statusCode || 500).json(
+        error.payload || { success: false, message: error.message }
+      );
     }
-
-    res.status(201).json(order);
   }
 
   async remove(req, res) {
-    const deletedOrder = await orderService.remove(req.params.id);
-
-    if (!deletedOrder) {
-      res.status(404).json({
-        message: 'Order not found!',
-        success: false,
+    try {
+      const deletedOrder = await orderService.remove(req.params.id, req.user);
+      if (!deletedOrder) {
+        return res.status(404).json({
+          message: 'Order not found!',
+          success: false,
+        });
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Order Deleted!',
       });
+    } catch (error) {
+      return res.status(error.statusCode || 500).json(
+        error.payload || { success: false, message: error.message }
+      );
     }
-
-    res.status(200).json({
-      success: true,
-      message: 'Order Deleted!',
-    });
   }
 
   async update(req, res) {
     try {
-      const order = await orderService.update(req.params.id, req.body);
-      return res.send(order);
-    } catch (error) {
-      if (error.statusCode === 404) {
-        return res.status(404).json(error.payload);
-      }
-      return res.status(500).json({
-        message: 'Order cannot be updated!',
-        success: false,
+      const order = await orderService.update(req.params.id, req.body, req.user);
+      return res.status(200).json({
+        success: true,
+        order,
       });
+    } catch (error) {
+      return res.status(error.statusCode || 500).json(
+        error.payload || { success: false, message: error.message }
+      );
     }
   }
 }

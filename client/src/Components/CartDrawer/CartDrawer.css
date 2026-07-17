@@ -85,82 +85,6 @@
   color: rgba(0, 0, 0, 0.75);
 }
 
-/* Craft workflow milestones */
-.cart-drawer__milestones {
-  padding: 1rem 1.25rem 1.15rem;
-  border-bottom: 1px solid rgba(201, 169, 97, 0.18);
-  flex-shrink: 0;
-}
-
-.cart-drawer__progress-track {
-  position: relative;
-  height: 4px;
-  margin: 0 0.5rem 1.1rem;
-  border-radius: 999px;
-  background: rgba(201, 169, 97, 0.2);
-  overflow: hidden;
-}
-
-.cart-drawer__progress-fill {
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #c9a961 0%, #b8860b 100%);
-  transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.cart-drawer__milestones-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.35rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.cart-drawer__milestone {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-  min-width: 0;
-  text-align: center;
-}
-
-.cart-drawer__milestone-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.35rem;
-  height: 2.35rem;
-  margin-bottom: 0.4rem;
-  border-radius: 50%;
-  border: 1.5px solid #1f1a14;
-  background: #fff;
-  font-size: 1rem;
-  color: #1f1a14;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-}
-
-.cart-drawer__milestone--reached .cart-drawer__milestone-icon {
-  border-color: var(--primary-dark, #b8860b);
-  background: #fffdf5;
-  color: var(--primary-dark, #b8860b);
-}
-
-.cart-drawer__milestone-label {
-  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
-  font-size: 0.62rem;
-  font-weight: 700;
-  line-height: 1.25;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #666;
-}
-
-.cart-drawer__milestone--reached .cart-drawer__milestone-label {
-  color: #1f1a14;
-}
-
 /* Scrollable body — line items only; recs sit below */
 .cart-drawer__body {
   flex: 1 1 auto;
@@ -517,8 +441,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .cart-drawer__backdrop,
-  .cart-drawer__panel,
-  .cart-drawer__progress-fill {
+  .cart-drawer__panel {
     transition: none;
   }
 }

@@ -173,7 +173,13 @@ export default function ProductForm({
   const addVariantGroup = () => {
     setFormFields((prev) => ({
       ...prev,
-      variants: [...(prev.variants || []), { variantName: "", options: [{ label: "", sku: "", price: "", stock: "", image: "" }] }],
+      variants: [
+        ...(prev.variants || []),
+        {
+          variantName: "",
+          options: [{ label: "", sku: "", price: "", stock: "", stockStatus: "in_stock", image: "" }],
+        },
+      ],
     }));
   };
 
@@ -190,7 +196,10 @@ export default function ProductForm({
       const variants = [...(prev.variants || [])];
       variants[gi] = {
         ...variants[gi],
-        options: [...(variants[gi].options || []), { label: "", sku: "", price: "", stock: "", image: "" }],
+        options: [
+          ...(variants[gi].options || []),
+          { label: "", sku: "", price: "", stock: "", stockStatus: "in_stock", image: "" },
+        ],
       };
       return { ...prev, variants };
     });
@@ -605,6 +614,7 @@ export default function ProductForm({
                     <span>SKU</span>
                     <span>Price</span>
                     <span>Stock</span>
+                    <span>Stock Status</span>
                     <span>Image</span>
                   </div>
                   {(group.options || []).map((opt, oi) => (
@@ -613,6 +623,16 @@ export default function ProductForm({
                       <input className="admin-dash__input" placeholder="SKU" value={opt.sku} onChange={(e) => updateVariantOption(gi, oi, "sku", e.target.value)} />
                       <input className="admin-dash__input" type="number" placeholder="Price" value={opt.price} onChange={(e) => updateVariantOption(gi, oi, "price", e.target.value)} />
                       <input className="admin-dash__input" type="number" placeholder="Stock" value={opt.stock} onChange={(e) => updateVariantOption(gi, oi, "stock", e.target.value)} />
+                      <select
+                        className="admin-dash__select"
+                        value={opt.stockStatus || "in_stock"}
+                        onChange={(e) => updateVariantOption(gi, oi, "stockStatus", e.target.value)}
+                        aria-label={`Stock status for ${group.variantName || "variant"} option ${oi + 1}`}
+                      >
+                        <option value="in_stock">In Stock</option>
+                        <option value="out_of_stock">Out of Stock</option>
+                        <option value="pre_order">Pre Order</option>
+                      </select>
                       <VariantImageUploadField
                         value={opt.image}
                         onChange={(url) => updateVariantOption(gi, oi, "image", url)}

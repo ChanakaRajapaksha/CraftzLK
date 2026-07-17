@@ -38,6 +38,7 @@ import { getSampleProductById } from "./data/sampleProductDetails";
 import {
   addToLocalCart,
   buildCartPayloadFromSample,
+  cartLineKey,
   isSampleProductId,
   removeFromLocalCart,
   updateLocalCartQty,
@@ -133,7 +134,7 @@ const OBSOLETE_STORAGE_KEYS = ["craftzlk_local_cart", "craftzlk_local_orders"];
 function AppContent() {
   const location = useLocation();
   const dispatch = useAppDispatch();
-  const { user } = useAppSelector((state) => state.auth);
+  const { user, isAuthInitialized, isAuthenticated } = useAppSelector((state) => state.auth);
   const isLogin = useAppSelector(selectIsLoggedIn);
 
   // Calculate initial header/footer visibility based on current route
@@ -201,6 +202,8 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
+    if (!isAuthInitialized || !isAuthenticated) return;
+
     fetchDataFromApi("/api/settings")
       .then((res) => {
         const brand = applyStoreBrandFromSettings(res?.settings);
@@ -213,7 +216,7 @@ function AppContent() {
         setStoreFavicon("");
         applyDocumentFavicon("");
       });
-  }, []);
+  }, [isAuthInitialized, isAuthenticated]);
 
   useEffect(() => {
     applyDocumentFavicon(storeFavicon);
@@ -247,39 +250,19 @@ function AppContent() {
   }, [location.pathname]);
 
   useEffect(() => {
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        if (
-          user?.userId !== "" &&
-          user?.userId !== undefined &&
-          user?.userId !== null
-        ) {
-          fetchDataFromApi(`/api/cart?userId=${user?.userId}`).then((res) => {
-            const apiItems = Array.isArray(res) ? res : [];
-            setCartData((prev) => {
-              const sampleItems = (Array.isArray(prev) ? prev : []).filter((item) =>
-                isSampleProductId(item.productId)
-              );
-              return [
-                ...apiItems,
-                ...sampleItems.filter(
-                  (local) => !apiItems.some((api) => api.productId === local.productId)
-                ),
-              ];
-            });
-          });
-        }
-      } catch (error) {
-        console.error("Error parsing user data:", error);
-      }
-    } else {
+    if (!isAuthInitialized) return;
+
+    if (!isAuthenticated) {
       setCartData([]);
+      return;
     }
-  }, [isLogin]);
+
+    getCartData();
+  }, [isLogin, isAuthInitialized, isAuthenticated]);
 
   useEffect(() => {
+    if (!isAuthInitialized || !isAuthenticated) return;
+
     getCountry("https://countriesnow.space/api/v0.1/countries/");
 
     refreshCategoryData();
@@ -301,33 +284,27 @@ function AppContent() {
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, [refreshCategoryData]);
+  }, [isAuthInitialized, isAuthenticated, refreshCategoryData]);
 
   const getCartData = () => {
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        if (user?.userId) {
-          fetchDataFromApi(`/api/cart?userId=${user?.userId}`).then((res) => {
-            const apiItems = Array.isArray(res) ? res : [];
-            setCartData((prev) => {
-              const sampleItems = (Array.isArray(prev) ? prev : []).filter((item) =>
-                isSampleProductId(item.productId)
-              );
-              return [
-                ...apiItems,
-                ...sampleItems.filter(
-                  (local) => !apiItems.some((api) => api.productId === local.productId)
-                ),
-              ];
-            });
-          });
-        }
-      } catch (error) {
-        console.error("Error parsing user data:", error);
-      }
-    }
+    if (!isLogin) return;
+
+    fetchDataFromApi("/api/cart")
+      .then((res) => {
+        const apiItems = Array.isArray(res) ? res : [];
+        setCartData((prev) => {
+          const sampleItems = (Array.isArray(prev) ? prev : []).filter((item) =>
+            isSampleProductId(item.productId)
+          );
+          return [
+            ...apiItems,
+            ...sampleItems.filter(
+              (local) => !apiItems.some((api) => cartLineKey(api) === cartLineKey(local))
+            ),
+          ];
+        });
+      })
+      .catch(() => {});
   };
 
   const syncSampleCartInState = (allItems) => {
@@ -365,7 +342,6 @@ function AppContent() {
     }
 
     if (isLogin) {
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
       const qty = Math.max(1, quantity);
       editData(`/api/cart/${item._id || item.id}`, {
         productTitle: item.productTitle,
@@ -375,6 +351,9 @@ function AppContent() {
         quantity: qty,
         subTotal: parseInt(item.price, 10) * qty,
         productId: item.productId,
+        variantLabel: item.variantLabel || "",
+        variantSku: item.variantSku || "",
+        countInStock: item.countInStock,
         userId: user?.userId,
       }).then(() => getCartData());
     }
@@ -431,6 +410,11 @@ function AppContent() {
       const next = addToLocalCart(current, data);
       syncSampleCartInState(next);
       if (openDrawer) setCartDrawerOpen(true);
+      setAlertBox({
+        open: true,
+        error: false,
+        msg: "Added to cart",
+      });
       setTimeout(finish, 450);
     };
 
@@ -439,56 +423,49 @@ function AppContent() {
       return;
     }
 
-    if (isLogin === true) {
-      setCartData((prev) => {
-        const arr = Array.isArray(prev) ? [...prev] : [];
-        const idx = arr.findIndex((i) => i.productId === data.productId);
-        if (idx >= 0) {
-          return arr.map((item, n) =>
-            n === idx
-              ? {
-                  ...item,
-                  quantity: item.quantity + data.quantity,
-                  subTotal: item.price * (item.quantity + data.quantity),
-                }
-              : item
-          );
-        }
-        return [
-          ...arr,
-          {
-            ...data,
-            id: data.id || `opt-${Date.now()}`,
-            _id: data._id || `opt-${Date.now()}`,
-          },
-        ];
+    if (!isLogin) {
+      setAlertBox({
+        open: true,
+        error: true,
+        msg: "Please sign in to add items to your cart.",
       });
+      finish();
+      return;
+    }
 
-      postData(`/api/cart/add`, data)
-        .then((res) => {
-          if (res.status !== false) {
-            if (openDrawer) setCartDrawerOpen(true);
-            getCartData();
-          } else {
-            setAlertBox({
-              open: true,
-              error: true,
-              msg: res.msg,
-            });
-            getCartData();
-          }
-        })
-        .finally(finish);
-    } else {
-      applyLocal();
-      if (!localOnly) {
+    const payload = {
+      ...data,
+      userId: user?.userId || data.userId,
+    };
+
+    postData("/api/cart/add", payload)
+      .then((res) => {
+        if (res?.success === false || res?.status === false) {
+          setAlertBox({
+            open: true,
+            error: true,
+            msg: res?.msg || res?.message || "Failed to add item to cart.",
+          });
+          getCartData();
+          return;
+        }
+
+        if (openDrawer) setCartDrawerOpen(true);
         setAlertBox({
           open: true,
           error: false,
-          msg: "Added to cart",
+          msg: res?.message || "Added to cart",
         });
-      }
-    }
+        getCartData();
+      })
+      .catch((error) => {
+        setAlertBox({
+          open: true,
+          error: true,
+          msg: error?.response?.data?.msg || error?.response?.data?.message || "Failed to add item to cart.",
+        });
+      })
+      .finally(finish);
   };
 
   const values = {

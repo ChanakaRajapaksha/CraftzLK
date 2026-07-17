@@ -1,7 +1,9 @@
 function errorHandler(err, req, res, next) {
     if (err.name === 'UnauthorizedError') {
-        // jwt authentication error
-        return res.status(401).json({message: "The user is not authorized"})
+        return res.status(401).json({
+            success: false,
+            message: 'Login again to access this page.',
+        });
     }
 
     if (err.name === 'ValidationError') {

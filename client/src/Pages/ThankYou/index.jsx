@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { COLLECTIONS_ALL_PATH } from "../Collections/collectionsConstants";
 import { parsePriceValue } from "../../utils/cartHelpers";
+import { getPaymentStatusLabel } from "../../utils/orderHelpers";
 import "./ThankYou.css";
 
 const CONFETTI_COLORS = ["#c9a961", "#b8860b", "#e8d5a3", "#8c6a2f", "#f0e6cf"];
@@ -112,6 +113,12 @@ const ThankYou = () => {
               {PAYMENT_LABELS[order.paymentMethod] || order.paymentMethod}
             </span>
           </div>
+          <div className="thank-you__meta-item">
+            <span className="thank-you__meta-label">Payment status</span>
+            <span className="thank-you__meta-value">
+              {getPaymentStatusLabel(order.paymentStatus)}
+            </span>
+          </div>
         </div>
 
         {order.paymentMethod === "bank_transfer" && (
@@ -139,6 +146,7 @@ const ThankYou = () => {
               >
                 <span className="thank-you__item-name">
                   {item.title}
+                  {item.variant ? ` (${item.variant})` : ""}
                   <span className="thank-you__item-qty"> × {item.quantity}</span>
                 </span>
                 <span className="thank-you__item-price">{formatRs(item.lineTotal)}</span>

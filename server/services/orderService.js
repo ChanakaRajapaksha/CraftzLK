@@ -1,11 +1,39 @@
 const { Orders } = require('../models/orders');
 
+function resolveUserId(authUser, bodyUserId) {
+  const id = authUser?._id || authUser?.id || bodyUserId;
+  return id ? String(id) : '';
+}
+
+function resolvePaymentStatus(paymentMethod) {
+  return paymentMethod === 'bank_transfer' ? 'paid' : 'pending';
+}
+
+function normalizeProducts(products = []) {
+  return products.map((item) => ({
+    productId: String(item.productId || ''),
+    productTitle: item.productTitle || '',
+    variant: String(item.variant || item.variantLabel || ''),
+    quantity: Number(item.quantity) || 1,
+    price: Number(item.price) || 0,
+    image: item.image || '',
+    subTotal:
+      Number(item.subTotal) ||
+      (Number(item.price) || 0) * (Number(item.quantity) || 1),
+  }));
+}
+
+async function generateOrderNumber() {
+  const count = await Orders.countDocuments();
+  return `#${1000 + count + 1}`;
+}
+
 class OrderService {
   async getSales() {
     const ordersList = await Orders.find();
 
     let totalSales = 0;
-    let monthlySales = [
+    const monthlySales = [
       { month: 'JAN', sale: 0 },
       { month: 'FEB', sale: 0 },
       { month: 'MAR', sale: 0 },
@@ -20,161 +48,122 @@ class OrderService {
       { month: 'DEC', sale: 0 },
     ];
 
-    for (let i = 0; i < ordersList.length; i++) {
-      totalSales = totalSales + parseInt(ordersList[i].amount);
-      const str = JSON.stringify(ordersList[i]?.date);
-      const monthStr = str.substr(6, 8);
-      const month = parseInt(monthStr.substr(0, 2));
+    for (let i = 0; i < ordersList.length; i += 1) {
+      totalSales += parseFloat(ordersList[i].amount) || 0;
+      const orderDate = new Date(ordersList[i]?.date);
+      const month = orderDate.getMonth() + 1;
 
-      if (month === 1) {
-        monthlySales[0] = {
-          month: 'JAN',
-          sale: (monthlySales[0].sale = parseInt(monthlySales[0].sale) + parseInt(ordersList[i].amount)),
-        };
-      }
-
-      if (month === 2) {
-        monthlySales[1] = {
-          month: 'FEB',
-          sale: (monthlySales[1].sale = parseInt(monthlySales[1].sale) + parseInt(ordersList[i].amount)),
-        };
-      }
-
-      if (month === 3) {
-        monthlySales[2] = {
-          month: 'MAR',
-          sale: (monthlySales[2].sale = parseInt(monthlySales[2].sale) + parseInt(ordersList[i].amount)),
-        };
-      }
-
-      if (month === 4) {
-        monthlySales[3] = {
-          month: 'APRIL',
-          sale: (monthlySales[3].sale = parseInt(monthlySales[3].sale) + parseInt(ordersList[i].amount)),
-        };
-      }
-
-      if (month === 5) {
-        monthlySales[4] = {
-          month: 'MAY',
-          sale: (monthlySales[4].sale = parseInt(monthlySales[4].sale) + parseInt(ordersList[i].amount)),
-        };
-      }
-
-      if (month === 6) {
-        monthlySales[5] = {
-          month: 'JUNE',
-          sale: (monthlySales[5].sale = parseInt(monthlySales[5].sale) + parseInt(ordersList[i].amount)),
-        };
-      }
-
-      if (month === 7) {
-        monthlySales[6] = {
-          month: 'JULY',
-          sale: (monthlySales[6].sale = parseInt(monthlySales[6].sale) + parseInt(ordersList[i].amount)),
-        };
-      }
-
-      if (month === 8) {
-        monthlySales[7] = {
-          month: 'AUG',
-          sale: (monthlySales[7].sale = parseInt(monthlySales[7].sale) + parseInt(ordersList[i].amount)),
-        };
-      }
-
-      if (month === 9) {
-        monthlySales[8] = {
-          month: 'SEP',
-          sale: (monthlySales[8].sale = parseInt(monthlySales[8].sale) + parseInt(ordersList[i].amount)),
-        };
-      }
-
-      if (month === 10) {
-        monthlySales[9] = {
-          month: 'OCT',
-          sale: (monthlySales[9].sale = parseInt(monthlySales[9].sale) + parseInt(ordersList[i].amount)),
-        };
-      }
-
-      if (month === 11) {
-        monthlySales[10] = {
-          month: 'NOV',
-          sale: (monthlySales[10].sale = parseInt(monthlySales[10].sale) + parseInt(ordersList[i].amount)),
-        };
-      }
-
-      if (month === 12) {
-        monthlySales[11] = {
-          month: 'DEC',
-          sale: (monthlySales[11].sale = parseInt(monthlySales[11].sale) + parseInt(ordersList[i].amount)),
-        };
+      if (month >= 1 && month <= 12) {
+        monthlySales[month - 1].sale += parseFloat(ordersList[i].amount) || 0;
       }
     }
 
     return { totalSales, monthlySales };
   }
 
-  async list(query) {
-    return Orders.find(query);
+  async list(authUser, query = {}) {
+    const userId = resolveUserId(authUser);
+    const isAdmin = authUser?.role === 'admin';
+    const filter = {};
+
+    if (isAdmin) {
+      if (query.userid) filter.userid = String(query.userid);
+    } else {
+      if (!userId) {
+        const error = new Error('Login again to access this page.');
+        error.statusCode = 401;
+        error.payload = { success: false, message: error.message };
+        throw error;
+      }
+      filter.userid = userId;
+    }
+
+    return Orders.find(filter).sort({ date: -1 });
   }
 
-  async getById(id) {
-    return Orders.findById(id);
+  async getById(id, authUser) {
+    const order = await Orders.findById(id);
+    if (!order) {
+      const error = new Error('The order with the given ID was not found.');
+      error.statusCode = 404;
+      error.payload = { success: false, message: error.message };
+      throw error;
+    }
+
+    const userId = resolveUserId(authUser);
+    const isAdmin = authUser?.role === 'admin';
+    if (!isAdmin && userId && order.userid !== userId) {
+      const error = new Error('Login again to access this page.');
+      error.statusCode = 401;
+      error.payload = { success: false, message: error.message };
+      throw error;
+    }
+
+    return order;
   }
 
   async getCount() {
     return Orders.countDocuments();
   }
 
-  async create(body) {
-    let order = new Orders({
+  async create(body, authUser) {
+    const userid = resolveUserId(authUser, body.userid);
+    if (!userid) {
+      const error = new Error('Login again to access this page.');
+      error.statusCode = 401;
+      error.payload = { success: false, message: error.message };
+      throw error;
+    }
+
+    const products = normalizeProducts(body.products);
+    if (!products.length) {
+      const error = new Error('Your cart is empty.');
+      error.statusCode = 400;
+      error.payload = { success: false, message: error.message };
+      throw error;
+    }
+
+    const paymentMethod = body.paymentMethod || 'cod';
+    const paymentStatus = resolvePaymentStatus(paymentMethod);
+    const status = 'confirmed';
+    const orderNumber = await generateOrderNumber();
+    const paymentId = body.paymentId || `ORD_${Date.now()}_${userid.slice(-6)}`;
+    const now = new Date();
+
+    const order = new Orders({
       name: body.name,
       phoneNumber: body.phoneNumber,
       address: body.address,
+      shippingAddress: body.shippingAddress || '',
       pincode: body.pincode,
-      amount: body.amount,
-      paymentId: body.paymentId,
+      amount: String(body.amount),
+      paymentId,
       email: body.email,
-      userid: body.userid,
-      products: body.products,
-      date: body.date,
-      paymentMethod: body.paymentMethod,
-      subtotal: body.subtotal,
-      shipping: body.shipping,
+      userid,
+      products,
+      orderNumber,
+      orderNotes: body.orderNotes || '',
+      paymentMethod,
+      paymentStatus,
+      status,
+      statusHistory: [{ status, date: now }],
+      subtotal: Number(body.subtotal) || 0,
+      discount: Number(body.discount) || 0,
+      tax: Number(body.tax) || 0,
+      shipping: Number(body.shipping) || 0,
+      date: body.date ? new Date(body.date) : now,
     });
 
-    const order1 = {
-      name: body.name,
-      phoneNumber: body.phoneNumber,
-      address: body.address,
-      pincode: body.pincode,
-      amount: body.amount,
-      paymentId: body.paymentId,
-      email: body.email,
-      userid: body.userid,
-      products: body.products,
-      date: body.date,
-    };
-
-    console.log(order1);
-
-    order = await order.save();
-    return order;
+    return order.save();
   }
 
-  async remove(id) {
+  async remove(id, authUser) {
+    await this.getById(id, authUser);
     return Orders.findByIdAndDelete(id);
   }
 
-  async update(id, body) {
-    const order = await Orders.findById(id);
-
-    if (!order) {
-      const error = new Error('Order not found!');
-      error.statusCode = 404;
-      error.payload = { message: error.message, success: false };
-      throw error;
-    }
+  async update(id, body, authUser) {
+    const order = await this.getById(id, authUser);
 
     const nextStatus = body.status ?? body.orderStatus ?? order.status;
     if (nextStatus && nextStatus !== order.status) {
@@ -187,12 +176,17 @@ class OrderService {
     if (body.name !== undefined) order.name = body.name;
     if (body.phoneNumber !== undefined) order.phoneNumber = body.phoneNumber;
     if (body.address !== undefined) order.address = body.address;
+    if (body.shippingAddress !== undefined) order.shippingAddress = body.shippingAddress;
     if (body.pincode !== undefined) order.pincode = body.pincode;
     if (body.amount !== undefined) order.amount = body.amount;
     if (body.paymentId !== undefined) order.paymentId = body.paymentId;
     if (body.email !== undefined) order.email = body.email;
-    if (body.userid !== undefined) order.userid = body.userid;
-    if (body.products !== undefined) order.products = body.products;
+    if (body.products !== undefined) order.products = normalizeProducts(body.products);
+    if (body.orderNotes !== undefined) order.orderNotes = body.orderNotes;
+    if (body.subtotal !== undefined) order.subtotal = Number(body.subtotal) || 0;
+    if (body.discount !== undefined) order.discount = Number(body.discount) || 0;
+    if (body.tax !== undefined) order.tax = Number(body.tax) || 0;
+    if (body.shipping !== undefined) order.shipping = Number(body.shipping) || 0;
 
     await order.save();
     return order;

@@ -1,6 +1,15 @@
 const dns = require('dns').promises;
 require('dotenv/config');
 
+const DNS_SERVERS = (process.env.DNS_SERVERS || '8.8.8.8,1.1.1.1')
+  .split(',')
+  .map((server) => server.trim())
+  .filter(Boolean);
+
+if (DNS_SERVERS.length) {
+  require('dns').setServers(DNS_SERVERS);
+}
+
 async function testConnection() {
   const connectionString = process.env.CONNECTION_STRING;
   

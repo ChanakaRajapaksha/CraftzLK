@@ -175,7 +175,13 @@ export function productToForm(product) {
     size: firstSize || "",
     productWeight: firstWeight || "",
     location: parseProductLocation(product.location),
-    variants: product.variants || [],
+    variants: (product.variants || []).map((group) => ({
+      ...group,
+      options: (group.options || []).map((opt) => ({
+        ...opt,
+        stockStatus: opt.stockStatus || "in_stock",
+      })),
+    })),
     customizationOptions: product.customizationOptions || [],
     shipping: {
       weight: product.shipping?.weight ?? "",
@@ -234,6 +240,7 @@ export function formToPayload(formFields) {
         ...opt,
         price: Number(opt.price) || 0,
         stock: Number(opt.stock) || 0,
+        stockStatus: opt.stockStatus || "in_stock",
       })),
     })),
     customizationOptions: formFields.customizationOptions || [],

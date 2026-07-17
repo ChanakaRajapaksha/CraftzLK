@@ -41,7 +41,7 @@ const STATUS_ALIASES = {
 };
 
 export function normalizeOrderStatus(status) {
-  const value = String(status || "placed").toLowerCase();
+  const value = String(status || "confirmed").toLowerCase();
   return STATUS_ALIASES[value] || value;
 }
 
@@ -72,7 +72,8 @@ export function getOrderDisplayId(order) {
 
 export function inferPaymentStatus(order) {
   if (order?.paymentStatus) return order.paymentStatus;
-  if (order?.paymentId && order.paymentId !== "pending" && order.paymentId !== "cod") return "paid";
+  if (order?.paymentMethod === "bank_transfer") return "paid";
+  if (order?.paymentMethod === "cod") return "pending";
   return "pending";
 }
 
@@ -101,8 +102,8 @@ export function normalizeOrder(order) {
 
   let statusHistory = Array.isArray(order.statusHistory) ? [...order.statusHistory] : [];
   if (!statusHistory.length) {
-    statusHistory = [{ status: "placed", date: date || new Date().toISOString() }];
-    const flow = ["placed", "confirmed", "packed", "shipped", "delivered"];
+    statusHistory = [{ status: "confirmed", date: date || new Date().toISOString() }];
+    const flow = ["confirmed", "packed", "shipped", "delivered"];
     const idx = flow.indexOf(status);
     if (idx > 0) {
       for (let i = 1; i <= idx; i += 1) {
@@ -113,6 +114,11 @@ export function normalizeOrder(order) {
       statusHistory.push({ status: "cancelled", date: date || new Date().toISOString() });
     }
   }
+
+  const paymentMethodLabels = {
+    cod: "Cash on delivery",
+    bank_transfer: "Direct bank transfer",
+  };
 
   return {
     ...order,
@@ -129,7 +135,7 @@ export function normalizeOrder(order) {
     date,
     statusHistory,
     orderNumber: getOrderDisplayId(order),
-    paymentMethod: order.paymentMethod || (paymentStatus === "paid" ? "Online" : "Cash on delivery"),
+    paymentMethod: paymentMethodLabels[order.paymentMethod] || order.paymentMethod || "—",
   };
 }
 

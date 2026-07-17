@@ -114,6 +114,10 @@ const cmsPageRoutes = require('./routes/cmsPages');
 const notificationRoutes = require('./routes/notifications');
 const adminNotificationRoutes = require('./routes/adminNotifications');
 const storeSettingsRoutes = require('./routes/storeSettings');
+const { apiAuthGuard } = require('./middleware/auth');
+
+// Require login for every API route except public auth entry points.
+app.use('/api', apiAuthGuard);
 
 // API Routes
 app.use("/api/auth", authRoutes);

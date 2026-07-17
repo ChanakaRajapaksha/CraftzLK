@@ -11,7 +11,6 @@ import {
   getCustomerStatusBadgeClass,
   normalizeCustomer,
 } from "./customerUtils";
-import { getSampleCustomerById, isSampleCustomerId } from "./customerListUtils";
 import { getOrderStatusBadgeClass } from "../Orders/orderUtils";
 
 function DetailItem({ label, value, children }) {
@@ -36,7 +35,6 @@ export default function CustomerDetails() {
   const { id } = useParams();
   const [customer, setCustomer] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [usingSampleData, setUsingSampleData] = useState(false);
   const [tab, setTab] = useState("profile");
 
   useEffect(() => {
@@ -45,29 +43,24 @@ export default function CustomerDetails() {
     const load = async () => {
       setLoading(true);
 
-      if (isSampleCustomerId(id)) {
-        const sample = getSampleCustomerById(id);
-        if (!cancelled) {
-          setCustomer(sample ? normalizeCustomer(sample) : null);
-          setUsingSampleData(Boolean(sample));
-          setLoading(false);
-        }
-        return;
-      }
-
       const res = await fetchDataFromApi(`/api/customers/${id}`);
       if (cancelled) return;
 
       if (res?.customerData) {
         setCustomer(normalizeCustomer(res.customerData));
-        setUsingSampleData(false);
       } else {
         setCustomer(null);
       }
       setLoading(false);
     };
 
-    load();
+    load().catch(() => {
+      if (!cancelled) {
+        setCustomer(null);
+        setLoading(false);
+      }
+    });
+
     return () => {
       cancelled = true;
     };
@@ -118,10 +111,6 @@ export default function CustomerDetails() {
           </Link>
         }
       />
-
-      {usingSampleData && (
-        <p className="admin-dash__sample-banner">Showing sample customer details for preview.</p>
-      )}
 
       <nav className="admin-dash__product-tabs" aria-label="Customer detail sections">
         {[
