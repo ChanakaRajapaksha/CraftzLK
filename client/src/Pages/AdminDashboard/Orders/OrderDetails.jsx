@@ -5,16 +5,16 @@ import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader"
 import { editData, fetchDataFromApi } from "../../../utils/api";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import OrderStatusDialog from "./OrderStatusDialog";
+import { downloadOrderPdf, printOrderInvoice } from "./orderInvoice";
 import {
-  downloadOrderPdf,
   formatCurrency,
+  formatOrderBillingAddress,
   formatOrderDate,
   getOrderDisplayId,
   getOrderStatusBadgeClass,
   getPaymentStatusBadgeClass,
   getTimelineSteps,
   normalizeOrder,
-  printOrderInvoice,
 } from "./orderUtils";
 
 function DetailItem({ label, value }) {
@@ -42,7 +42,8 @@ export default function OrderDetails() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
-  const [nextStatus, setNextStatus] = useState("confirmed");
+  const [nextStatus, setNextStatus] = useState("placed");
+  const [nextPaymentStatus, setNextPaymentStatus] = useState("pending");
   const [savingStatus, setSavingStatus] = useState(false);
 
   useEffect(() => {
@@ -77,19 +78,25 @@ export default function OrderDetails() {
   const timeline = useMemo(() => (order ? getTimelineSteps(order.status) : []), [order]);
 
   const openStatusDialog = () => {
-    setNextStatus(order?.status || "confirmed");
+    setNextStatus(order?.status || "placed");
+    setNextPaymentStatus(order?.paymentStatus || "pending");
     setStatusDialogOpen(true);
   };
 
   const saveStatus = () => {
     if (!order) return;
 
+    const payload = {
+      status: nextStatus,
+      paymentStatus: nextPaymentStatus,
+    };
+
     setSavingStatus(true);
-    editData(`/api/orders/${id}`, { status: nextStatus })
+    editData(`/api/orders/${id}`, payload)
       .then((res) => {
-        setOrder(normalizeOrder(res?.order || res));
+        setOrder(normalizeOrder(res?.order || { ...order, ...payload }));
         setStatusDialogOpen(false);
-        setAlertBox?.({ open: true, error: false, msg: "Order status updated." });
+        setAlertBox?.({ open: true, error: false, msg: "Order and payment status updated." });
       })
       .catch(() => {
         setAlertBox?.({ open: true, error: true, msg: "Failed to update order status." });
@@ -139,11 +146,34 @@ export default function OrderDetails() {
             <button type="button" className="admin-dash__btn admin-dash__btn--ghost" onClick={openStatusDialog}>
               Change Status
             </button>
-            <button type="button" className="admin-dash__btn admin-dash__btn--ghost" onClick={() => printOrderInvoice(order)}>
+            <button
+              type="button"
+              className="admin-dash__btn admin-dash__btn--ghost"
+              onClick={() => printOrderInvoice(order)}
+            >
               <FaPrint aria-hidden />
               Print Invoice
             </button>
-            <button type="button" className="admin-dash__btn" onClick={() => downloadOrderPdf(order)}>
+            <button
+              type="button"
+              className="admin-dash__btn"
+              onClick={() => {
+                try {
+                  downloadOrderPdf(order);
+                  setAlertBox?.({
+                    open: true,
+                    error: false,
+                    msg: "Invoice PDF downloaded.",
+                  });
+                } catch {
+                  setAlertBox?.({
+                    open: true,
+                    error: true,
+                    msg: "Failed to download invoice PDF.",
+                  });
+                }
+              }}
+            >
               <FaFileDownload aria-hidden />
               Download PDF
             </button>
@@ -157,7 +187,10 @@ export default function OrderDetails() {
             <DetailItem label="Name" value={order.name} />
             <DetailItem label="Phone" value={order.phoneNumber} />
             <DetailItem label="Email" value={order.email} />
-            <DetailItem label="Billing address" value={`${order.address}${order.pincode ? `, ${order.pincode}` : ""}`} />
+            <DetailItem
+              label="Billing address"
+              value={formatOrderBillingAddress(order.address, order.pincode)}
+            />
             {order.shippingAddress ? (
               <DetailItem label="Shipping address" value={order.shippingAddress} />
             ) : null}
@@ -287,8 +320,10 @@ export default function OrderDetails() {
       <OrderStatusDialog
         open={statusDialogOpen}
         order={order}
-        value={nextStatus}
-        onChange={setNextStatus}
+        statusValue={nextStatus}
+        paymentValue={nextPaymentStatus}
+        onStatusChange={setNextStatus}
+        onPaymentChange={setNextPaymentStatus}
         onConfirm={saveStatus}
         onCancel={() => setStatusDialogOpen(false)}
         saving={savingStatus}

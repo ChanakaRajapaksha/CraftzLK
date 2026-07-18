@@ -1,7 +1,10 @@
 export function formatCurrency(value) {
   const amount = Number(value);
   if (!Number.isFinite(amount)) return "—";
-  return `Rs ${amount.toLocaleString("en-LK")}`;
+  return `Rs ${amount.toLocaleString("en-LK", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 }
 
 export function formatCustomerDate(value) {

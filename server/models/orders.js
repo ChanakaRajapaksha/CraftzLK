@@ -37,6 +37,10 @@ const ordersSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  customerId: {
+    type: String,
+    default: '',
+  },
   products: [
     {
       productId: { type: String },
@@ -89,7 +93,7 @@ const ordersSchema = mongoose.Schema({
   ],
   status: {
     type: String,
-    default: 'confirmed',
+    default: 'placed',
   },
   date: {
     type: Date,

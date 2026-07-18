@@ -11,8 +11,8 @@ import StatCard from "../../../Components/AdminDashboard/StatCard";
 import { editData, fetchDataFromApi } from "../../../utils/api";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import OrderStatusDialog from "./OrderStatusDialog";
+import { downloadOrderPdf, printOrderInvoice } from "./orderInvoice";
 import {
-  downloadOrderPdf,
   formatCurrency,
   formatOrderDate,
   getOrderDisplayId,
@@ -23,7 +23,6 @@ import {
   ORDER_DATE_PRESETS,
   ORDER_STATUSES,
   PAYMENT_STATUSES,
-  printOrderInvoice,
 } from "./orderUtils";
 
 export default function OrderList() {
@@ -39,7 +38,8 @@ export default function OrderList() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [statusTarget, setStatusTarget] = useState(null);
-  const [nextStatus, setNextStatus] = useState("confirmed");
+  const [nextStatus, setNextStatus] = useState("placed");
+  const [nextPaymentStatus, setNextPaymentStatus] = useState("pending");
   const [savingStatus, setSavingStatus] = useState(false);
 
   const loadOrders = () => {
@@ -109,7 +109,8 @@ export default function OrderList() {
 
   const openStatusDialog = (order) => {
     setStatusTarget(order);
-    setNextStatus(order.status || "confirmed");
+    setNextStatus(order.status || "placed");
+    setNextPaymentStatus(order.paymentStatus || "pending");
   };
 
   const closeStatusDialog = () => {
@@ -120,16 +121,20 @@ export default function OrderList() {
     if (!statusTarget) return;
 
     const id = statusTarget._id || statusTarget.id;
+    const payload = {
+      status: nextStatus,
+      paymentStatus: nextPaymentStatus,
+    };
 
     setSavingStatus(true);
-    editData(`/api/orders/${id}`, { status: nextStatus })
+    editData(`/api/orders/${id}`, payload)
       .then((res) => {
-        const updated = normalizeOrder(res?.order || res);
+        const updated = normalizeOrder(res?.order || { ...statusTarget, ...payload });
         setOrders((prev) =>
           prev.map((order) => ((order._id || order.id) === id ? updated : order))
         );
         closeStatusDialog();
-        setAlertBox?.({ open: true, error: false, msg: "Order status updated." });
+        setAlertBox?.({ open: true, error: false, msg: "Order and payment status updated." });
       })
       .catch(() => {
         setAlertBox?.({ open: true, error: true, msg: "Failed to update order status." });
@@ -150,7 +155,10 @@ export default function OrderList() {
         <StatCard
           icon={<MdPayments />}
           label="Revenue (Rs)"
-          value={stats.revenue.toLocaleString("en-LK")}
+          value={stats.revenue.toLocaleString("en-LK", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
           gradient={["#a67c52", "#c9a961"]}
         />
         <StatCard
@@ -299,7 +307,22 @@ export default function OrderList() {
                               type="button"
                               className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
                               title="Download PDF"
-                              onClick={() => downloadOrderPdf(order)}
+                              onClick={() => {
+                                try {
+                                  downloadOrderPdf(order);
+                                  setAlertBox?.({
+                                    open: true,
+                                    error: false,
+                                    msg: "Invoice PDF downloaded.",
+                                  });
+                                } catch {
+                                  setAlertBox?.({
+                                    open: true,
+                                    error: true,
+                                    msg: "Failed to download invoice PDF.",
+                                  });
+                                }
+                              }}
                             >
                               <FaFileDownload />
                             </button>
@@ -332,8 +355,10 @@ export default function OrderList() {
       <OrderStatusDialog
         open={Boolean(statusTarget)}
         order={statusTarget}
-        value={nextStatus}
-        onChange={setNextStatus}
+        statusValue={nextStatus}
+        paymentValue={nextPaymentStatus}
+        onStatusChange={setNextStatus}
+        onPaymentChange={setNextPaymentStatus}
         onConfirm={saveStatus}
         onCancel={closeStatusDialog}
         saving={savingStatus}

@@ -1,12 +1,13 @@
 const { Orders } = require('../models/orders');
+const customerService = require('./customerService');
 
 function resolveUserId(authUser, bodyUserId) {
   const id = authUser?._id || authUser?.id || bodyUserId;
   return id ? String(id) : '';
 }
 
-function resolvePaymentStatus(paymentMethod) {
-  return paymentMethod === 'bank_transfer' ? 'paid' : 'pending';
+function resolvePaymentStatus() {
+  return 'pending';
 }
 
 function normalizeProducts(products = []) {
@@ -125,7 +126,7 @@ class OrderService {
 
     const paymentMethod = body.paymentMethod || 'cod';
     const paymentStatus = resolvePaymentStatus(paymentMethod);
-    const status = 'confirmed';
+    const status = 'placed';
     const orderNumber = await generateOrderNumber();
     const paymentId = body.paymentId || `ORD_${Date.now()}_${userid.slice(-6)}`;
     const now = new Date();
@@ -154,7 +155,9 @@ class OrderService {
       date: body.date ? new Date(body.date) : now,
     });
 
-    return order.save();
+    const savedOrder = await order.save();
+    await customerService.upsertFromOrder(savedOrder);
+    return savedOrder;
   }
 
   async remove(id, authUser) {

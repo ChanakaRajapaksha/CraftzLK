@@ -165,7 +165,7 @@ const Checkout = () => {
       shippingAddress: createdOrder.shippingAddress || "",
       paymentMethod: createdOrder.paymentMethod,
       paymentStatus: createdOrder.paymentStatus,
-      status: createdOrder.status || "confirmed",
+      status: createdOrder.status || "placed",
       subtotal: createdOrder.subtotal ?? subtotal,
       shipping: createdOrder.shipping ?? shipping,
       total: parsePriceValue(createdOrder.amount) || orderTotal,

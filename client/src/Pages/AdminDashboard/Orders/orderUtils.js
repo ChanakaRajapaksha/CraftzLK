@@ -41,7 +41,7 @@ const STATUS_ALIASES = {
 };
 
 export function normalizeOrderStatus(status) {
-  const value = String(status || "confirmed").toLowerCase();
+  const value = String(status || "placed").toLowerCase();
   return STATUS_ALIASES[value] || value;
 }
 
@@ -54,10 +54,28 @@ export function formatOrderDate(value) {
   });
 }
 
+export function formatOrderBillingAddress(address, pincode) {
+  const addr = String(address || "").trim().replace(/\s+/g, " ");
+  const pin = String(pincode || "").trim();
+
+  if (!addr && !pin) return "—";
+  if (!addr) return pin;
+  if (!pin) return addr;
+
+  const escapedPin = pin.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const endsWithPin = new RegExp(`(,\\s*)?${escapedPin}$`).test(addr);
+  if (endsWithPin) return addr;
+
+  return `${addr}, ${pin}`;
+}
+
 export function formatCurrency(value) {
   const amount = Number(value);
   if (!Number.isFinite(amount)) return "—";
-  return `Rs ${amount.toLocaleString("en-LK")}`;
+  return `Rs ${amount.toLocaleString("en-LK", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 }
 
 export function getOrderDisplayId(order) {
@@ -72,8 +90,6 @@ export function getOrderDisplayId(order) {
 
 export function inferPaymentStatus(order) {
   if (order?.paymentStatus) return order.paymentStatus;
-  if (order?.paymentMethod === "bank_transfer") return "paid";
-  if (order?.paymentMethod === "cod") return "pending";
   return "pending";
 }
 
@@ -102,8 +118,8 @@ export function normalizeOrder(order) {
 
   let statusHistory = Array.isArray(order.statusHistory) ? [...order.statusHistory] : [];
   if (!statusHistory.length) {
-    statusHistory = [{ status: "confirmed", date: date || new Date().toISOString() }];
-    const flow = ["confirmed", "packed", "shipped", "delivered"];
+    statusHistory = [{ status: "placed", date: date || new Date().toISOString() }];
+    const flow = ["placed", "confirmed", "packed", "shipped", "delivered"];
     const idx = flow.indexOf(status);
     if (idx > 0) {
       for (let i = 1; i <= idx; i += 1) {
@@ -172,72 +188,4 @@ export function getTimelineSteps(currentStatus) {
     completed: index <= activeIndex,
     active: index === activeIndex,
   }));
-}
-
-export function buildInvoiceHtml(order) {
-  const normalized = normalizeOrder(order);
-  const rows = (normalized.products || [])
-    .map(
-      (item) => `
-        <tr>
-          <td>${item.productTitle || "Product"}</td>
-          <td>${item.variant || "—"}</td>
-          <td>${item.quantity || 0}</td>
-          <td>${formatCurrency(item.price)}</td>
-          <td>${formatCurrency(item.subTotal)}</td>
-        </tr>`
-    )
-    .join("");
-
-  return `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <title>Invoice ${normalized.orderNumber}</title>
-  <style>
-    body { font-family: Arial, sans-serif; color: #222; padding: 32px; }
-    h1 { margin: 0 0 8px; }
-    .meta { color: #666; margin-bottom: 24px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-    th, td { border-bottom: 1px solid #ddd; padding: 10px 8px; text-align: left; }
-    .totals { margin-top: 20px; width: 280px; margin-left: auto; }
-    .totals div { display: flex; justify-content: space-between; padding: 4px 0; }
-    .totals .grand { font-weight: bold; font-size: 1.1rem; border-top: 1px solid #333; margin-top: 8px; padding-top: 8px; }
-  </style>
-</head>
-<body>
-  <h1>CraftzLK Invoice</h1>
-  <div class="meta">
-    <div>Order: ${normalized.orderNumber}</div>
-    <div>Date: ${formatOrderDate(normalized.date)}</div>
-    <div>Customer: ${normalized.name}</div>
-  </div>
-  <table>
-    <thead>
-      <tr><th>Product</th><th>Variant</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr>
-    </thead>
-    <tbody>${rows}</tbody>
-  </table>
-  <div class="totals">
-    <div><span>Subtotal</span><span>${formatCurrency(normalized.subtotal)}</span></div>
-    <div><span>Discount</span><span>- ${formatCurrency(normalized.discount)}</span></div>
-    <div><span>Tax</span><span>${formatCurrency(normalized.tax)}</span></div>
-    <div><span>Shipping</span><span>${formatCurrency(normalized.shipping)}</span></div>
-    <div class="grand"><span>Total</span><span>${formatCurrency(normalized.total)}</span></div>
-  </div>
-  <script>window.onload = () => window.print();</script>
-</body>
-</html>`;
-}
-
-export function printOrderInvoice(order) {
-  const html = buildInvoiceHtml(order);
-  const win = window.open("", "_blank", "noopener,noreferrer,width=900,height=700");
-  if (!win) return;
-  win.document.write(html);
-  win.document.close();
-}
-
-export function downloadOrderPdf(order) {
-  printOrderInvoice(order);
 }

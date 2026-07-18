@@ -17,7 +17,10 @@ export function parsePriceValue(value) {
 
 export function formatRs(amount) {
   const n = parsePriceValue(amount);
-  return `Rs ${n.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  return `Rs ${n.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 }
 
 export function getCartSubtotal(items) {
