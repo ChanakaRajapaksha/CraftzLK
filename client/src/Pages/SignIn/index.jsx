@@ -26,7 +26,8 @@ const SignIn = () => {
   const dispatch = useAppDispatch();
   const history = useNavigate();
   const location = useLocation();
-  const redirectAfterLogin = location.state?.from || "/";
+  const searchParams = new URLSearchParams(location.search);
+  const redirectAfterLogin = location.state?.from || searchParams.get("from") || "/";
 
   const {
     control,

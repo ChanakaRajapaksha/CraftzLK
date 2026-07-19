@@ -1,5 +1,5 @@
 import { useContext, useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { MyContext } from "../../App";
 import UserAvatarImgComponent from "../../Components/userAvatarImg";
 import { COLLECTIONS_ALL_PATH } from "../Collections/collectionsConstants";
@@ -42,7 +42,6 @@ function getItemPreview(order) {
 
 const MyAccount = () => {
   const context = useContext(MyContext);
-  const navigate = useNavigate();
   const [phone, setPhone] = useState("");
   const [orders, setOrders] = useState([]);
 
@@ -54,15 +53,9 @@ const MyAccount = () => {
     context?.setEnableFilterTab?.(false);
     context?.setisHeaderFooterShow?.(true);
 
-    const token = localStorage.getItem("token");
     const localUser = getStoredUser();
-    if (!token && !localUser?.userId) {
-      navigate("/signIn");
-      return;
-    }
-
     if (localUser?.userId) {
-      fetchUserOrders(localUser.userId)
+      fetchUserOrders()
         .then(setOrders)
         .catch(() => setOrders([]));
 
@@ -74,7 +67,7 @@ const MyAccount = () => {
           /* demo UI — local data only */
         });
     }
-  }, [context, navigate]);
+  }, [context]);
 
   const cartItems = Array.isArray(context?.cartData) ? context.cartData : [];
   const cartCount = getCartItemCount(cartItems);

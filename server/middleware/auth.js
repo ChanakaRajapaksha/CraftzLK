@@ -17,6 +17,54 @@ function isPublicApiRoute(req) {
   return PUBLIC_API_ROUTES.has(`${req.method.toUpperCase()} ${path}`);
 }
 
+function isStorefrontBrowseRoute(req) {
+  if (req.method.toUpperCase() !== 'GET') return false;
+
+  const path = req.originalUrl.split('?')[0];
+
+  const exactPaths = new Set([
+    '/api/banners',
+    '/api/homeSideBanners',
+    '/api/homeBottomBanners',
+    '/api/homeBanner',
+    '/api/homepage-content',
+    '/api/search',
+    '/api/category/active',
+    '/api/settings',
+  ]);
+
+  if (exactPaths.has(path)) return true;
+
+  if (path.startsWith('/api/products') && !path.startsWith('/api/products/admin')) {
+    return true;
+  }
+
+  if (path.startsWith('/api/productReviews')) {
+    return true;
+  }
+
+  if (path.startsWith('/api/artisans')) {
+    return true;
+  }
+
+  if (path.startsWith('/api/cms-pages')) {
+    return true;
+  }
+
+  if (path.startsWith('/api/category/')) {
+    if (
+      path.startsWith('/api/category/admin') ||
+      path.includes('/get/count') ||
+      path.includes('/subCat/get/count')
+    ) {
+      return false;
+    }
+    return path !== '/api/category';
+  }
+
+  return false;
+}
+
 function sendLoginRequired(res, extra = {}) {
   return res.status(401).json({
     success: false,
@@ -64,10 +112,13 @@ const authenticateToken = async (req, res, next) => {
   }
 };
 
-// Global guard for all /api routes except explicit public auth entry points.
+// Global guard for all /api routes except public auth and storefront browsing.
 const apiAuthGuard = (req, res, next) => {
   if (isPublicApiRoute(req)) {
     return next();
+  }
+  if (isStorefrontBrowseRoute(req)) {
+    return optionalAuth(req, res, next);
   }
   return authenticateToken(req, res, next);
 };
@@ -114,6 +165,7 @@ module.exports = {
   LOGIN_REQUIRED_MESSAGE,
   PUBLIC_API_ROUTES,
   isPublicApiRoute,
+  isStorefrontBrowseRoute,
   apiAuthGuard,
   authenticateToken,
   optionalAuth,

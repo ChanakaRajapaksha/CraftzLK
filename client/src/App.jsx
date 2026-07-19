@@ -39,13 +39,17 @@ import {
   addToLocalCart,
   buildCartPayloadFromSample,
   cartLineKey,
+  clearGuestCartStorage,
   isSampleProductId,
+  readGuestCart,
   removeFromLocalCart,
   updateLocalCartQty,
+  writeGuestCart,
 } from "./utils/cartHelpers";
 import Compare from "./Pages/Compare/index.jsx";
 import { Toaster } from "sonner";
 import AdminGuard from "./Components/AdminDashboard/AdminGuard";
+import AuthGuard from "./Components/AuthGuard";
 import AdminLayout from "./Components/AdminDashboard/AdminLayout";
 import AdminDashboardHome from "./Pages/AdminDashboard/Dashboard/index.jsx";
 import CategoryList from "./Pages/AdminDashboard/Categories/CategoryList";
@@ -202,7 +206,7 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
-    if (!isAuthInitialized || !isAuthenticated) return;
+    if (!isAuthInitialized) return;
 
     fetchDataFromApi("/api/settings")
       .then((res) => {
@@ -216,7 +220,7 @@ function AppContent() {
         setStoreFavicon("");
         applyDocumentFavicon("");
       });
-  }, [isAuthInitialized, isAuthenticated]);
+  }, [isAuthInitialized]);
 
   useEffect(() => {
     applyDocumentFavicon(storeFavicon);
@@ -252,8 +256,14 @@ function AppContent() {
   useEffect(() => {
     if (!isAuthInitialized) return;
 
+    refreshCategoryData();
+  }, [isAuthInitialized, refreshCategoryData]);
+
+  useEffect(() => {
+    if (!isAuthInitialized) return;
+
     if (!isAuthenticated) {
-      setCartData([]);
+      setCartData(readGuestCart());
       return;
     }
 
@@ -264,8 +274,6 @@ function AppContent() {
     if (!isAuthInitialized || !isAuthenticated) return;
 
     getCountry("https://countriesnow.space/api/v0.1/countries/");
-
-    refreshCategoryData();
 
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
@@ -311,6 +319,7 @@ function AppContent() {
     const items = Array.isArray(allItems) ? allItems : [];
     if (!isLogin) {
       setCartData(items);
+      writeGuestCart(items);
       return;
     }
 
@@ -424,12 +433,7 @@ function AppContent() {
     }
 
     if (!isLogin) {
-      setAlertBox({
-        open: true,
-        error: true,
-        msg: "Please sign in to add items to your cart.",
-      });
-      finish();
+      applyLocal();
       return;
     }
 
@@ -555,18 +559,42 @@ function AppContent() {
         <Route exact={true} path="/signUp" element={<SignUp />} />
         <Route exact={true} path="/forgot-password" element={<ForgotPassword />} />
         <Route exact={true} path="/reset-password" element={<ResetPassword />} />
-        <Route exact={true} path="/my-list" element={<MyList />} />
+        <Route
+          exact={true}
+          path="/my-list"
+          element={
+            <AuthGuard>
+              <MyList />
+            </AuthGuard>
+          }
+        />
         <Route exact={true} path="/compare" element={<Compare />} />
         <Route exact={true} path="/checkout" element={<Checkout />} />
         <Route exact={true} path="/thank-you" element={<ThankYou />} />
-        <Route exact={true} path="/orders" element={<Orders />} />
+        <Route
+          exact={true}
+          path="/orders"
+          element={
+            <AuthGuard>
+              <Orders />
+            </AuthGuard>
+          }
+        />
         <Route exact={true} path="/gifts" element={<Gifts />} />
         <Route exact={true} path="/eco" element={<Eco />} />
         <Route exact={true} path="/about" element={<About />} />
-        <Route exact={true} path="/my-account" element={<MyAccount />} />
+        <Route
+          exact={true}
+          path="/my-account"
+          element={
+            <AuthGuard>
+              <MyAccount />
+            </AuthGuard>
+          }
+        />
         <Route exact={true} path="/search" element={<SearchPage />} />
         <Route exact={true} path="/verifyOTP" element={<VerifyOTP />} />
-        <Route exact={true} path="/changePassword" element={<ChangePassword />} />
+        <Route exact={true} path="/changePassword" element={<AuthGuard><ChangePassword /></AuthGuard>} />
 
         {/* Admin dashboard (admin role only) */}
         <Route path="/dashboard" element={<AdminGuard><AdminLayout /></AdminGuard>}>

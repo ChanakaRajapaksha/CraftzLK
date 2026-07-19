@@ -36,6 +36,16 @@ function getItemPreview(order) {
   return extra > 0 ? `${first} and ${extra} more item${extra > 1 ? "s" : ""}` : first;
 }
 
+function DetailRow({ label, value }) {
+  if (!value) return null;
+  return (
+    <div className="my-orders__detail-row">
+      <dt>{label}</dt>
+      <dd>{value}</dd>
+    </div>
+  );
+}
+
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
@@ -46,12 +56,6 @@ const Orders = () => {
     window.scrollTo(0, 0);
     context.setEnableFilterTab?.(false);
 
-    if (context.isLogin !== true) {
-      setOrders([]);
-      setLoading(false);
-      return;
-    }
-
     fetchUserOrders()
       .then((stored) => {
         setOrders(stored);
@@ -61,7 +65,7 @@ const Orders = () => {
       })
       .catch(() => setOrders([]))
       .finally(() => setLoading(false));
-  }, [context.isLogin]);
+  }, []);
 
   const stats = useMemo(() => {
     const totalSpent = orders.reduce(
@@ -217,149 +221,116 @@ const Orders = () => {
                   <div className="my-orders__card-body">
                     <div className="my-orders__card-body-inner">
                       <div className="my-orders__card-details">
-                        <ol className="my-orders__timeline" aria-label="Order progress">
-                          {TIMELINE_STEPS.map((label, stepIndex) => {
-                            const isDone = stepIndex < timelineDone;
-                            return (
-                              <li
-                                key={label}
-                                className={`my-orders__timeline-step${
-                                  isDone ? " my-orders__timeline-step--done" : ""
-                                }`}
-                              >
-                                <span className="my-orders__timeline-dot">
-                                  {isDone && (
-                                    <svg viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                                      <path
-                                        d="M2.5 6 5 8.5 9.5 3.5"
-                                        stroke="currentColor"
-                                        strokeWidth="1.75"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                      />
-                                    </svg>
-                                  )}
-                                </span>
-                                <span className="my-orders__timeline-label">{label}</span>
-                              </li>
-                            );
-                          })}
-                        </ol>
+                        <section className="my-orders__section my-orders__section--timeline">
+                          <h3 className="my-orders__section-title">Order progress</h3>
+                          <ol className="my-orders__timeline" aria-label="Order progress">
+                            {TIMELINE_STEPS.map((label, stepIndex) => {
+                              const isDone = stepIndex < timelineDone;
+                              return (
+                                <li
+                                  key={label}
+                                  className={`my-orders__timeline-step${
+                                    isDone ? " my-orders__timeline-step--done" : ""
+                                  }`}
+                                >
+                                  <span className="my-orders__timeline-dot">
+                                    {isDone && (
+                                      <svg viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                                        <path
+                                          d="M2.5 6 5 8.5 9.5 3.5"
+                                          stroke="currentColor"
+                                          strokeWidth="1.75"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                        />
+                                      </svg>
+                                    )}
+                                  </span>
+                                  <span className="my-orders__timeline-label">{label}</span>
+                                </li>
+                              );
+                            })}
+                          </ol>
+                        </section>
 
-                        <div className="my-orders__meta-row">
-                          <span className="my-orders__pill">
-                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                              <rect
-                                x="2"
-                                y="5"
-                                width="20"
-                                height="14"
-                                rx="2"
-                                stroke="currentColor"
-                                strokeWidth="1.75"
-                              />
-                              <path d="M2 10h20" stroke="currentColor" strokeWidth="1.75" />
-                            </svg>
-                            {PAYMENT_LABELS[order.paymentMethod] || order.paymentMethod || "—"}
-                          </span>
-                          <span className="my-orders__pill">
-                            Payment: {getPaymentStatusLabel(order.paymentStatus)}
-                          </span>
-                          {order.phoneNumber && (
-                            <span className="my-orders__pill">
-                              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                <path
-                                  d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"
-                                  stroke="currentColor"
-                                  strokeWidth="1.75"
-                                  strokeLinecap="round"
-                                />
-                              </svg>
-                              {order.phoneNumber}
-                            </span>
-                          )}
-                          {order.email && (
-                            <span className="my-orders__pill">
-                              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                <rect
-                                  x="3"
-                                  y="5"
-                                  width="18"
-                                  height="14"
-                                  rx="2"
-                                  stroke="currentColor"
-                                  strokeWidth="1.75"
-                                />
-                                <path
-                                  d="m3 7 9 6 9-6"
-                                  stroke="currentColor"
-                                  strokeWidth="1.75"
-                                  strokeLinecap="round"
-                                />
-                              </svg>
-                              {order.email}
-                            </span>
-                          )}
-                          {order.name && (
-                            <span className="my-orders__pill">
-                              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.75" />
-                                <path
-                                  d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"
-                                  stroke="currentColor"
-                                  strokeWidth="1.75"
-                                  strokeLinecap="round"
-                                />
-                              </svg>
-                              {order.name}
-                            </span>
-                          )}
-                        </div>
+                        <div className="my-orders__details-grid">
+                          <section className="my-orders__section my-orders__section--items">
+                            <h3 className="my-orders__section-title">
+                              Items in this order
+                              <span className="my-orders__section-count">{itemCount}</span>
+                            </h3>
+                            <ul className="my-orders__items">
+                              {items.map((item, itemIndex) => (
+                                <li key={item.id || itemIndex} className="my-orders__item">
+                                  <span className="my-orders__item-name">
+                                    {item.title}
+                                    {item.variant ? ` (${item.variant})` : ""}
+                                    <span className="my-orders__item-qty"> × {item.quantity}</span>
+                                  </span>
+                                  <span className="my-orders__item-price">
+                                    {formatRs(item.lineTotal)}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
 
-                        {(order.address || order.shippingAddress) && (
-                          <div className="my-orders__meta-row">
-                            {order.address && (
-                              <span className="my-orders__pill">
-                                Billing: {order.address}
-                              </span>
+                            <div className="my-orders__totals">
+                              <div className="my-orders__totals-row">
+                                <span>Subtotal</span>
+                                <span>{formatRs(order.subtotal)}</span>
+                              </div>
+                              <div className="my-orders__totals-row">
+                                <span>Shipping</span>
+                                <span>{formatRs(order.shipping)}</span>
+                              </div>
+                              <div className="my-orders__totals-row my-orders__totals-row--total">
+                                <span>Total</span>
+                                <span>{formatRs(order.total)}</span>
+                              </div>
+                            </div>
+                          </section>
+
+                          <aside className="my-orders__aside">
+                            <section className="my-orders__section">
+                              <h3 className="my-orders__section-title">Customer</h3>
+                              <dl className="my-orders__detail-list">
+                                <DetailRow label="Name" value={order.name} />
+                                <DetailRow label="Phone" value={order.phoneNumber} />
+                                <DetailRow label="Email" value={order.email} />
+                              </dl>
+                            </section>
+
+                            <section className="my-orders__section">
+                              <h3 className="my-orders__section-title">Payment</h3>
+                              <dl className="my-orders__detail-list">
+                                <DetailRow
+                                  label="Method"
+                                  value={PAYMENT_LABELS[order.paymentMethod] || order.paymentMethod || "—"}
+                                />
+                                <DetailRow
+                                  label="Status"
+                                  value={getPaymentStatusLabel(order.paymentStatus)}
+                                />
+                              </dl>
+                            </section>
+
+                            {(order.address || order.shippingAddress) && (
+                              <section className="my-orders__section">
+                                <h3 className="my-orders__section-title">Delivery</h3>
+                                <dl className="my-orders__detail-list">
+                                  <DetailRow label="Billing" value={order.address} />
+                                  <DetailRow label="Shipping" value={order.shippingAddress} />
+                                </dl>
+                              </section>
                             )}
-                            {order.shippingAddress && (
-                              <span className="my-orders__pill">
-                                Shipping: {order.shippingAddress}
-                              </span>
+
+                            {order.orderNotes && (
+                              <section className="my-orders__section">
+                                <h3 className="my-orders__section-title">Order notes</h3>
+                                <p className="my-orders__notes">{order.orderNotes}</p>
+                              </section>
                             )}
-                          </div>
-                        )}
-
-                        <h3 className="my-orders__items-title">Items in this order</h3>
-                        <ul className="my-orders__items">
-                          {items.map((item, itemIndex) => (
-                            <li key={item.id || itemIndex} className="my-orders__item">
-                              <span className="my-orders__item-name">
-                                {item.title}
-                                {item.variant ? ` (${item.variant})` : ""}
-                                <span className="my-orders__item-qty"> × {item.quantity}</span>
-                              </span>
-                              <span className="my-orders__item-price">
-                                {formatRs(item.lineTotal)}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-
-                        <div className="my-orders__totals">
-                          <div className="my-orders__totals-row">
-                            <span>Subtotal</span>
-                            <span>{formatRs(order.subtotal)}</span>
-                          </div>
-                          <div className="my-orders__totals-row">
-                            <span>Shipping</span>
-                            <span>{formatRs(order.shipping)}</span>
-                          </div>
-                          <div className="my-orders__totals-row my-orders__totals-row--total">
-                            <span>Total</span>
-                            <span>{formatRs(order.total)}</span>
-                          </div>
+                          </aside>
                         </div>
 
                         {order.paymentMethod === "bank_transfer" && (

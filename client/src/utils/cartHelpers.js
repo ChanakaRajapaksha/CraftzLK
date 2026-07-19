@@ -101,3 +101,31 @@ export function removeFromLocalCart(items, itemId) {
     (item) => item.id !== itemId && item._id !== itemId
   );
 }
+
+export const GUEST_CART_STORAGE_KEY = "craftzlk_guest_cart";
+
+export function readGuestCart() {
+  try {
+    const raw = sessionStorage.getItem(GUEST_CART_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export function writeGuestCart(items) {
+  try {
+    sessionStorage.setItem(GUEST_CART_STORAGE_KEY, JSON.stringify(Array.isArray(items) ? items : []));
+  } catch {
+    /* storage optional */
+  }
+}
+
+export function clearGuestCartStorage() {
+  try {
+    sessionStorage.removeItem(GUEST_CART_STORAGE_KEY);
+  } catch {
+    /* storage optional */
+  }
+}

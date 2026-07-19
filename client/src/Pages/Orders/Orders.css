@@ -55,9 +55,9 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 52rem;
+  max-width: 96rem;
   margin: 0 auto;
-  padding: 0 clamp(1.25rem, 2.5vw, 2rem);
+  padding: 0 clamp(1.25rem, 3vw, 2.5rem);
 }
 
 /* div used instead of <header> — global theme.css styles all header { } with dark bg !important */
@@ -317,8 +317,123 @@
 }
 
 .my-orders__card-details {
-  padding: 0 clamp(1.1rem, 3vw, 1.5rem) 1.35rem;
+  padding: 0 clamp(1.15rem, 3vw, 1.75rem) 1.5rem;
   border-top: 1px dashed rgba(201, 169, 97, 0.45);
+}
+
+.my-orders__section {
+  margin: 0;
+}
+
+.my-orders__section--timeline {
+  margin: 1.15rem 0 0;
+  padding-bottom: 1.15rem;
+  border-bottom: 1px dashed rgba(201, 169, 97, 0.35);
+}
+
+.my-orders__section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 0.85rem;
+  font-family: var(--font-heading, "Playfair Display", serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1f1a14;
+}
+
+.my-orders__section-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4rem;
+  height: 1.4rem;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: rgba(201, 169, 97, 0.18);
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--primary-dark, #b8860b);
+}
+
+.my-orders__details-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(16rem, 0.9fr);
+  gap: 1.35rem 1.75rem;
+  margin-top: 1.25rem;
+  align-items: start;
+}
+
+.my-orders__section--items {
+  min-width: 0;
+  padding: 1.1rem 1.15rem;
+  border: 1px solid rgba(201, 169, 97, 0.3);
+  border-radius: 14px;
+  background: rgba(255, 252, 247, 0.72);
+}
+
+.my-orders__aside {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
+.my-orders__aside .my-orders__section {
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(201, 169, 97, 0.28);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.my-orders__aside .my-orders__section-title {
+  margin-bottom: 0.7rem;
+  font-size: 0.98rem;
+}
+
+.my-orders__detail-list {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.my-orders__detail-row {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: start;
+}
+
+.my-orders__detail-row dt {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #9a8b78;
+}
+
+.my-orders__detail-row dd {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #3d2f1f;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.my-orders__notes {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #5c4d3a;
+}
+
+@media (max-width: 900px) {
+  .my-orders__details-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Timeline */
@@ -326,8 +441,8 @@
   display: flex;
   justify-content: space-between;
   gap: 0.35rem;
-  margin: 1.1rem 0 1.35rem;
-  padding: 0;
+  margin: 0;
+  padding: 0.35rem 0 0;
   list-style: none;
 }
 
@@ -396,32 +511,7 @@
   }
 }
 
-/* Meta row */
-.my-orders__meta-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.65rem;
-  margin-bottom: 1.15rem;
-}
-
-.my-orders__pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.75rem;
-  border-radius: 8px;
-  background: transparent;
-  border: 1px solid rgba(201, 169, 97, 0.35);
-  font-size: 0.82rem;
-  color: #5c4d3a;
-}
-
-.my-orders__pill svg {
-  width: 0.9rem;
-  height: 0.9rem;
-  color: var(--primary-dark, #b8860b);
-  flex-shrink: 0;
-}
+/* Meta pills removed — details use structured sections */
 
 /* Items */
 .my-orders__items-title {
@@ -443,7 +533,7 @@
   justify-content: space-between;
   align-items: baseline;
   gap: 1rem;
-  padding: 0.6rem 0;
+  padding: 0.7rem 0;
   border-bottom: 1px dashed rgba(201, 169, 97, 0.35);
   font-size: 0.92rem;
   color: #3d2f1f;
@@ -477,22 +567,23 @@
 .my-orders__totals-row {
   display: flex;
   justify-content: space-between;
-  padding: 0.25rem 0;
+  padding: 0.3rem 0;
   font-size: 0.92rem;
   color: #5c4d3a;
 }
 
 .my-orders__totals-row--total {
-  margin-top: 0.35rem;
-  padding-top: 0.55rem;
+  margin-top: 0.4rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid rgba(201, 169, 97, 0.28);
   font-size: 1.05rem;
   font-weight: 700;
   color: #1f1a14;
 }
 
 .my-orders__bank-note {
-  margin-top: 1rem;
-  padding: 0.85rem 1rem;
+  margin-top: 1.15rem;
+  padding: 0.9rem 1.1rem;
   border-left: 3px solid var(--primary-dark, #b8860b);
   border-radius: 8px;
   background: rgba(201, 169, 97, 0.12);

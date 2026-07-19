@@ -35,10 +35,84 @@ const publicEndpoints = [
     '/api/auth/refresh-token'
 ];
 
-const AUTH_PAGES = ['/signIn', '/signUp', '/forgot-password', '/reset-password'];
+const AUTH_PAGES = ['/signIn', '/signUp', '/forgot-password', '/reset-password', '/verifyOTP'];
+
+const PROTECTED_APP_PATHS = [
+  '/orders',
+  '/my-account',
+  '/my-list',
+  '/changePassword',
+  '/dashboard',
+];
+
+function normalizeRequestPath(url = '') {
+  const raw = String(url || '');
+  if (raw.startsWith('http')) {
+    try {
+      return new URL(raw).pathname;
+    } catch {
+      return raw.split('?')[0];
+    }
+  }
+  return raw.split('?')[0];
+}
 
 function isPublicEndpoint(url = '') {
-    return publicEndpoints.some((endpoint) => url.includes(endpoint));
+  return publicEndpoints.some((endpoint) => url.includes(endpoint));
+}
+
+function isGuestBrowsableEndpoint(url = '') {
+  const path = normalizeRequestPath(url);
+  if (reqMethodIsGet(path, url) === false) return false;
+
+  const exactPaths = new Set([
+    '/api/banners',
+    '/api/homeSideBanners',
+    '/api/homeBottomBanners',
+    '/api/homeBanner',
+    '/api/homepage-content',
+    '/api/search',
+    '/api/category/active',
+    '/api/settings',
+  ]);
+
+  if (exactPaths.has(path)) return true;
+  if (path.startsWith('/api/products') && !path.startsWith('/api/products/admin')) return true;
+  if (path.startsWith('/api/productReviews')) return true;
+  if (path.startsWith('/api/artisans')) return true;
+  if (path.startsWith('/api/cms-pages')) return true;
+
+  if (path.startsWith('/api/category/')) {
+    if (
+      path.startsWith('/api/category/admin') ||
+      path.includes('/get/count') ||
+      path.includes('/subCat/get/count')
+    ) {
+      return false;
+    }
+    return path !== '/api/category';
+  }
+
+  return false;
+}
+
+function reqMethodIsGet(path, url) {
+  if (url.includes(' ')) {
+    return url.trim().toUpperCase().startsWith('GET ');
+  }
+  return true;
+}
+
+function shouldAttachAuth(url = '') {
+  return !isPublicEndpoint(url) && !isGuestBrowsableEndpoint(url);
+}
+
+function shouldRedirectOnAuthFailure() {
+  const currentPath = window.location.pathname;
+  if (AUTH_PAGES.includes(currentPath)) return false;
+  return PROTECTED_APP_PATHS.some(
+    (prefix) => currentPath === prefix || currentPath.startsWith(`${prefix}/`)
+  );
 }
 
 let refreshTokenPromise = null;
@@ -70,11 +144,12 @@ async function ensureAccessToken() {
 function redirectToSignIn() {
     const currentPath = window.location.pathname;
     if (AUTH_PAGES.includes(currentPath)) return;
-    window.location.href = "/signIn";
+    const from = encodeURIComponent(currentPath);
+    window.location.href = `/signIn?from=${from}`;
 }
 
 apiClient.interceptors.request.use(async (config) => {
-    if (!isPublicEndpoint(config.url)) {
+    if (shouldAttachAuth(config.url)) {
         await ensureAccessToken();
     }
 
@@ -96,6 +171,10 @@ apiClient.interceptors.response.use(
             return Promise.reject(error);
         }
 
+        if (isGuestBrowsableEndpoint(originalRequest.url)) {
+            return Promise.reject(error);
+        }
+
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
 
@@ -109,7 +188,9 @@ apiClient.interceptors.response.use(
             clearAccessToken();
             clearPersistedAuthUser();
             notifySessionExpired();
-            redirectToSignIn();
+            if (shouldRedirectOnAuthFailure()) {
+                redirectToSignIn();
+            }
         }
 
         return Promise.reject(error);
