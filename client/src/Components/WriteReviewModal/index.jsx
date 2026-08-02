@@ -122,6 +122,13 @@ export default function WriteReviewModal({ open, onClose, product, onSubmitted }
   }, [open, resetModal]);
 
   useEffect(() => {
+    if (!open) return;
+    if (isAuthenticated && authUser?.userId) return;
+    onClose();
+    navigate("/signIn", { state: { from: window.location.pathname } });
+  }, [open, isAuthenticated, authUser?.userId, onClose, navigate]);
+
+  useEffect(() => {
     if (!open) return undefined;
 
     const onKeyDown = (event) => {
