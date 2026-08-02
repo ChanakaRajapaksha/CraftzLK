@@ -1,21 +1,23 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import { FaCheck, FaStar, FaTimes } from "react-icons/fa";
+import { FaCheck, FaEye, FaStar, FaTimes } from "react-icons/fa";
 import { MdDelete, MdRateReview } from "react-icons/md";
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
 import Rating from "@mui/material/Rating";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import AdminPagination from "../../../Components/AdminDashboard/AdminPagination";
 import AdminConfirmDialog from "../../../Components/AdminDashboard/AdminConfirmDialog";
+import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
-import { deleteData, editData, fetchDataFromApi } from "../../../utils/api";
+import { deleteData, fetchDataFromApi, patchData, restoreSession } from "../../../utils/api";
+import { useAppSelector } from "../../../store/hooks";
 import {
   formatReviewDate,
   getReviewStatusBadgeClass,
   normalizeReview,
   REVIEW_STATUSES,
 } from "./reviewUtils";
-import { getReviewListSampleData, isSampleReviewId } from "./reviewListUtils";
+import ReviewDetailsModal from "./ReviewDetailsModal";
 
 function truncateComment(text, max = 72) {
   const value = String(text || "").trim();
@@ -25,42 +27,70 @@ function truncateComment(text, max = 72) {
 
 export default function ReviewList() {
   const { setAlertBox } = useOutletContext();
+  const isAuthInitialized = useAppSelector((state) => state.auth.isAuthInitialized);
   const [reviews, setReviews] = useState([]);
-  const [usingSampleData, setUsingSampleData] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [ratingFilter, setRatingFilter] = useState("all");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [viewTarget, setViewTarget] = useState(null);
 
   const showAlert = (error, msg) => {
     setAlertBox?.({ open: true, error, msg });
   };
 
-  const applySample = () => {
-    setReviews(getReviewListSampleData().map(normalizeReview));
-    setUsingSampleData(true);
-  };
+  const loadReviews = useCallback(async () => {
+    setLoading(true);
+    setLoadError(false);
 
-  const loadReviews = () => {
-    fetchDataFromApi("/api/productReviews")
-      .then((res) => {
-        const list = res?.reviewList || (Array.isArray(res) ? res : []);
-        if (list.length) {
-          setReviews(list.map(normalizeReview));
-          setUsingSampleData(false);
-        } else {
-          applySample();
-        }
-      })
-      .catch(() => applySample());
-  };
+    try {
+      const sessionReady = await restoreSession();
+      if (sessionReady !== true) {
+        throw new Error("Login is required to load reviews.");
+      }
+
+      const res = await fetchDataFromApi("/api/productReviews/admin/list");
+      if (
+        !res ||
+        res instanceof Error ||
+        res?.response ||
+        res?.isAxiosError ||
+        res?.success === false
+      ) {
+        throw new Error(
+          res?.response?.data?.message ||
+            res?.message ||
+            "Failed to load reviews."
+        );
+      }
+
+      const list = Array.isArray(res?.reviewList)
+        ? res.reviewList
+        : Array.isArray(res)
+          ? res
+          : [];
+
+      setReviews(list.map(normalizeReview));
+    } catch {
+      setReviews([]);
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    loadReviews();
   }, []);
+
+  useEffect(() => {
+    if (!isAuthInitialized) return;
+    loadReviews();
+  }, [isAuthInitialized, loadReviews]);
 
   const stats = useMemo(() => {
     const pendingCount = reviews.filter((item) => item.status === "pending").length;
@@ -114,19 +144,23 @@ export default function ReviewList() {
   }, [page, totalPages]);
 
   const updateReviewStatus = (id, status) => {
-    if (usingSampleData || isSampleReviewId(id)) {
-      setReviews((prev) =>
-        prev.map((item) => ((item._id || item.id) === id ? { ...item, status } : item))
-      );
-      showAlert(false, `Review ${status}.`);
-      return;
-    }
+    const endpoint =
+      status === "approved"
+        ? `/api/productReviews/${id}/approve`
+        : `/api/productReviews/${id}/reject`;
 
-    editData(`/api/productReviews/${id}/status`, { status })
+    patchData(endpoint)
       .then((res) => {
+        if (!res || res.success === false) {
+          showAlert(true, res?.message || "Failed to update review status.");
+          return;
+        }
         const updated = normalizeReview(res);
         setReviews((prev) =>
           prev.map((item) => ((item._id || item.id) === id ? updated : item))
+        );
+        setViewTarget((current) =>
+          current && (current._id || current.id) === id ? updated : current
         );
         showAlert(false, `Review ${status}.`);
       })
@@ -134,16 +168,16 @@ export default function ReviewList() {
   };
 
   const deleteReview = (id) => {
-    if (usingSampleData || isSampleReviewId(id)) {
-      setReviews((prev) => prev.filter((item) => (item._id || item.id) !== id));
-      showAlert(false, "Review removed from sample list.");
-      return;
-    }
-
-    deleteData(`/api/productReviews/${id}`).then(() => {
-      showAlert(false, "Review deleted.");
-      loadReviews();
-    });
+    deleteData(`/api/productReviews/${id}`)
+      .then((res) => {
+        if (res?.success === false) {
+          showAlert(true, res?.message || "Failed to delete review.");
+          return;
+        }
+        showAlert(false, "Review deleted.");
+        loadReviews();
+      })
+      .catch(() => showAlert(true, "Failed to delete review."));
   };
 
   const requestDelete = (item) => {
@@ -158,6 +192,16 @@ export default function ReviewList() {
     deleteReview(deleteTarget.id);
     setDeleteTarget(null);
   };
+
+  const openReviewDetails = (item) => {
+    setViewTarget(item);
+  };
+
+  const emptyMessage = loadError
+    ? "Unable to load reviews. Please try again."
+    : filtered.length === 0 && reviews.length === 0
+      ? "No reviews yet. Customer submissions will appear here for moderation."
+      : "No reviews match your filters.";
 
   return (
     <>
@@ -185,12 +229,6 @@ export default function ReviewList() {
       </div>
 
       <section className="admin-dash__panel">
-        {usingSampleData && (
-          <p className="admin-dash__sample-banner">
-            Showing sample reviews — connect live data when customers submit reviews via the storefront.
-          </p>
-        )}
-
         <div className="admin-dash__toolbar admin-dash__toolbar--wrap admin-dash__toolbar--filters">
           <input
             className="admin-dash__input"
@@ -235,103 +273,121 @@ export default function ReviewList() {
           </select>
         </div>
 
-        <div className="admin-dash__data-table">
-          <div className="admin-dash__table-wrap admin-dash__table-wrap--modern">
-            <table className="admin-dash__table admin-dash__table--modern admin-dash__table--reviews">
-              <thead>
-                <tr>
-                  <th>Customer</th>
-                  <th>Product</th>
-                  <th>Rating</th>
-                  <th>Comment</th>
-                  <th>Date</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {slice.length === 0 ? (
+        {loading ? (
+          <AdminLoadingState message="Loading reviews…" />
+        ) : (
+          <div className="admin-dash__data-table">
+            <div className="admin-dash__table-wrap admin-dash__table-wrap--modern">
+              <table className="admin-dash__table admin-dash__table--modern admin-dash__table--reviews">
+                <thead>
                   <tr>
-                    <td colSpan={7} className="admin-dash__table-empty">
-                      No reviews match your filters.
-                    </td>
+                    <th>Customer</th>
+                    <th>Product</th>
+                    <th>Rating</th>
+                    <th>Comment</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
-                ) : (
-                  slice.map((item) => {
-                    const id = item._id || item.id;
-                    const comment = item.comment || item.review;
+                </thead>
+                <tbody>
+                  {slice.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="admin-dash__table-empty">
+                        {emptyMessage}
+                      </td>
+                    </tr>
+                  ) : (
+                    slice.map((item) => {
+                      const id = item._id || item.id;
+                      const comment = item.comment || item.review;
 
-                    return (
-                      <tr key={id}>
-                        <td><strong>{item.customerName}</strong></td>
-                        <td>{item.productName || "—"}</td>
-                        <td>
-                          <Rating value={Number(item.rating) || 0} readOnly size="small" />
-                        </td>
-                        <td className="admin-dash__review-comment" title={comment}>
-                          {truncateComment(comment)}
-                        </td>
-                        <td>{formatReviewDate(item.dateCreated || item.date)}</td>
-                        <td>
-                          <span
-                            className={`admin-dash__status-badge admin-dash__status-badge--${getReviewStatusBadgeClass(item.status)}`}
-                          >
-                            {item.status}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="admin-dash__actions admin-dash__actions--reviews">
-                            <button
-                              type="button"
-                              className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
-                              title="Approve"
-                              disabled={item.status === "approved"}
-                              onClick={() => updateReviewStatus(id, "approved")}
+                      return (
+                        <tr key={id}>
+                          <td><strong>{item.customerName}</strong></td>
+                          <td>{item.productName || "—"}</td>
+                          <td>
+                            <Rating value={Number(item.rating) || 0} readOnly size="small" />
+                          </td>
+                          <td className="admin-dash__review-comment" title={comment}>
+                            {truncateComment(comment)}
+                          </td>
+                          <td>{formatReviewDate(item.dateCreated || item.date)}</td>
+                          <td>
+                            <span
+                              className={`admin-dash__status-badge admin-dash__status-badge--${getReviewStatusBadgeClass(item.status)}`}
                             >
-                              <FaCheck />
-                            </button>
-                            <button
-                              type="button"
-                              className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
-                              title="Reject"
-                              disabled={item.status === "rejected"}
-                              onClick={() => updateReviewStatus(id, "rejected")}
-                            >
-                              <FaTimes />
-                            </button>
-                            <button
-                              type="button"
-                              className="admin-dash__btn admin-dash__btn--danger admin-dash__btn--sm admin-dash__btn--icon"
-                              title="Delete"
-                              onClick={() => requestDelete(item)}
-                            >
-                              <MdDelete />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                              {item.status}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="admin-dash__actions admin-dash__actions--reviews">
+                              <button
+                                type="button"
+                                className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
+                                title="View details"
+                                onClick={() => openReviewDetails(item)}
+                              >
+                                <FaEye />
+                              </button>
+                              <button
+                                type="button"
+                                className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
+                                title="Approve"
+                                disabled={item.status === "approved"}
+                                onClick={() => updateReviewStatus(id, "approved")}
+                              >
+                                <FaCheck />
+                              </button>
+                              <button
+                                type="button"
+                                className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
+                                title="Reject"
+                                disabled={item.status === "rejected"}
+                                onClick={() => updateReviewStatus(id, "rejected")}
+                              >
+                                <FaTimes />
+                              </button>
+                              <button
+                                type="button"
+                                className="admin-dash__btn admin-dash__btn--danger admin-dash__btn--sm admin-dash__btn--icon"
+                                title="Delete"
+                                onClick={() => requestDelete(item)}
+                              >
+                                <MdDelete />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <AdminPagination
+              page={page}
+              totalPages={totalPages}
+              totalItems={filtered.length}
+              itemLabel="reviews"
+              rowsPerPage={rowsPerPage}
+              rowsPerPageOptions={[10, 25, 50]}
+              onPageChange={setPage}
+              onRowsPerPageChange={(value) => {
+                setRowsPerPage(value);
+                setPage(0);
+              }}
+            />
           </div>
-
-          <AdminPagination
-            page={page}
-            totalPages={totalPages}
-            totalItems={filtered.length}
-            itemLabel="reviews"
-            rowsPerPage={rowsPerPage}
-            rowsPerPageOptions={[10, 25, 50]}
-            onPageChange={setPage}
-            onRowsPerPageChange={(value) => {
-              setRowsPerPage(value);
-              setPage(0);
-            }}
-          />
-        </div>
+        )}
       </section>
+
+      <ReviewDetailsModal
+        open={Boolean(viewTarget)}
+        review={viewTarget}
+        onClose={() => setViewTarget(null)}
+      />
 
       <AdminConfirmDialog
         open={Boolean(deleteTarget)}

@@ -6,10 +6,9 @@ import {
   FEED_PAGE_SIZE,
   FEED_SORT_OPTIONS,
   PRODUCT_QUESTIONS,
-  PRODUCT_REVIEWS,
   sortProductQuestions,
-  sortProductReviews,
-} from "./productReviewsQuestions";
+  sortFeedReviews,
+} from "../../utils/productReviewUtils";
 import "./ProductReviewsFeed.css";
 
 const LOAD_DELAY_MS = 750;
@@ -43,6 +42,8 @@ function UserAvatar() {
 }
 
 function ReviewCard({ review }) {
+  const images = Array.isArray(review.images) ? review.images.filter(Boolean) : [];
+
   return (
     <li className="spd-feed__item spd-feed__item--review">
       <div className="spd-feed__review-top">
@@ -62,6 +63,27 @@ function ReviewCard({ review }) {
 
       {review.title && <p className="spd-feed__review-title">{review.title}</p>}
       <p className="spd-feed__review-body">{review.body}</p>
+
+      {images.length > 0 && (
+        <div className="spd-feed__images" aria-label="Review photos">
+          {images.map((imageUrl, index) => (
+            <a
+              key={`${review.id}-${imageUrl}-${index}`}
+              href={imageUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="spd-feed__image-link"
+            >
+              <img
+                src={imageUrl}
+                alt={`Photo shared by ${review.name}`}
+                className="spd-feed__image"
+                loading="lazy"
+              />
+            </a>
+          ))}
+        </div>
+      )}
     </li>
   );
 }
@@ -96,7 +118,7 @@ function QuestionCard({ item }) {
   );
 }
 
-export default function ProductReviewsFeed() {
+export default function ProductReviewsFeed({ reviews = [], loading = false }) {
   const [activeTab, setActiveTab] = useState("reviews");
   const [sortBy, setSortBy] = useState("recent");
   const [sortOpen, setSortOpen] = useState(false);
@@ -104,7 +126,10 @@ export default function ProductReviewsFeed() {
   const [visibleQuestions, setVisibleQuestions] = useState(FEED_PAGE_SIZE);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  const sortedReviews = useMemo(() => sortProductReviews(PRODUCT_REVIEWS, sortBy), [sortBy]);
+  const sortedReviews = useMemo(
+    () => sortFeedReviews(reviews, sortBy),
+    [reviews, sortBy]
+  );
   const sortedQuestions = useMemo(() => sortProductQuestions(PRODUCT_QUESTIONS), []);
 
   const visibleReviewItems = sortedReviews.slice(0, visibleReviews);
@@ -116,6 +141,10 @@ export default function ProductReviewsFeed() {
 
   const selectedSortLabel =
     FEED_SORT_OPTIONS.find((option) => option.value === sortBy)?.label ?? "Most Recent";
+
+  useEffect(() => {
+    setVisibleReviews(FEED_PAGE_SIZE);
+  }, [reviews]);
 
   useEffect(() => {
     if (!sortOpen) return undefined;
@@ -159,7 +188,7 @@ export default function ProductReviewsFeed() {
           className={`spd-feed__tab${activeTab === "reviews" ? " spd-feed__tab--active" : ""}`}
           onClick={() => setActiveTab("reviews")}
         >
-          Reviews ({PRODUCT_REVIEWS.length})
+          Reviews ({reviews.length})
         </button>
         <button
           type="button"
@@ -225,9 +254,19 @@ export default function ProductReviewsFeed() {
           aria-labelledby="spd-feed-tab-reviews"
           className="spd-feed__list"
         >
-          {visibleReviewItems.map((review) => (
-            <ReviewCard key={review.id} review={review} />
-          ))}
+          {loading ? (
+            <li className="spd-feed__item spd-feed__item--review">
+              <p className="spd-feed__review-body">Loading reviews…</p>
+            </li>
+          ) : visibleReviewItems.length === 0 ? (
+            <li className="spd-feed__item spd-feed__item--review">
+              <p className="spd-feed__review-body">No approved reviews yet.</p>
+            </li>
+          ) : (
+            visibleReviewItems.map((review) => (
+              <ReviewCard key={review.id} review={review} />
+            ))
+          )}
         </ul>
       ) : (
         <ul

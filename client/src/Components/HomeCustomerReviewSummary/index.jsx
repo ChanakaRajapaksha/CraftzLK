@@ -8,7 +8,7 @@ import {
   HiSparkles,
 } from "react-icons/hi2";
 import CustomerReviewsModal from "../CustomerReviewsModal";
-import { REVIEW_AVERAGE, REVIEW_TOTAL_LABEL } from "../CustomerReviewsModal/reviewStats";
+import { fetchDataFromApi } from "../../utils/api";
 import "./HomeCustomerReviewSummary.css";
 
 const BRAND = "CraftzLK";
@@ -55,11 +55,49 @@ const FEATURES = [
   },
 ];
 
+function formatAverage(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return "0.0";
+  return n.toFixed(1);
+}
+
+function formatCount(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < 0) return "0";
+  return n.toLocaleString("en-US");
+}
+
 export default function HomeCustomerReviewSummary({ variant = "home" }) {
   const [reviewsOpen, setReviewsOpen] = useState(false);
+  const [averageRating, setAverageRating] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
   const isProduct = variant === "product";
 
   useEffect(() => () => setReviewsOpen(false), []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchDataFromApi("/api/productReviews/stats")
+      .then((res) => {
+        if (cancelled || !res || res.success === false) return;
+        setAverageRating(Number(res.averageRating) || 0);
+        setReviewCount(Number(res.reviewCount) || 0);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setAverageRating(0);
+          setReviewCount(0);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const displayAverage = formatAverage(averageRating);
+  const displayCount = formatCount(reviewCount);
 
   return (
     <div
@@ -81,11 +119,11 @@ export default function HomeCustomerReviewSummary({ variant = "home" }) {
             <span className="home-review-summary__brand">{BRAND}</span>
             <span
               className="home-review-summary__score"
-              aria-label={`${REVIEW_AVERAGE} out of 5 stars`}
+              aria-label={`${displayAverage} out of 5 stars`}
             >
-              {REVIEW_AVERAGE} <span aria-hidden="true">★</span>
+              {displayAverage} <span aria-hidden="true">★</span>
             </span>
-            <span className="home-review-summary__count">({REVIEW_TOTAL_LABEL})</span>
+            <span className="home-review-summary__count">({displayCount})</span>
           </h2>
 
           <div className="home-review-summary__body">
@@ -140,7 +178,12 @@ export default function HomeCustomerReviewSummary({ variant = "home" }) {
       )}
 
       {reviewsOpen && (
-        <CustomerReviewsModal open onClose={() => setReviewsOpen(false)} />
+        <CustomerReviewsModal
+          open
+          onClose={() => setReviewsOpen(false)}
+          averageRating={averageRating}
+          reviewCount={reviewCount}
+        />
       )}
     </div>
   );

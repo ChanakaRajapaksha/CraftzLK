@@ -6,7 +6,6 @@ import NewArrivalsRail from "../../Components/NewArrivalsRail";
 import BestSellersRail from "../../Components/BestSellersRail";
 import HomeHeroBanner from "../../Components/HomeHeroBanner";
 import HomeCustomerReviewSummary from "../../Components/HomeCustomerReviewSummary";
-import HomeProductImagesSection from "../../Components/HomeProductImagesSection";
 import PopularCategoriesGrid from "../../Components/PopularCategoriesGrid";
 import React, { useContext, useEffect, useState } from "react";
 
@@ -20,7 +19,6 @@ import { HOME_SECTION_INNER_DIVIDED } from "../../Components/homeRailLayout";
 
 const Home = () => {
   const [bannerList, setBannerList] = useState([]);
-  const [randomCatProducts, setRandomCatProducts] = useState([]);
   const [homeSideBanners, setHomeSideBanners] = useState([]);
   const [homeBottomBanners, setHomeBottomBanners] = useState([]);
 
@@ -46,28 +44,6 @@ const Home = () => {
     context?.setIsBottomShow?.(true);
   }, []);
 
-  useEffect(() => {
-    const categoryData = context?.categoryData;
-
-    if (Array.isArray(categoryData) && categoryData.length > 0) {
-      const randomIndex = Math.floor(
-        Math.random() * categoryData.length
-      );
-
-      fetchDataFromApi(
-        `/api/products/catId?catId=${
-          categoryData[randomIndex]?.id
-        }&location=${localStorage.getItem("location")}`
-      ).then((res) => {
-        setRandomCatProducts({
-          catName: categoryData[randomIndex]?.name,
-          catId: categoryData[randomIndex]?.id,
-          products: res?.products,
-        });
-      });
-    }
-  }, [context?.categoryData]);
-
   return (
     <>
       <CategoryHeroSlider />
@@ -86,11 +62,6 @@ const Home = () => {
         <BestSellersRail />
 
         <HomeHeroBanner />
-
-        <HomeProductImagesSection
-          randomCatProducts={randomCatProducts}
-          windowWidth={context?.windowWidth ?? 0}
-        />
 
         <div className="homeContentAfterRails">
           {(homeSideBanners?.length !== 0 ||

@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -14,6 +14,7 @@ import WriteReviewModal from "../../Components/WriteReviewModal";
 import AskQuestionModal from "../../Components/AskQuestionModal";
 import YouMayAlsoLike from "../../Components/YouMayAlsoLike";
 import { fetchDataFromApi } from "../../utils/api";
+import { parseProductReviewsResponse } from "../../utils/productReviewUtils";
 import { useAppSelector } from "../../store/hooks";
 import ProductReviewsFeed from "./ProductReviewsFeed";
 import {
@@ -90,6 +91,10 @@ export default function SampleProductDetails() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [writeReviewOpen, setWriteReviewOpen] = useState(false);
   const [askQuestionOpen, setAskQuestionOpen] = useState(false);
+  const [productReviews, setProductReviews] = useState([]);
+  const [reviewAverage, setReviewAverage] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
   const [showReviewStickyCard, setShowReviewStickyCard] = useState(false);
   const [reviewStickyExpanded, setReviewStickyExpanded] = useState(false);
   const reviewsSectionRef = useRef(null);
@@ -110,6 +115,9 @@ export default function SampleProductDetails() {
       setActiveImage(0);
       setActiveColor(null);
       setQuantity(1);
+      setProductReviews([]);
+      setReviewAverage(0);
+      setReviewCount(0);
 
       if (isSampleProductId(id)) {
         const sample = getSampleProductById(id);
@@ -117,6 +125,8 @@ export default function SampleProductDetails() {
           if (sample) {
             setProduct({
               ...sample,
+              rating: 0,
+              reviewCount: 0,
               hasVariants: Array.isArray(sample.colors) && sample.colors.length > 0,
             });
           } else {
@@ -153,6 +163,34 @@ export default function SampleProductDetails() {
       cancelled = true;
     };
   }, [id, isAuthInitialized]);
+
+  const loadProductReviews = useCallback(async (productId) => {
+    if (!productId) return;
+
+    setReviewsLoading(true);
+    try {
+      const res = await fetchDataFromApi(
+        `/api/productReviews?productId=${encodeURIComponent(productId)}`
+      );
+      const { reviews, averageRating, reviewCount: totalReviews } =
+        parseProductReviewsResponse(res);
+
+      setProductReviews(reviews);
+      setReviewAverage(averageRating);
+      setReviewCount(totalReviews);
+    } catch {
+      setProductReviews([]);
+      setReviewAverage(0);
+      setReviewCount(0);
+    } finally {
+      setReviewsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!product?.id) return;
+    loadProductReviews(product.id);
+  }, [product?.id, loadProductReviews]);
 
   useEffect(() => {
     if (product?.colors?.length) {
@@ -290,7 +328,7 @@ export default function SampleProductDetails() {
           ? `${product.name} — ${selectedVariant.label}`
           : product.name,
         image: selectedVariant?.image || mainImage,
-        rating: product.rating,
+        rating: reviewAverage,
         price: activePrice,
         quantity,
         subTotal: activePrice * quantity,
@@ -371,7 +409,7 @@ export default function SampleProductDetails() {
               {stockLabel}
             </p>
 
-            <StarRating value={product.rating} count={product.reviewCount} />
+            <StarRating value={reviewAverage} count={reviewCount} />
 
             <section className="spd-desc" aria-labelledby="spd-desc-heading">
               <button
@@ -509,13 +547,13 @@ export default function SampleProductDetails() {
           <div className="spd-reviews__layout">
             <div className="spd-reviews__summary">
               <div className="spd-reviews__score-row">
-                <ReviewSummaryStars value={product.rating} />
+                <ReviewSummaryStars value={reviewAverage} />
                 <button type="button" className="spd-reviews__score-link">
-                  {product.rating.toFixed(2)} out of 5
+                  {reviewAverage.toFixed(2)} out of 5
                 </button>
               </div>
               <p className="spd-reviews__count">
-                Based on {product.reviewCount} review{product.reviewCount === 1 ? "" : "s"}
+                Based on {reviewCount} review{reviewCount === 1 ? "" : "s"}
               </p>
             </div>
 
@@ -539,7 +577,7 @@ export default function SampleProductDetails() {
             </div>
           </div>
 
-          <ProductReviewsFeed />
+          <ProductReviewsFeed reviews={productReviews} loading={reviewsLoading} />
 
           <HomeCustomerReviewSummary variant="product" />
         </section>
@@ -550,7 +588,8 @@ export default function SampleProductDetails() {
       <WriteReviewModal
         open={writeReviewOpen}
         onClose={() => setWriteReviewOpen(false)}
-        product={{ name: product.name, image: mainImage }}
+        product={{ id: product.id, name: product.name, image: mainImage }}
+        onSubmitted={() => loadProductReviews(product.id)}
       />
       <AskQuestionModal
         open={askQuestionOpen}

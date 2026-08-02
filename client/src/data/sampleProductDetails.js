@@ -17,8 +17,8 @@ const PRODUCT_TEMPLATES = {
   "wooden-wine-glasses": {
     name: "Handcrafted Wooden Wine Glasses (Set of 2)",
     images: [IMG.wine.base, IMG.wine.zoom],
-    rating: 4.55,
-    reviewCount: 128,
+    rating: 0,
+    reviewCount: 0,
     countInStock: 24,
     shortDescription: {
       bullets: [
@@ -71,8 +71,8 @@ const PRODUCT_TEMPLATES = {
   "jack-fruit-curry": {
     name: "Traditional Jack Fruit Curry (Homemade)",
     images: [IMG.curry.base, IMG.curry.zoom],
-    rating: 4.72,
-    reviewCount: 86,
+    rating: 0,
+    reviewCount: 0,
     countInStock: 18,
     shortDescription: {
       bullets: [
@@ -122,8 +122,8 @@ const PRODUCT_TEMPLATES = {
   "ranawara-tea-powder": {
     name: "Organic Ranawara Tea Powder (100g)",
     images: [IMG.tea.base, IMG.tea.zoom],
-    rating: 4.61,
-    reviewCount: 54,
+    rating: 0,
+    reviewCount: 0,
     countInStock: 0,
     shortDescription: {
       bullets: [

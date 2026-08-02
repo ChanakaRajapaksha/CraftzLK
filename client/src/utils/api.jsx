@@ -62,6 +62,22 @@ function isPublicEndpoint(url = '') {
   return publicEndpoints.some((endpoint) => url.includes(endpoint));
 }
 
+function isGuestBrowsableProductReviews(url = '') {
+  const path = normalizeRequestPath(url);
+  if (path === '/api/productReviews/stats') return true;
+  if (path === '/api/productReviews/getall') return true;
+  if (path !== '/api/productReviews') return false;
+
+  const query = url.includes('?') ? url.split('?')[1] : '';
+  if (!query) return false;
+
+  try {
+    return Boolean(new URLSearchParams(query).get('productId'));
+  } catch {
+    return query.includes('productId=');
+  }
+}
+
 function isGuestBrowsableEndpoint(url = '') {
   const path = normalizeRequestPath(url);
   if (reqMethodIsGet(path, url) === false) return false;
@@ -79,7 +95,7 @@ function isGuestBrowsableEndpoint(url = '') {
 
   if (exactPaths.has(path)) return true;
   if (path.startsWith('/api/products') && !path.startsWith('/api/products/admin')) return true;
-  if (path.startsWith('/api/productReviews')) return true;
+  if (isGuestBrowsableProductReviews(url)) return true;
   if (path.startsWith('/api/artisans')) return true;
   if (path.startsWith('/api/cms-pages')) return true;
 
@@ -285,6 +301,11 @@ export const postData = async (url, formData) => {
 
 export const editData = async (url, updatedData ) => {
     const { data } = await apiClient.put(url, updatedData);
+    return data;
+}
+
+export const patchData = async (url, updatedData = {}) => {
+    const { data } = await apiClient.patch(url, updatedData);
     return data;
 }
 

@@ -12,9 +12,9 @@ const DEFAULT_TRUST_BADGES = [
 const DEFAULT_DISCLAIMER =
   "Actual product colors may vary slightly from the images shown on our website/app.";
 
-/** Dummy review values until live reviews are connected */
-export const DUMMY_PRODUCT_RATING = 4;
-export const DUMMY_REVIEW_COUNT = 128;
+/** Default review values before live approved reviews are loaded */
+export const DEFAULT_PRODUCT_RATING = 0;
+export const DEFAULT_REVIEW_COUNT = 0;
 
 export function formatPriceDisplay(price) {
   const amount = Number(price);
@@ -131,8 +131,8 @@ export function mapApiProductToDetailsView(apiProduct) {
     id,
     name: apiProduct.name || "",
     images: Array.isArray(apiProduct.images) ? apiProduct.images.filter(Boolean) : [],
-    rating: DUMMY_PRODUCT_RATING,
-    reviewCount: DUMMY_REVIEW_COUNT,
+    rating: DEFAULT_PRODUCT_RATING,
+    reviewCount: DEFAULT_REVIEW_COUNT,
     countInStock: Number(apiProduct.countInStock) || 0,
     stockStatus: apiProduct.stockStatus || "in_stock",
     price: Number(apiProduct.price) || 0,

@@ -5,17 +5,12 @@ import { useTheme } from "@mui/material/styles";
 import Zoom from "@mui/material/Zoom";
 import { HiSparkles } from "react-icons/hi2";
 import { IoIosSearch } from "react-icons/io";
-import { FaFilter } from "react-icons/fa";
+import { FaCheck, FaFilter } from "react-icons/fa";
 import { IoChevronDown } from "react-icons/io5";
-import {
-  REVIEW_AVERAGE,
-  REVIEW_DISTRIBUTION,
-  REVIEW_TOTAL_LABEL,
-  reviewBarPercent,
-} from "./reviewStats";
+import { fetchDataFromApi } from "../../utils/api";
+import { formatReviewFeedDate } from "../../utils/productReviewUtils";
 import {
   FILTER_STAR_OPTIONS,
-  REVIEWS,
   REVIEWS_PER_PAGE,
   SORT_OPTIONS,
   STORE_SUMMARY,
@@ -23,16 +18,7 @@ import {
 import "./CustomerReviewsModal.css";
 
 const CRM_TRANSITION_MS = { enter: 300, exit: 240 };
-
-/** Warm image cache so first open does not wait on product thumbnails. */
-function preloadReviewImages() {
-  const urls = [...new Set(REVIEWS.map((r) => r.productImg).filter(Boolean))];
-  urls.forEach((src) => {
-    const img = new Image();
-    img.decoding = "async";
-    img.src = src;
-  });
-}
+const EMPTY_DISTRIBUTION = [5, 4, 3, 2, 1].map((stars) => ({ stars, count: 0 }));
 
 const CrmDialogTransition = forwardRef(function CrmDialogTransition(props, ref) {
   return (
@@ -65,67 +51,12 @@ function Avatar({ name }) {
   return <span className="crm-avatar">{name.charAt(0).toUpperCase()}</span>;
 }
 
-function VerifiedBadge() {
+function ApprovedBadge() {
   return (
-    <span className="crm-card__verified" title="Verified purchase" aria-label="Verified purchase">
-      ✓
+    <span className="crm-card__verified" title="Approved review" aria-label="Approved review">
+      <FaCheck aria-hidden="true" />
     </span>
   );
-}
-
-function parseReviewDate(dateStr) {
-  const [month, day, year] = dateStr.split("/").map(Number);
-  return new Date(year, month - 1, day).getTime();
-}
-
-function filterAndSortReviews(reviews, { query, starFilters, sortBy }) {
-  let result = [...reviews];
-
-  if (query.trim()) {
-    const q = query.trim().toLowerCase();
-    result = result.filter(
-      (r) =>
-        r.name.toLowerCase().includes(q) ||
-        r.title?.toLowerCase().includes(q) ||
-        r.body.toLowerCase().includes(q) ||
-        r.product.toLowerCase().includes(q)
-    );
-  }
-
-  if (starFilters.length > 0) {
-    result = result.filter((r) => starFilters.includes(r.stars));
-  }
-
-  if (sortBy === "recent") {
-    result.sort((a, b) => parseReviewDate(b.date) - parseReviewDate(a.date));
-  } else if (sortBy === "highest") {
-    result.sort((a, b) => b.stars - a.stars || parseReviewDate(b.date) - parseReviewDate(a.date));
-  } else if (sortBy === "lowest") {
-    result.sort((a, b) => a.stars - b.stars || parseReviewDate(b.date) - parseReviewDate(a.date));
-  } else if (sortBy === "only_pictures") {
-    result = result.filter((r) => r.hasPictures);
-    result.sort((a, b) => parseReviewDate(b.date) - parseReviewDate(a.date));
-  } else if (sortBy === "pictures_first") {
-    result.sort(
-      (a, b) =>
-        Number(b.hasPictures) - Number(a.hasPictures) ||
-        parseReviewDate(b.date) - parseReviewDate(a.date)
-    );
-  } else if (sortBy === "videos_first") {
-    result.sort(
-      (a, b) =>
-        Number(b.hasVideo) - Number(a.hasVideo) ||
-        parseReviewDate(b.date) - parseReviewDate(a.date)
-    );
-  } else if (sortBy === "most_helpful") {
-    result.sort(
-      (a, b) =>
-        (b.helpfulCount ?? 0) - (a.helpfulCount ?? 0) ||
-        parseReviewDate(b.date) - parseReviewDate(a.date)
-    );
-  }
-
-  return result;
 }
 
 function buildPageNumbers(page, totalPages) {
@@ -145,41 +76,126 @@ function buildPageNumbers(page, totalPages) {
   return pages;
 }
 
-export default function CustomerReviewsModal({ open, onClose }) {
+function formatAverage(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return "0.0";
+  return n.toFixed(1);
+}
+
+function formatCount(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < 0) return "0";
+  return n.toLocaleString("en-US");
+}
+
+function reviewBarPercent(count, total) {
+  const safeTotal = Number(total) || 0;
+  if (!safeTotal) return 0;
+  return Math.round((Number(count) / safeTotal) * 1000) / 10;
+}
+
+function mapModalReviewItem(review) {
+  const images = Array.isArray(review.images)
+    ? review.images.map((item) => String(item || "").trim()).filter(Boolean)
+    : [];
+  const dateSource = review.dateCreated || review.date;
+
+  return {
+    id: review._id || review.id,
+    name: review.name || review.customerName || "Customer",
+    verified: review.verified === true || review.status === "approved",
+    date: formatReviewFeedDate(dateSource),
+    stars: Number(review.stars ?? review.customerRating ?? review.rating ?? 0),
+    title: review.title || "",
+    body: review.body || review.review || review.comment || "",
+    product: review.product || review.productName || "Product",
+    productImg: review.productImg || images[0] || "",
+    productId: review.productId || "",
+    images,
+  };
+}
+
+function buildGetAllUrl({
+  page,
+  search,
+  starFilters,
+  sortBy,
+  productId,
+}) {
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  params.set("limit", String(REVIEWS_PER_PAGE));
+  params.set("sort", sortBy || "recent");
+
+  if (search.trim()) {
+    params.set("search", search.trim());
+  }
+
+  if (starFilters.length > 0) {
+    params.set("stars", starFilters.join(","));
+  }
+
+  if (productId) {
+    params.set("productId", String(productId));
+  }
+
+  return `/api/productReviews/getall?${params.toString()}`;
+}
+
+export default function CustomerReviewsModal({
+  open,
+  onClose,
+  averageRating = 0,
+  reviewCount = 0,
+  productId = null,
+}) {
   const theme = useTheme();
   const isMobileLayout = useMediaQuery(theme.breakpoints.down("md"));
 
   const [page, setPage] = useState(1);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
   const [starFilters, setStarFilters] = useState([]);
   const [sortBy, setSortBy] = useState("recent");
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
+  const [liveAverage, setLiveAverage] = useState(averageRating);
+  const [liveCount, setLiveCount] = useState(reviewCount);
+  const [distribution, setDistribution] = useState(EMPTY_DISTRIBUTION);
+
+  const displayAverage = formatAverage(liveAverage);
+  const displayCount = formatCount(liveCount);
+
+  useEffect(() => {
+    setLiveAverage(averageRating);
+    setLiveCount(reviewCount);
+  }, [averageRating, reviewCount]);
 
   useEffect(() => {
     if (!open) {
       setPage(1);
       setSearchOpen(false);
       setSearchQuery("");
+      setDebouncedSearch("");
       setFiltersOpen(false);
       setSortOpen(false);
       setStarFilters([]);
       setSortBy("recent");
+      setReviews([]);
+      setTotalPages(1);
     }
   }, [open]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return undefined;
-    if ("requestIdleCallback" in window) {
-      const id = window.requestIdleCallback(() => preloadReviewImages(), {
-        timeout: 2500,
-      });
-      return () => window.cancelIdleCallback(id);
-    }
-    const t = window.setTimeout(preloadReviewImages, 400);
-    return () => window.clearTimeout(t);
-  }, []);
+    const timer = window.setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -208,18 +224,78 @@ export default function CustomerReviewsModal({ open, onClose }) {
 
   useEffect(() => {
     setPage(1);
-  }, [searchQuery, starFilters, sortBy]);
+  }, [debouncedSearch, starFilters, sortBy, productId]);
 
-  const filteredReviews = useMemo(
-    () => filterAndSortReviews(REVIEWS, { query: searchQuery, starFilters, sortBy }),
-    [searchQuery, starFilters, sortBy]
-  );
+  useEffect(() => {
+    if (!open) return undefined;
 
-  const totalPages = Math.max(1, Math.ceil(filteredReviews.length / REVIEWS_PER_PAGE));
+    let cancelled = false;
+    setLoading(true);
+
+    const url = buildGetAllUrl({
+      page,
+      search: debouncedSearch,
+      starFilters,
+      sortBy,
+      productId,
+    });
+
+    fetchDataFromApi(url)
+      .then((res) => {
+        if (cancelled) return;
+        if (!res || res.success === false) {
+          setReviews([]);
+          setTotalPages(1);
+          return;
+        }
+
+        const list = Array.isArray(res.reviewList) ? res.reviewList : [];
+        setReviews(list.map(mapModalReviewItem));
+        setTotalPages(Math.max(1, Number(res.totalPages) || 1));
+
+        if (Number.isFinite(Number(res.averageRating))) {
+          setLiveAverage(Number(res.averageRating));
+        }
+        if (Number.isFinite(Number(res.reviewCount))) {
+          setLiveCount(Number(res.reviewCount));
+        }
+        if (Array.isArray(res.distribution) && res.distribution.length) {
+          setDistribution(
+            [5, 4, 3, 2, 1].map((stars) => {
+              const match = res.distribution.find(
+                (item) => Number(item.stars) === stars
+              );
+              return { stars, count: Number(match?.count) || 0 };
+            })
+          );
+        } else {
+          setDistribution(EMPTY_DISTRIBUTION);
+        }
+
+        if (Number(res.page) && Number(res.page) !== page) {
+          setPage(Number(res.page));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setReviews([]);
+          setTotalPages(1);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, page, debouncedSearch, starFilters, sortBy, productId]);
+
   const safePage = Math.min(page, totalPages);
-  const paged = filteredReviews.slice(
-    (safePage - 1) * REVIEWS_PER_PAGE,
-    safePage * REVIEWS_PER_PAGE
+
+  const pageNumbers = useMemo(
+    () => buildPageNumbers(safePage, totalPages),
+    [safePage, totalPages]
   );
 
   const toggleStarFilter = (star) => {
@@ -269,13 +345,13 @@ export default function CustomerReviewsModal({ open, onClose }) {
           </h2>
 
           <div className="crm-sidebar__score">
-            <span className="crm-sidebar__average">{REVIEW_AVERAGE}</span>
-            <span className="crm-sidebar__total">{REVIEW_TOTAL_LABEL} reviews</span>
+            <span className="crm-sidebar__average">{displayAverage}</span>
+            <span className="crm-sidebar__total">{displayCount} reviews</span>
           </div>
 
           <ul className="crm-histogram" aria-label="Rating breakdown">
-            {REVIEW_DISTRIBUTION.map(({ stars, count }) => {
-              const pct = reviewBarPercent(count);
+            {distribution.map(({ stars, count }) => {
+              const pct = reviewBarPercent(count, liveCount);
               return (
                 <li key={stars} className="crm-histogram__row">
                   <span className="crm-histogram__label">{stars}</span>
@@ -306,7 +382,7 @@ export default function CustomerReviewsModal({ open, onClose }) {
 
           <div className="crm-toolbar">
             <span className="crm-toolbar__tab">
-              Product and Store Reviews ({REVIEW_TOTAL_LABEL})
+              Product and Store Reviews ({displayCount})
             </span>
 
             <div className="crm-toolbar__actions">
@@ -420,10 +496,12 @@ export default function CustomerReviewsModal({ open, onClose }) {
 
           <div className="crm-scroll" tabIndex={0} aria-label="Customer reviews list">
             <ul className="crm-list">
-              {paged.length === 0 ? (
+              {loading ? (
+                <li className="crm-empty">Loading reviews...</li>
+              ) : reviews.length === 0 ? (
                 <li className="crm-empty">No reviews match your search or filters.</li>
               ) : (
-                paged.map((review) => (
+                reviews.map((review) => (
                   <li key={review.id} className="crm-card">
                     {review.stars != null && <StarRow filled={review.stars} />}
 
@@ -432,7 +510,7 @@ export default function CustomerReviewsModal({ open, onClose }) {
                       <div className="crm-card__meta-info">
                         <span className="crm-card__name">
                           {review.name}
-                          {review.verified && <VerifiedBadge />}
+                          {review.verified && <ApprovedBadge />}
                         </span>
                         <span className="crm-card__date">{review.date}</span>
                       </div>
@@ -441,17 +519,44 @@ export default function CustomerReviewsModal({ open, onClose }) {
                     {review.title && <p className="crm-card__title">{review.title}</p>}
                     <p className="crm-card__body">{review.body}</p>
 
-                    <div className="crm-card__product">
-                      <img
-                        src={review.productImg}
-                        alt=""
-                        className="crm-card__product-thumb"
-                        loading="lazy"
-                      />
-                      <button type="button" className="crm-card__product-link">
-                        {review.product}
-                      </button>
-                    </div>
+                    {Array.isArray(review.images) && review.images.length > 0 && (
+                      <div className="crm-card__images" aria-label="Review photos">
+                        {review.images.map((imageUrl, index) => (
+                          <a
+                            key={`${review.id}-${imageUrl}-${index}`}
+                            href={imageUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="crm-card__image-link"
+                          >
+                            <img
+                              src={imageUrl}
+                              alt={`Photo shared by ${review.name}`}
+                              className="crm-card__image"
+                              loading="lazy"
+                            />
+                          </a>
+                        ))}
+                      </div>
+                    )}
+
+                    {(review.product || review.productImg) && (
+                      <div className="crm-card__product">
+                        {review.productImg ? (
+                          <img
+                            src={review.productImg}
+                            alt=""
+                            className="crm-card__product-thumb"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <span className="crm-card__product-thumb" aria-hidden="true" />
+                        )}
+                        <button type="button" className="crm-card__product-link">
+                          {review.product}
+                        </button>
+                      </div>
+                    )}
                   </li>
                 ))
               )}
@@ -463,13 +568,13 @@ export default function CustomerReviewsModal({ open, onClose }) {
               type="button"
               className="crm-pagination__btn crm-pagination__arrow"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={safePage === 1}
+              disabled={safePage === 1 || loading}
               aria-label="Previous page"
             >
               ‹
             </button>
 
-            {buildPageNumbers(safePage, totalPages).map((p, i) =>
+            {pageNumbers.map((p, i) =>
               p === "..." ? (
                 <span key={`ellipsis-${i}`} className="crm-pagination__ellipsis">
                   …
@@ -480,6 +585,7 @@ export default function CustomerReviewsModal({ open, onClose }) {
                   type="button"
                   className={`crm-pagination__btn${p === safePage ? " crm-pagination__btn--active" : ""}`}
                   onClick={() => setPage(p)}
+                  disabled={loading}
                   aria-current={p === safePage ? "page" : undefined}
                 >
                   {p}
@@ -491,7 +597,7 @@ export default function CustomerReviewsModal({ open, onClose }) {
               type="button"
               className="crm-pagination__btn crm-pagination__arrow"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={safePage === totalPages}
+              disabled={safePage === totalPages || loading}
               aria-label="Next page"
             >
               ›

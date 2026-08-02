@@ -4133,6 +4133,61 @@
   flex-wrap: nowrap;
 }
 
+.admin-dash__settings-modal--reviews {
+  width: min(100%, 44rem);
+}
+
+.admin-dash__review-details-panel {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.admin-dash__review-details-comment {
+  margin-top: 1.25rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid rgba(201, 169, 97, 0.2);
+}
+
+.admin-dash__review-details-comment-label {
+  margin: 0 0 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9a8b78;
+}
+
+.admin-dash__review-details-images {
+  margin-top: 1.25rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid rgba(201, 169, 97, 0.2);
+}
+
+.admin-dash__review-details-image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+  gap: 0.75rem;
+}
+
+.admin-dash__review-details-image-link {
+  display: block;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid rgba(201, 169, 97, 0.28);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.admin-dash__review-details-image {
+  display: block;
+  width: 100%;
+  height: 7.5rem;
+  object-fit: cover;
+}
+
+
 /* ——— Inventory management ——— */
 .admin-dash__table--stock {
   font-size: 0.84rem;
