@@ -1,52 +1,89 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useOutletContext } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useOutletContext, useSearchParams } from "react-router-dom";
 import { FaPencilAlt, FaPlus, FaTag } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import { IoTicketOutline } from "react-icons/io5";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import AdminPagination from "../../../Components/AdminDashboard/AdminPagination";
 import AdminConfirmDialog from "../../../Components/AdminDashboard/AdminConfirmDialog";
+import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
 import { deleteData, fetchDataFromApi } from "../../../utils/api";
-import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import { formatCouponDiscount, formatUsage } from "./couponFormDefaults";
-import { getCouponListSampleData, isSampleCouponId } from "./couponListUtils";
 import { formatListDate, getPromoStatusBadge } from "./promoListHelpers";
+import CouponFormModal from "./CouponFormModal";
 
 export default function CouponList() {
   const { setAlertBox } = useOutletContext();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [coupons, setCoupons] = useState([]);
-  const [usingSampleData, setUsingSampleData] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [discountTypeFilter, setDiscountTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingCouponId, setEditingCouponId] = useState(null);
 
-  const applySample = () => {
-    setCoupons(getCouponListSampleData());
-    setUsingSampleData(true);
-  };
+  const loadCoupons = useCallback(() => {
+    setLoading(true);
+    setLoadError(false);
 
-  const loadCoupons = () => {
     fetchDataFromApi("/api/coupons")
       .then((res) => {
-        const list = res?.couponList || [];
-        if (list.length) {
-          setCoupons(list);
-          setUsingSampleData(false);
-        } else {
-          applySample();
+        if (res?.success === false) {
+          throw new Error(res?.message || "Failed to load coupons.");
         }
+        setCoupons(Array.isArray(res?.couponList) ? res.couponList : []);
       })
-      .catch(() => applySample());
-  };
+      .catch(() => {
+        setCoupons([]);
+        setLoadError(true);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    loadCoupons();
   }, []);
+
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    const action = searchParams.get("action");
+
+    if (editId) {
+      setEditingCouponId(editId);
+      setModalOpen(true);
+    } else if (action === "add") {
+      setEditingCouponId(null);
+      setModalOpen(true);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    loadCoupons();
+  }, [loadCoupons]);
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setEditingCouponId(null);
+    if (searchParams.get("edit") || searchParams.get("action")) {
+      setSearchParams({}, { replace: true });
+    }
+  };
+
+  const openCreateModal = () => {
+    setEditingCouponId(null);
+    setModalOpen(true);
+  };
+
+  const openEditModal = (item) => {
+    setEditingCouponId(item._id || item.id);
+    setModalOpen(true);
+  };
 
   const stats = useMemo(() => {
     const activeCount = coupons.filter((item) => item.status === "active").length;
@@ -84,15 +121,23 @@ export default function CouponList() {
   }, [page, totalPages]);
 
   const deleteCoupon = (id) => {
-    if (usingSampleData || isSampleCouponId(id)) {
-      setCoupons((prev) => prev.filter((item) => (item._id || item.id) !== id));
-      setAlertBox?.({ open: true, error: false, msg: "Coupon removed from sample list." });
-      return;
-    }
-    deleteData(`/api/coupons/${id}`).then(() => {
-      setAlertBox?.({ open: true, error: false, msg: "Coupon deleted." });
-      loadCoupons();
-    });
+    deleteData(`/api/coupons/${id}`)
+      .then((res) => {
+        if (res?.success === false) {
+          setAlertBox?.({
+            open: true,
+            error: true,
+            msg: res?.message || "Failed to delete coupon.",
+          });
+          return;
+        }
+        setAlertBox?.({ open: true, error: false, msg: "Coupon deleted." });
+        loadCoupons();
+      })
+      .catch((error) => {
+        const message = error?.response?.data?.message || "Failed to delete coupon.";
+        setAlertBox?.({ open: true, error: true, msg: message });
+      });
   };
 
   const requestDelete = (item) => {
@@ -105,6 +150,12 @@ export default function CouponList() {
     setDeleteTarget(null);
   };
 
+  const emptyMessage = loadError
+    ? "Unable to load coupons. Please try again."
+    : filtered.length === 0 && coupons.length === 0
+      ? "No coupons yet. Add your first discount code."
+      : "No coupons match your filters.";
+
   return (
     <>
       <AdminPageHeader
@@ -112,10 +163,10 @@ export default function CouponList() {
         subtitle="Manage discount codes for checkout and campaigns."
         breadcrumbs={[{ label: "Promotions & Marketing" }, { label: "Coupons" }]}
         action={
-          <Link to={`${ADMIN_BASE}/promotions/coupons/add`} className="admin-dash__btn">
+          <button type="button" className="admin-dash__btn" onClick={openCreateModal}>
             <FaPlus />
             Add Coupon
-          </Link>
+          </button>
         }
       />
 
@@ -127,12 +178,6 @@ export default function CouponList() {
       </div>
 
       <section className="admin-dash__panel">
-        {usingSampleData && (
-          <p className="admin-dash__sample-banner">
-            Showing sample coupons — add live coupons via Add Coupon or your API.
-          </p>
-        )}
-
         <div className="admin-dash__toolbar admin-dash__toolbar--wrap admin-dash__toolbar--filters">
           <input
             className="admin-dash__input"
@@ -176,95 +221,108 @@ export default function CouponList() {
           </select>
         </div>
 
-        <div className="admin-dash__data-table">
-          <div className="admin-dash__table-wrap admin-dash__table-wrap--modern">
-            <table className="admin-dash__table admin-dash__table--modern admin-dash__table--coupons">
-              <thead>
-                <tr>
-                  <th>Code</th>
-                  <th>Discount</th>
-                  <th>Usage</th>
-                  <th>Min order</th>
-                  <th>Expiry</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {slice.length === 0 ? (
+        {loading ? (
+          <AdminLoadingState message="Loading coupons…" />
+        ) : (
+          <div className="admin-dash__data-table">
+            <div className="admin-dash__table-wrap admin-dash__table-wrap--modern">
+              <table className="admin-dash__table admin-dash__table--modern admin-dash__table--coupons">
+                <thead>
                   <tr>
-                    <td colSpan={7} className="admin-dash__table-empty">
-                      No coupons match your filters.
-                    </td>
+                    <th>Code</th>
+                    <th>Discount</th>
+                    <th>Usage</th>
+                    <th>Min order</th>
+                    <th>Expiry</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
-                ) : (
-                  slice.map((item) => {
-                    const id = item._id || item.id;
-                    const statusBadge = getPromoStatusBadge(item.status);
+                </thead>
+                <tbody>
+                  {slice.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="admin-dash__table-empty">
+                        {emptyMessage}
+                      </td>
+                    </tr>
+                  ) : (
+                    slice.map((item) => {
+                      const id = item._id || item.id;
+                      const statusBadge = getPromoStatusBadge(item.status);
 
-                    return (
-                      <tr key={id}>
-                        <td>
-                          <strong className="admin-dash__coupon-code">{item.code}</strong>
-                          <span className="admin-dash__promo-type-pill">
-                            {item.discountType === "fixed" ? "Fixed" : "Percent"}
-                          </span>
-                        </td>
-                        <td><strong>{formatCouponDiscount(item)}</strong></td>
-                        <td>
-                          <span className="admin-dash__badge">{formatUsage(item)}</span>
-                        </td>
-                        <td>
-                          {item.minOrderValue
-                            ? `Rs ${Number(item.minOrderValue).toLocaleString()}`
-                            : "—"}
-                        </td>
-                        <td>{formatListDate(item.expiryDate)}</td>
-                        <td>
-                          <span className={statusBadge.className}>{statusBadge.label}</span>
-                        </td>
-                        <td>
-                          <div className="admin-dash__actions">
-                            <Link
-                              to={`${ADMIN_BASE}/promotions/coupons/edit/${id}`}
-                              className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
-                              title="Edit"
-                            >
-                              <FaPencilAlt />
-                            </Link>
-                            <button
-                              type="button"
-                              className="admin-dash__btn admin-dash__btn--danger admin-dash__btn--sm admin-dash__btn--icon"
-                              onClick={() => requestDelete(item)}
-                              title="Delete"
-                            >
-                              <MdDelete />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                      return (
+                        <tr key={id}>
+                          <td>
+                            <strong className="admin-dash__coupon-code">{item.code}</strong>
+                            <span className="admin-dash__promo-type-pill">
+                              {item.discountType === "fixed" ? "Fixed" : "Percent"}
+                            </span>
+                          </td>
+                          <td><strong>{formatCouponDiscount(item)}</strong></td>
+                          <td>
+                            <span className="admin-dash__badge">{formatUsage(item)}</span>
+                          </td>
+                          <td>
+                            {item.minOrderValue
+                              ? `Rs ${Number(item.minOrderValue).toLocaleString()}`
+                              : "—"}
+                          </td>
+                          <td>{formatListDate(item.expiryDate)}</td>
+                          <td>
+                            <span className={statusBadge.className}>{statusBadge.label}</span>
+                          </td>
+                          <td>
+                            <div className="admin-dash__actions">
+                              <button
+                                type="button"
+                                className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
+                                onClick={() => openEditModal(item)}
+                                title="Edit"
+                              >
+                                <FaPencilAlt />
+                              </button>
+                              <button
+                                type="button"
+                                className="admin-dash__btn admin-dash__btn--danger admin-dash__btn--sm admin-dash__btn--icon"
+                                onClick={() => requestDelete(item)}
+                                title="Delete"
+                              >
+                                <MdDelete />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <AdminPagination
+              page={page}
+              totalPages={totalPages}
+              totalItems={filtered.length}
+              itemLabel="coupons"
+              rowsPerPage={rowsPerPage}
+              rowsPerPageOptions={[10, 25, 50]}
+              onPageChange={setPage}
+              onRowsPerPageChange={(value) => {
+                setRowsPerPage(value);
+                setPage(0);
+              }}
+            />
           </div>
-
-          <AdminPagination
-            page={page}
-            totalPages={totalPages}
-            totalItems={filtered.length}
-            itemLabel="coupons"
-            rowsPerPage={rowsPerPage}
-            rowsPerPageOptions={[10, 25, 50]}
-            onPageChange={setPage}
-            onRowsPerPageChange={(value) => {
-              setRowsPerPage(value);
-              setPage(0);
-            }}
-          />
-        </div>
+        )}
       </section>
+
+      <CouponFormModal
+        open={modalOpen}
+        couponId={editingCouponId}
+        onClose={closeModal}
+        onSaved={loadCoupons}
+        setAlertBox={setAlertBox}
+      />
 
       <AdminConfirmDialog
         open={Boolean(deleteTarget)}

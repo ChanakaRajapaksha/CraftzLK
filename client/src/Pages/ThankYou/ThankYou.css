@@ -312,6 +312,15 @@
   color: #5c4d3a;
 }
 
+.thank-you__totals-row--discount {
+  color: #3d5a41;
+}
+
+.thank-you__totals-row--discount span:last-child {
+  color: #2d6a3a;
+  font-weight: 600;
+}
+
 .thank-you__totals-row--total {
   margin-top: 0.4rem;
   padding-top: 0.7rem;

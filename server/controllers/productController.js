@@ -27,6 +27,18 @@ class ProductController {
     }
   }
 
+  async listActive(_req, res) {
+    try {
+      const result = await productService.listActive();
+      return res.status(200).json(result);
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to load active products.',
+      });
+    }
+  }
+
   async list(req, res) {
     try {
       const result = await productService.list(req.query);

@@ -60,6 +60,16 @@ class CouponsController {
     }
   }
 
+  async validate(req, res) {
+    try {
+      const { code, subtotal } = req.body || {};
+      const result = await couponsService.validateCoupon(code, subtotal);
+      return res.status(200).json({ success: true, ...result });
+    } catch {
+      return res.status(500).json({ success: false, message: 'Failed to validate coupon.' });
+    }
+  }
+
   async remove(req, res) {
     try {
       const deleted = await couponsService.deleteById(req.params.id);

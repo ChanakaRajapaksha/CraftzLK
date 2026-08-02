@@ -1,5 +1,6 @@
 const { Orders } = require('../models/orders');
 const customerService = require('./customerService');
+const couponsService = require('./couponsService');
 
 function resolveUserId(authUser, bodyUserId) {
   const id = authUser?._id || authUser?.id || bodyUserId;
@@ -124,6 +125,34 @@ class OrderService {
       throw error;
     }
 
+    const subtotal =
+      Number(body.subtotal) ||
+      products.reduce((sum, item) => sum + (Number(item.subTotal) || 0), 0);
+    const shipping = Number(body.shipping) || 0;
+
+    let discount = 0;
+    let couponCode = '';
+
+    if (body.couponCode) {
+      const validation = await couponsService.validateCoupon(body.couponCode, subtotal);
+      if (!validation.valid) {
+        const error = new Error(validation.message || 'Invalid coupon code.');
+        error.statusCode = 400;
+        error.payload = { success: false, message: error.message, reason: validation.reason };
+        throw error;
+      }
+      discount = validation.discount;
+      couponCode = validation.code;
+      await couponsService.incrementUsage(validation.couponId);
+    } else if (Number(body.discount) > 0) {
+      const error = new Error('Coupon code is required when applying a discount.');
+      error.statusCode = 400;
+      error.payload = { success: false, message: error.message };
+      throw error;
+    }
+
+    const computedAmount = Math.round(Math.max(0, subtotal + shipping - discount) * 100) / 100;
+
     const paymentMethod = body.paymentMethod || 'cod';
     const paymentStatus = resolvePaymentStatus(paymentMethod);
     const status = 'placed';
@@ -137,7 +166,7 @@ class OrderService {
       address: body.address,
       shippingAddress: body.shippingAddress || '',
       pincode: body.pincode,
-      amount: String(body.amount),
+      amount: String(computedAmount),
       paymentId,
       email: body.email,
       userid,
@@ -148,10 +177,11 @@ class OrderService {
       paymentStatus,
       status,
       statusHistory: [{ status, date: now }],
-      subtotal: Number(body.subtotal) || 0,
-      discount: Number(body.discount) || 0,
+      subtotal,
+      discount,
+      couponCode,
       tax: Number(body.tax) || 0,
-      shipping: Number(body.shipping) || 0,
+      shipping,
       date: body.date ? new Date(body.date) : now,
     });
 

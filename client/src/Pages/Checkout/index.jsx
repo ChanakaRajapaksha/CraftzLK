@@ -1,11 +1,12 @@
 import CircularProgress from "@mui/material/CircularProgress";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { MyContext } from "../../App";
 import { COLLECTIONS_ALL_PATH } from "../Collections/collectionsConstants";
 import { getCartSubtotal, isSampleProductId, parsePriceValue } from "../../utils/cartHelpers";
 import { deleteData, postData } from "../../utils/api";
+import CheckoutCouponSection from "./CheckoutCouponSection";
 import "./Checkout.css";
 
 const FLAT_SHIPPING_LKR = 450;
@@ -38,6 +39,12 @@ const Checkout = () => {
   const [isPageReady, setIsPageReady] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponFeedback, setCouponFeedback] = useState(null);
+  const [couponApplying, setCouponApplying] = useState(false);
+  const [lastFailedCode, setLastFailedCode] = useState("");
+  const cartRevalidateRef = useRef(false);
 
   const context = useContext(MyContext);
   const history = useNavigate();
@@ -49,7 +56,157 @@ const Checkout = () => {
 
   const subtotal = useMemo(() => getCartSubtotal(cartItems), [cartItems]);
   const shipping = cartItems.length > 0 ? FLAT_SHIPPING_LKR : 0;
-  const orderTotal = subtotal + shipping;
+  const discount = appliedCoupon?.discount ?? 0;
+  const orderTotal = Math.max(0, subtotal + shipping - discount);
+
+  const applyDisabled =
+    couponApplying ||
+    !couponCode.trim() ||
+    (couponFeedback?.disableApply &&
+      couponCode.trim().toUpperCase() === lastFailedCode.toUpperCase());
+
+  const mapCouponFeedback = useCallback((result) => {
+    if (result?.valid) {
+      return {
+        type: "success",
+        reason: "applied",
+        message: result.message,
+        subMessage: result.successDetail,
+      };
+    }
+
+    const reason = result?.reason || "not_found";
+    let type = "error";
+    if (reason === "inactive" || reason === "min_order") type = "warning";
+
+    return {
+      type,
+      reason,
+      message: result?.message || "Coupon code not found.",
+      subMessage: result?.subMessage || "",
+      disableApply: Boolean(result?.disableApply),
+    };
+  }, []);
+
+  const handleCouponCodeChange = (e) => {
+    const value = e.target.value.toUpperCase();
+    setCouponCode(value);
+    setCouponFeedback(null);
+    setLastFailedCode("");
+  };
+
+  const handleApplyCoupon = async () => {
+    const code = couponCode.trim();
+    if (!code) return;
+
+    setCouponApplying(true);
+    setCouponFeedback(null);
+
+    try {
+      const res = await postData("/api/coupons/validate", { code, subtotal });
+      if (res?.success === false && res?.valid === undefined) {
+        setCouponFeedback({
+          type: "error",
+          reason: "not_found",
+          message: res?.message || "Failed to validate coupon.",
+        });
+        return;
+      }
+
+      if (res?.valid) {
+        setAppliedCoupon({
+          code: res.code,
+          discount: res.discount,
+          discountLabel: res.discountLabel,
+          discountType: res.discountType,
+          discountValue: res.discountValue,
+          message: res.message,
+          successDetail: res.successDetail,
+          minOrderValue: res.minOrderValue || 0,
+        });
+        setCouponFeedback(mapCouponFeedback(res));
+        setLastFailedCode("");
+        return;
+      }
+
+      const feedback = mapCouponFeedback(res);
+      setCouponFeedback(feedback);
+      if (feedback.disableApply) {
+        setLastFailedCode(code);
+      }
+    } catch (error) {
+      setCouponFeedback({
+        type: "error",
+        reason: "not_found",
+        message: error?.response?.data?.message || "Coupon code not found.",
+      });
+    } finally {
+      setCouponApplying(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponFeedback(null);
+    setLastFailedCode("");
+  };
+
+  useEffect(() => {
+    if (!appliedCoupon?.code) return;
+
+    let cancelled = false;
+
+    const revalidateAppliedCoupon = async () => {
+      try {
+        const res = await postData("/api/coupons/validate", {
+          code: appliedCoupon.code,
+          subtotal,
+        });
+
+        if (cancelled) return;
+
+        if (res?.valid) {
+          setAppliedCoupon((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  discount: res.discount,
+                  discountLabel: res.discountLabel,
+                  message: res.message,
+                  successDetail: res.successDetail,
+                  minOrderValue: res.minOrderValue || 0,
+                }
+              : prev
+          );
+          setCouponFeedback(null);
+          return;
+        }
+
+        if (res?.reason === "min_order") {
+          setAppliedCoupon(null);
+          setCouponCode("");
+          setCouponFeedback({
+            type: "warning",
+            reason: "min_order",
+            message: "Coupon removed. Your cart no longer meets the minimum order amount.",
+          });
+        }
+      } catch {
+        /* keep applied coupon on transient errors */
+      }
+    };
+
+    if (cartRevalidateRef.current) {
+      revalidateAppliedCoupon();
+    } else {
+      cartRevalidateRef.current = true;
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [subtotal, appliedCoupon?.code]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -168,6 +325,8 @@ const Checkout = () => {
       status: createdOrder.status || "placed",
       subtotal: createdOrder.subtotal ?? subtotal,
       shipping: createdOrder.shipping ?? shipping,
+      discount: createdOrder.discount ?? discount,
+      couponCode: createdOrder.couponCode || appliedCoupon?.code || "",
       total: parsePriceValue(createdOrder.amount) || orderTotal,
       date: orderDate,
       orderNotes: createdOrder.orderNotes || "",
@@ -267,12 +426,17 @@ const Checkout = () => {
         paymentMethod,
         subtotal,
         shipping,
+        discount,
+        couponCode: appliedCoupon?.code || "",
       });
 
-      const createdOrder = res?.order;
-      if (!createdOrder) {
-        throw new Error("Invalid order response");
+      if (!res?.order || res?.success === false) {
+        toast.error(res?.message || "Failed to place order. Please try again.");
+        setIsSubmitting(false);
+        return;
       }
+
+      const createdOrder = res.order;
 
       await clearBackendCart(cartItems);
       submitOrder(createdOrder);
@@ -590,6 +754,17 @@ const Checkout = () => {
           </section>
 
           <aside className="checkout-page__order" aria-labelledby="checkout-order-heading">
+            <CheckoutCouponSection
+              appliedCoupon={appliedCoupon}
+              couponCode={couponCode}
+              couponFeedback={couponFeedback}
+              couponApplying={couponApplying}
+              applyDisabled={applyDisabled}
+              onCouponCodeChange={handleCouponCodeChange}
+              onApplyCoupon={handleApplyCoupon}
+              onRemoveCoupon={handleRemoveCoupon}
+            />
+
             <h2 id="checkout-order-heading" className="checkout-page__section-title">
               Your order
             </h2>
@@ -626,6 +801,12 @@ const Checkout = () => {
                   <td>Subtotal</td>
                   <td>{formatRsDecimal(subtotal)}</td>
                 </tr>
+                {discount > 0 && (
+                  <tr className="checkout-page__discount-row">
+                    <td>Discount</td>
+                    <td>-{formatRsDecimal(discount)}</td>
+                  </tr>
+                )}
                 <tr>
                   <td>Shipping</td>
                   <td>Flat rate: {formatRsDecimal(shipping)}</td>

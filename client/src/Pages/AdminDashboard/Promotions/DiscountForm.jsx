@@ -1,5 +1,11 @@
-import { useEffect, useState } from "react";
-import { DISCOUNT_FORM_TABS, DISCOUNT_TYPES, formToPayload } from "./discountFormDefaults";
+import { useEffect, useMemo, useState } from "react";
+import {
+  DISCOUNT_FORM_TABS,
+  DISCOUNT_TYPES,
+  buildVariantSelectionKey,
+  formToPayload,
+  productHasSelectableVariants,
+} from "./discountFormDefaults";
 import { fetchDataFromApi } from "../../../utils/api";
 
 function Field({ label, htmlFor, children, full = false }) {
@@ -18,17 +24,68 @@ export default function DiscountForm({
   setAlertBox,
   isLoading = false,
   submitLabel = "Save discount",
+  variant = "page",
   onSubmit,
 }) {
   const [tab, setTab] = useState("basic");
   const [products, setProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [productSearch, setProductSearch] = useState("");
 
   useEffect(() => {
-    fetchDataFromApi("/api/products").then((res) => {
-      const list = res?.products || res?.productList || res || [];
-      setProducts(Array.isArray(list) ? list : []);
-    }).catch(() => setProducts([]));
+    setProductsLoading(true);
+    fetchDataFromApi("/api/products/active")
+      .then((res) => {
+        if (res?.success === false) {
+          setProducts([]);
+          return;
+        }
+        const list = res?.products || [];
+        setProducts(Array.isArray(list) ? list : []);
+      })
+      .catch(() => setProducts([]))
+      .finally(() => setProductsLoading(false));
   }, []);
+
+  const filteredProducts = useMemo(() => {
+    const q = productSearch.trim().toLowerCase();
+    if (!q) return products;
+    return products.filter((product) => {
+      const baseMatch = [product.name, product.catName].some((value) =>
+        String(value || "").toLowerCase().includes(q)
+      );
+      if (baseMatch) return true;
+
+      return (product.variants || []).some((group) => {
+        if (String(group.variantName || "").toLowerCase().includes(q)) return true;
+        return (group.options || []).some((option) =>
+          String(option.label || "").toLowerCase().includes(q)
+        );
+      });
+    });
+  }, [products, productSearch]);
+
+  const selectedVariantKeys = useMemo(
+    () =>
+      new Set(
+        (formFields.variantTargets || []).map(
+          (target) =>
+            target.selectionKey ||
+            buildVariantSelectionKey(target.productId, target.variantName, target.optionLabel)
+        )
+      ),
+    [formFields.variantTargets]
+  );
+
+  const selectedCount = useMemo(() => {
+    const variantProductIds = new Set(
+      (formFields.variantTargets || []).map((target) => String(target.productId || ""))
+    );
+    const wholeProducts = (formFields.productIds || []).filter(
+      (id) => !variantProductIds.has(String(id))
+    );
+    return wholeProducts.length + (formFields.variantTargets || []).length;
+  }, [formFields.productIds, formFields.variantTargets]);
 
   const changeInput = (e) => {
     const { name, value } = e.target;
@@ -46,7 +103,7 @@ export default function DiscountForm({
   };
 
   const toggleProduct = (product) => {
-    const pid = product._id || product.id;
+    const pid = String(product._id || product.id);
     const pname = product.name;
     setFormFields((prev) => {
       const ids = [...(prev.productIds || [])];
@@ -63,6 +120,64 @@ export default function DiscountForm({
     });
   };
 
+  const toggleVariantOption = (product, group, option) => {
+    const productId = String(product._id || product.id);
+    const variantName = group.variantName || "";
+    const optionLabel = option.label || "";
+    const selectionKey = buildVariantSelectionKey(productId, variantName, optionLabel);
+
+    setFormFields((prev) => {
+      const targets = [...(prev.variantTargets || [])];
+      const existingIndex = targets.findIndex(
+        (target) =>
+          (target.selectionKey ||
+            buildVariantSelectionKey(target.productId, target.variantName, target.optionLabel)) ===
+          selectionKey
+      );
+
+      if (existingIndex >= 0) {
+        targets.splice(existingIndex, 1);
+      } else {
+        targets.push({
+          productId,
+          productName: product.name || "",
+          variantName,
+          optionLabel,
+          optionId: option._id || option.id ? String(option._id || option.id) : "",
+          selectionKey,
+        });
+      }
+
+      const productIds = new Set((prev.productIds || []).map(String));
+      const productNames = [...(prev.productNames || [])];
+      const productNameMap = new Map(
+        (prev.productIds || []).map((id, index) => [String(id), productNames[index] || ""])
+      );
+
+      if (targets.some((target) => String(target.productId) === productId)) {
+        productIds.add(productId);
+        productNameMap.set(productId, product.name || "");
+      } else {
+        // Keep whole-product selections; only drop productId if it was variant-driven only
+        // Products with variants are never whole-product selected in this UI.
+        if (productHasSelectableVariants(product)) {
+          productIds.delete(productId);
+          productNameMap.delete(productId);
+        }
+      }
+
+      const nextIds = [...productIds];
+      const nextNames = nextIds.map((id) => productNameMap.get(id) || "");
+
+      return {
+        ...prev,
+        variantTargets: targets,
+        productIds: nextIds,
+        productNames: nextNames,
+      };
+    });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formFields.name?.trim()) {
@@ -70,8 +185,12 @@ export default function DiscountForm({
       setTab("basic");
       return;
     }
-    if (formFields.type === "product" && !(formFields.productIds || []).length) {
-      setAlertBox?.({ open: true, error: true, msg: "Select at least one product." });
+    if (
+      formFields.type === "product" &&
+      !(formFields.productIds || []).length &&
+      !(formFields.variantTargets || []).length
+    ) {
+      setAlertBox?.({ open: true, error: true, msg: "Select at least one product or variant." });
       setTab("target");
       return;
     }
@@ -84,7 +203,11 @@ export default function DiscountForm({
   };
 
   return (
-    <form className="admin-dash__product-form" onSubmit={handleSubmit}>
+    <form
+      id={variant === "modal" ? "discount-form-modal" : undefined}
+      className="admin-dash__product-form"
+      onSubmit={handleSubmit}
+    >
       <nav className="admin-dash__product-tabs" aria-label="Discount form sections">
         {DISCOUNT_FORM_TABS.map((item) => (
           <button
@@ -136,23 +259,101 @@ export default function DiscountForm({
 
         {tab === "target" && formFields.type === "product" && (
           <div className="admin-dash__field admin-dash__field--full">
-            <label className="admin-dash__label">Select Products</label>
-            <div className="admin-dash__checkbox-list">
-              {products.length === 0 ? (
-                <p className="admin-dash__hint">No products loaded. Add products first or use sample data on the list page.</p>
+            <label className="admin-dash__label" htmlFor="discount-product-search">
+              Select Products & Variants
+            </label>
+            <input
+              id="discount-product-search"
+              className="admin-dash__input"
+              style={{ marginBottom: "0.75rem" }}
+              placeholder="Search products by name, category, or variant…"
+              value={productSearch}
+              onChange={(e) => setProductSearch(e.target.value)}
+            />
+            <div className="admin-dash__checkbox-list admin-dash__checkbox-list--products">
+              {productsLoading ? (
+                <p className="admin-dash__hint">Loading active products…</p>
+              ) : filteredProducts.length === 0 ? (
+                <p className="admin-dash__hint">
+                  {products.length === 0
+                    ? "No active products found. Add products first."
+                    : "No products match your search."}
+                </p>
               ) : (
-                products.slice(0, 50).map((product) => {
-                  const pid = product._id || product.id;
-                  const checked = (formFields.productIds || []).includes(pid);
+                filteredProducts.map((product) => {
+                  const pid = String(product._id || product.id);
+                  const hasVariants = productHasSelectableVariants(product);
+                  const productChecked = (formFields.productIds || []).includes(pid);
+
+                  if (!hasVariants) {
+                    return (
+                      <label key={pid} className="admin-dash__checkbox-item admin-dash__checkbox-item--product">
+                        <input
+                          type="checkbox"
+                          checked={productChecked}
+                          onChange={() => toggleProduct(product)}
+                        />
+                        <span className="admin-dash__discount-product-name">{product.name}</span>
+                      </label>
+                    );
+                  }
+
                   return (
-                    <label key={pid} className="admin-dash__checkbox-item">
-                      <input type="checkbox" checked={checked} onChange={() => toggleProduct(product)} />
-                      <span>{product.name}</span>
-                    </label>
+                    <div key={pid} className="admin-dash__discount-product-group">
+                      <div className="admin-dash__discount-product-name">{product.name}</div>
+                      {(product.variants || []).map((group, groupIndex) => {
+                        const options = (group.options || []).filter((option) => option.label);
+                        if (!options.length) return null;
+                        return (
+                          <div
+                            key={`${pid}-${group.variantName || groupIndex}`}
+                            className="admin-dash__discount-variant-group"
+                          >
+                            <div className="admin-dash__discount-variant-group-label">
+                              {group.variantName || `Variant ${groupIndex + 1}`}
+                            </div>
+                            <div className="admin-dash__discount-variant-options">
+                              {options.map((option, optionIndex) => {
+                                const selectionKey = buildVariantSelectionKey(
+                                  pid,
+                                  group.variantName || "",
+                                  option.label || ""
+                                );
+                                const checked = selectedVariantKeys.has(selectionKey);
+                                return (
+                                  <label
+                                    key={`${selectionKey}-${optionIndex}`}
+                                    className="admin-dash__checkbox-item admin-dash__checkbox-item--variant"
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={checked}
+                                      onChange={() => toggleVariantOption(product, group, option)}
+                                    />
+                                    <span>{option.label}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   );
                 })
               )}
             </div>
+            {selectedCount > 0 && (
+              <p className="admin-dash__hint" style={{ marginTop: "0.65rem" }}>
+                {selectedCount} item{selectedCount === 1 ? "" : "s"} selected
+                {(formFields.variantTargets || []).length > 0
+                  ? ` (${(formFields.variantTargets || []).length} variant${
+                      (formFields.variantTargets || []).length === 1 ? "" : "s"
+                    })`
+                  : ""}
+                .
+              </p>
+            )}
           </div>
         )}
 
@@ -170,7 +371,7 @@ export default function DiscountForm({
         )}
 
         {tab === "target" && formFields.type === "seasonal" && (
-          <p className="admin-dash__hint">Seasonal sales apply store-wide during the scheduled period. Add a description on the Details tab.</p>
+          <p className="admin-dash__hint">Seasonal sales apply store-wide to all active products during the scheduled period. Add a description on the Details tab.</p>
         )}
 
         {tab === "schedule" && (
@@ -185,9 +386,11 @@ export default function DiscountForm({
         )}
 
         <div className="admin-dash__product-form-actions">
-          <button type="submit" className="admin-dash__btn" disabled={isLoading}>
-            {isLoading ? "Saving…" : submitLabel}
-          </button>
+          {variant !== "modal" && (
+            <button type="submit" className="admin-dash__btn" disabled={isLoading}>
+              {isLoading ? "Saving…" : submitLabel}
+            </button>
+          )}
         </div>
       </section>
     </form>

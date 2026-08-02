@@ -34,16 +34,18 @@ class HomeSliderBannersController {
   async create(req, res) {
     try {
       const saved = await homeSliderBannersService.create(req.body);
-      return res.status(201).json(saved);
-    } catch {
-      return res.status(500).json({ success: false, message: 'Failed to create banner.' });
+      return res.status(201).json({ success: true, ...saved });
+    } catch (error) {
+      return res.status(error.statusCode || 500).json(
+        error.payload || { success: false, message: 'Failed to create banner.' }
+      );
     }
   }
 
   async update(req, res) {
     try {
       const updated = await homeSliderBannersService.update(req.params.id, req.body);
-      return res.status(200).json(updated);
+      return res.status(200).json({ success: true, ...updated });
     } catch (error) {
       return res.status(error.statusCode || 500).json(
         error.payload || { success: false, message: 'Failed to update banner.' }

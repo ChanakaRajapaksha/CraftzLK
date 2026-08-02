@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useOutletContext } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useOutletContext, useSearchParams } from "react-router-dom";
 import { FaPencilAlt, FaPlus, FaPercent } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import { IoPricetagOutline } from "react-icons/io5";
@@ -7,52 +7,98 @@ import { MdCategory, MdLayers } from "react-icons/md";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import AdminPagination from "../../../Components/AdminDashboard/AdminPagination";
 import AdminConfirmDialog from "../../../Components/AdminDashboard/AdminConfirmDialog";
+import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
 import { deleteData, fetchDataFromApi } from "../../../utils/api";
-import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import {
   formatDiscountTarget,
   formatDiscountType,
   formatDiscountValue,
   DISCOUNT_TYPES,
 } from "./discountFormDefaults";
-import { getDiscountListSampleData, isSampleDiscountId } from "./discountListUtils";
 import { formatListDate, getPromoStatusBadge } from "./promoListHelpers";
+import DiscountFormModal from "./DiscountFormModal";
 
 export default function DiscountList() {
-  const { setAlertBox } = useOutletContext();
+  const { setAlertBox, catData } = useOutletContext();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [discounts, setDiscounts] = useState([]);
-  const [usingSampleData, setUsingSampleData] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingDiscountId, setEditingDiscountId] = useState(null);
+  const [initialDiscountType, setInitialDiscountType] = useState("");
 
-  const applySample = () => {
-    setDiscounts(getDiscountListSampleData());
-    setUsingSampleData(true);
-  };
+  const loadDiscounts = useCallback(() => {
+    setLoading(true);
+    setLoadError(false);
 
-  const loadDiscounts = () => {
     fetchDataFromApi("/api/promo-discounts")
       .then((res) => {
-        const list = res?.discountList || [];
-        if (list.length) {
-          setDiscounts(list);
-          setUsingSampleData(false);
-        } else {
-          applySample();
+        if (res?.success === false) {
+          throw new Error(res?.message || "Failed to load discounts.");
         }
+        setDiscounts(Array.isArray(res?.discountList) ? res.discountList : []);
       })
-      .catch(() => applySample());
-  };
+      .catch(() => {
+        setDiscounts([]);
+        setLoadError(true);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    loadDiscounts();
   }, []);
+
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    const action = searchParams.get("action");
+    const type = searchParams.get("type");
+
+    if (editId) {
+      setEditingDiscountId(editId);
+      setInitialDiscountType("");
+      setModalOpen(true);
+    } else if (action === "add") {
+      setEditingDiscountId(null);
+      setInitialDiscountType(
+        type && DISCOUNT_TYPES.some((item) => item.value === type) ? type : ""
+      );
+      setModalOpen(true);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    loadDiscounts();
+  }, [loadDiscounts]);
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setEditingDiscountId(null);
+    setInitialDiscountType("");
+    if (searchParams.get("edit") || searchParams.get("action")) {
+      setSearchParams({}, { replace: true });
+    }
+  };
+
+  const openCreateModal = (type = "") => {
+    setEditingDiscountId(null);
+    setInitialDiscountType(type);
+    setModalOpen(true);
+  };
+
+  const openEditModal = (item) => {
+    setEditingDiscountId(item._id || item.id);
+    setInitialDiscountType("");
+    setModalOpen(true);
+  };
 
   const stats = useMemo(() => {
     const byType = DISCOUNT_TYPES.reduce((acc, t) => {
@@ -91,15 +137,23 @@ export default function DiscountList() {
   }, [page, totalPages]);
 
   const deleteDiscount = (id) => {
-    if (usingSampleData || isSampleDiscountId(id)) {
-      setDiscounts((prev) => prev.filter((item) => (item._id || item.id) !== id));
-      setAlertBox?.({ open: true, error: false, msg: "Discount removed from sample list." });
-      return;
-    }
-    deleteData(`/api/promo-discounts/${id}`).then(() => {
-      setAlertBox?.({ open: true, error: false, msg: "Discount deleted." });
-      loadDiscounts();
-    });
+    deleteData(`/api/promo-discounts/${id}`)
+      .then((res) => {
+        if (res?.success === false) {
+          setAlertBox?.({
+            open: true,
+            error: true,
+            msg: res?.message || "Failed to delete discount.",
+          });
+          return;
+        }
+        setAlertBox?.({ open: true, error: false, msg: "Discount deleted." });
+        loadDiscounts();
+      })
+      .catch((error) => {
+        const message = error?.response?.data?.message || "Failed to delete discount.";
+        setAlertBox?.({ open: true, error: true, msg: message });
+      });
   };
 
   const requestDelete = (item) => {
@@ -112,6 +166,12 @@ export default function DiscountList() {
     setDeleteTarget(null);
   };
 
+  const emptyMessage = loadError
+    ? "Unable to load discounts. Please try again."
+    : filtered.length === 0 && discounts.length === 0
+      ? "No discounts yet. Create your first promotion."
+      : "No discounts match your filters.";
+
   return (
     <>
       <AdminPageHeader
@@ -119,10 +179,10 @@ export default function DiscountList() {
         subtitle="Create product, category, and seasonal sale promotions."
         breadcrumbs={[{ label: "Promotions & Marketing" }, { label: "Discounts" }]}
         action={
-          <Link to={`${ADMIN_BASE}/promotions/discounts/add`} className="admin-dash__btn">
+          <button type="button" className="admin-dash__btn" onClick={() => openCreateModal()}>
             <FaPlus />
             Create Discount
-          </Link>
+          </button>
         }
       />
 
@@ -134,12 +194,6 @@ export default function DiscountList() {
       </div>
 
       <section className="admin-dash__panel">
-        {usingSampleData && (
-          <p className="admin-dash__sample-banner">
-            Showing sample discounts — create live promotions via Create Discount.
-          </p>
-        )}
-
         <div className="admin-dash__toolbar admin-dash__toolbar--wrap admin-dash__toolbar--filters">
           <input
             className="admin-dash__input"
@@ -184,109 +238,128 @@ export default function DiscountList() {
             <option value="expired">Expired</option>
           </select>
           {DISCOUNT_TYPES.map((type) => (
-            <Link
+            <button
               key={type.value}
-              to={`${ADMIN_BASE}/promotions/discounts/add?type=${type.value}`}
+              type="button"
               className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
+              onClick={() => openCreateModal(type.value)}
             >
               {type.label}
-            </Link>
+            </button>
           ))}
         </div>
 
-        <div className="admin-dash__data-table">
-          <div className="admin-dash__table-wrap admin-dash__table-wrap--modern">
-            <table className="admin-dash__table admin-dash__table--modern admin-dash__table--discounts">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Type</th>
-                  <th>Discount</th>
-                  <th>Target</th>
-                  <th>Period</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {slice.length === 0 ? (
+        {loading ? (
+          <AdminLoadingState message="Loading discounts…" />
+        ) : (
+          <div className="admin-dash__data-table">
+            <div className="admin-dash__table-wrap admin-dash__table-wrap--modern">
+              <table className="admin-dash__table admin-dash__table--modern admin-dash__table--discounts">
+                <thead>
                   <tr>
-                    <td colSpan={7} className="admin-dash__table-empty">
-                      No discounts match your filters.
-                    </td>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Discount</th>
+                    <th>Target</th>
+                    <th>Period</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
-                ) : (
-                  slice.map((item) => {
-                    const id = item._id || item.id;
-                    const statusBadge = getPromoStatusBadge(item.status);
+                </thead>
+                <tbody>
+                  {slice.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="admin-dash__table-empty">
+                        {emptyMessage}
+                      </td>
+                    </tr>
+                  ) : (
+                    slice.map((item) => {
+                      const id = item._id || item.id;
+                      const statusBadge = getPromoStatusBadge(item.status);
 
-                    return (
-                      <tr key={id}>
-                        <td><strong>{item.name}</strong></td>
-                        <td>
-                          <span className="admin-dash__promo-type-pill">
-                            {formatDiscountType(item.type)}
-                          </span>
-                        </td>
-                        <td><strong>{formatDiscountValue(item)}</strong></td>
-                        <td>{formatDiscountTarget(item)}</td>
-                        <td>
-                          {formatListDate(item.startDate)}
-                          {" – "}
-                          {formatListDate(item.endDate)}
-                        </td>
-                        <td>
-                          <span className={statusBadge.className}>{statusBadge.label}</span>
-                        </td>
-                        <td>
-                          <div className="admin-dash__actions">
-                            <Link
-                              to={`${ADMIN_BASE}/promotions/discounts/edit/${id}`}
-                              className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
-                              title="Edit"
-                            >
-                              <FaPencilAlt />
-                            </Link>
-                            <button
-                              type="button"
-                              className="admin-dash__btn admin-dash__btn--danger admin-dash__btn--sm admin-dash__btn--icon"
-                              onClick={() => requestDelete(item)}
-                              title="Delete"
-                            >
-                              <MdDelete />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                      return (
+                        <tr key={id}>
+                          <td><strong>{item.name}</strong></td>
+                          <td>
+                            <span className="admin-dash__promo-type-pill">
+                              {formatDiscountType(item.type)}
+                            </span>
+                            {item.source === "product_form" && (
+                              <span className="admin-dash__promo-source-pill">Product pricing</span>
+                            )}
+                          </td>
+                          <td><strong>{formatDiscountValue(item)}</strong></td>
+                          <td>{formatDiscountTarget(item)}</td>
+                          <td>
+                            {formatListDate(item.startDate)}
+                            {" – "}
+                            {formatListDate(item.endDate)}
+                          </td>
+                          <td>
+                            <span className={statusBadge.className}>{statusBadge.label}</span>
+                          </td>
+                          <td>
+                            <div className="admin-dash__actions">
+                              <button
+                                type="button"
+                                className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
+                                onClick={() => openEditModal(item)}
+                                title="Edit"
+                              >
+                                <FaPencilAlt />
+                              </button>
+                              <button
+                                type="button"
+                                className="admin-dash__btn admin-dash__btn--danger admin-dash__btn--sm admin-dash__btn--icon"
+                                onClick={() => requestDelete(item)}
+                                title="Delete"
+                              >
+                                <MdDelete />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <AdminPagination
+              page={page}
+              totalPages={totalPages}
+              totalItems={filtered.length}
+              itemLabel="discounts"
+              rowsPerPage={rowsPerPage}
+              rowsPerPageOptions={[10, 25, 50]}
+              onPageChange={setPage}
+              onRowsPerPageChange={(value) => {
+                setRowsPerPage(value);
+                setPage(0);
+              }}
+            />
           </div>
-
-          <AdminPagination
-            page={page}
-            totalPages={totalPages}
-            totalItems={filtered.length}
-            itemLabel="discounts"
-            rowsPerPage={rowsPerPage}
-            rowsPerPageOptions={[10, 25, 50]}
-            onPageChange={setPage}
-            onRowsPerPageChange={(value) => {
-              setRowsPerPage(value);
-              setPage(0);
-            }}
-          />
-        </div>
+        )}
       </section>
+
+      <DiscountFormModal
+        open={modalOpen}
+        discountId={editingDiscountId}
+        initialType={initialDiscountType}
+        onClose={closeModal}
+        onSaved={loadDiscounts}
+        setAlertBox={setAlertBox}
+        catData={catData}
+      />
 
       <AdminConfirmDialog
         open={Boolean(deleteTarget)}
         title="Delete discount?"
         message={
           deleteTarget
-            ? `Are you sure you want to delete "${deleteTarget.name}"? This action cannot be undone.`
+            ? `Are you sure you want to delete "${deleteTarget.name}"? Product pricing will be restored for targeted items.`
             : ""
         }
         confirmLabel="Delete"

@@ -76,15 +76,31 @@ class HomeSliderBannersService {
   }
 
   async create(body) {
+    if (!String(body?.heading || '').trim()) {
+      const error = new Error('Heading is required.');
+      error.statusCode = 400;
+      error.payload = { success: false, message: error.message };
+      throw error;
+    }
+
+    const desktopImage = body.desktopImage || '';
+    const mobileImage = body.mobileImage || '';
+    if (!desktopImage && !mobileImage) {
+      const error = new Error('Upload at least one banner image.');
+      error.statusCode = 400;
+      error.payload = { success: false, message: error.message };
+      throw error;
+    }
+
     const entry = new HomeSliderBanner({
-      heading: body.heading,
+      heading: String(body.heading).trim(),
       title: body.title || body.heading,
       description: body.description || '',
       buttonText: body.buttonText || 'Shop Now',
       buttonUrl: body.buttonUrl || '',
       link: body.link || body.buttonUrl || '',
-      desktopImage: body.desktopImage || '',
-      mobileImage: body.mobileImage || '',
+      desktopImage,
+      mobileImage,
       displayOrder: Number(body.displayOrder) || 0,
       status: body.status || 'active',
     });
@@ -94,17 +110,33 @@ class HomeSliderBannersService {
   }
 
   async update(id, body) {
+    if (!String(body?.heading || '').trim()) {
+      const error = new Error('Heading is required.');
+      error.statusCode = 400;
+      error.payload = { success: false, message: error.message };
+      throw error;
+    }
+
+    const desktopImage = body.desktopImage || '';
+    const mobileImage = body.mobileImage || '';
+    if (!desktopImage && !mobileImage) {
+      const error = new Error('Upload at least one banner image.');
+      error.statusCode = 400;
+      error.payload = { success: false, message: error.message };
+      throw error;
+    }
+
     const updated = await HomeSliderBanner.findByIdAndUpdate(
       id,
       {
-        heading: body.heading,
+        heading: String(body.heading).trim(),
         title: body.title || body.heading,
         description: body.description || '',
         buttonText: body.buttonText || 'Shop Now',
         buttonUrl: body.buttonUrl || '',
         link: body.link || body.buttonUrl || '',
-        desktopImage: body.desktopImage || '',
-        mobileImage: body.mobileImage || '',
+        desktopImage,
+        mobileImage,
         displayOrder: Number(body.displayOrder) || 0,
         status: body.status || 'active',
       },

@@ -158,6 +158,15 @@ const ThankYou = () => {
               <span>Subtotal</span>
               <span>{formatRs(order.subtotal)}</span>
             </div>
+            {parsePriceValue(order.discount) > 0 && (
+              <div className="thank-you__totals-row thank-you__totals-row--discount">
+                <span>
+                  Discount
+                  {order.couponCode ? ` (${order.couponCode})` : ""}
+                </span>
+                <span>-{formatRs(order.discount)}</span>
+              </div>
+            )}
             <div className="thank-you__totals-row">
               <span>Shipping</span>
               <span>{formatRs(order.shipping)}</span>

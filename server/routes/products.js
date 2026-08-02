@@ -21,6 +21,7 @@ router.post(
   asyncHandler(productController.upload.bind(productController))
 );
 router.get('/admin/list', asyncHandler(productController.adminList.bind(productController)));
+router.get('/active', asyncHandler(productController.listActive.bind(productController)));
 router.get('/', asyncHandler(productController.list.bind(productController)));
 router.get('/catName', asyncHandler(productController.listByCatName.bind(productController)));
 router.get('/catId', asyncHandler(productController.listByCatId.bind(productController)));

@@ -137,6 +137,7 @@ app.use("/api/customers", customerRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/promo-discounts", promoDiscountRoutes);
 app.use("/api/home-slider-banners", homeSliderBannerRoutes);
+app.use("/api/promo-banners", homeSliderBannerRoutes);
 app.use("/api/homepage-content", homepageContentRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api/shipping-methods", shippingMethodRoutes);

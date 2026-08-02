@@ -318,6 +318,254 @@
   }
 }
 
+/* Coupon */
+.checkout-page__coupon {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.35rem;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.25);
+}
+
+.checkout-page__coupon--applied {
+  border-bottom-color: rgba(201, 169, 97, 0.35);
+}
+
+.checkout-page__coupon-head {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.85rem;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #1f1a14;
+}
+
+.checkout-page__coupon-head-icon {
+  color: var(--primary-dark, #b8860b);
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.checkout-page__coupon-field-wrap {
+  position: relative;
+  margin-bottom: 0.75rem;
+}
+
+.checkout-page__coupon-input-icon {
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9a8b78;
+  font-size: 1.05rem;
+  pointer-events: none;
+}
+
+.checkout-page__coupon-input {
+  width: 100%;
+  padding: 0.78rem 0.95rem 0.78rem 2.55rem;
+  border: 1px solid rgba(201, 169, 97, 0.45);
+  border-radius: 8px;
+  background: #fff;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.98rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #1f1a14;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.checkout-page__coupon-input::placeholder {
+  color: #9a8b78;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.checkout-page__coupon-input:focus {
+  outline: none;
+  border-color: var(--primary-dark, #b8860b);
+  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.15);
+}
+
+.checkout-page__coupon-input--error {
+  border-color: #c0392b;
+}
+
+.checkout-page__coupon-input--error:focus {
+  border-color: #c0392b;
+  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.15);
+}
+
+.checkout-page__coupon-apply {
+  display: block;
+  width: 100%;
+  padding: 0.72rem 1rem;
+  border: 1px solid rgba(201, 169, 97, 0.55);
+  border-radius: 8px;
+  background: rgba(201, 169, 97, 0.12);
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #3d2f1f;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.checkout-page__coupon-apply:hover:not(:disabled) {
+  background: rgba(184, 134, 11, 0.18);
+  border-color: var(--primary-dark, #b8860b);
+  color: #1f1a14;
+}
+
+.checkout-page__coupon-apply:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.checkout-page__coupon-feedback {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin-top: 0.85rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 8px;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.checkout-page__coupon-feedback svg {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  font-size: 1.05rem;
+}
+
+.checkout-page__coupon-feedback-message {
+  margin: 0;
+  font-weight: 600;
+}
+
+.checkout-page__coupon-feedback-sub {
+  margin: 0.25rem 0 0;
+  font-weight: 500;
+}
+
+.checkout-page__coupon-feedback--error {
+  background: rgba(192, 57, 43, 0.08);
+  border: 1px solid rgba(192, 57, 43, 0.2);
+  color: #922b21;
+}
+
+.checkout-page__coupon-feedback--warning {
+  background: rgba(184, 134, 11, 0.1);
+  border: 1px solid rgba(184, 134, 11, 0.25);
+  color: #6b4f1d;
+}
+
+.checkout-page__coupon-feedback--success {
+  background: rgba(90, 122, 94, 0.1);
+  border: 1px solid rgba(90, 122, 94, 0.22);
+  color: #3d5a41;
+}
+
+.checkout-page__coupon-applied-card {
+  padding: 0.95rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(90, 122, 94, 0.28);
+  background: rgba(90, 122, 94, 0.08);
+}
+
+.checkout-page__coupon-applied-main {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.75rem;
+}
+
+.checkout-page__coupon-applied-icon {
+  font-size: 1.35rem;
+  color: var(--primary-dark, #b8860b);
+  flex-shrink: 0;
+}
+
+.checkout-page__coupon-applied-code {
+  display: block;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  color: #1f1a14;
+}
+
+.checkout-page__coupon-applied-label {
+  display: inline-block;
+  margin-top: 0.15rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(184, 134, 11, 0.15);
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b4f1d;
+}
+
+.checkout-page__coupon-applied-success {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+  color: #3d5a41;
+}
+
+.checkout-page__coupon-applied-success svg {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  font-size: 1.05rem;
+}
+
+.checkout-page__coupon-applied-message,
+.checkout-page__coupon-applied-detail {
+  margin: 0;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.checkout-page__coupon-applied-detail {
+  margin-top: 0.2rem;
+  color: #5c4d3a;
+}
+
+.checkout-page__coupon-remove {
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #922b21;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.checkout-page__coupon-remove:hover {
+  color: #c0392b;
+}
+
+.checkout-page__discount-row td {
+  color: #3d5a41 !important;
+  font-weight: 600;
+}
+
+.checkout-page__discount-row td:last-child {
+  color: #2d6a3a !important;
+}
+
 /* Order summary */
 .checkout-page__order {
   padding: 2.25rem 1.75rem;

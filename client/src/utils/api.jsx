@@ -32,7 +32,8 @@ const publicEndpoints = [
     '/api/auth/request-password-reset',
     '/api/auth/reset-password',
     '/api/auth/google',
-    '/api/auth/refresh-token'
+    '/api/auth/refresh-token',
+    '/api/coupons/validate',
 ];
 
 const AUTH_PAGES = ['/signIn', '/signUp', '/forgot-password', '/reset-password', '/verifyOTP'];

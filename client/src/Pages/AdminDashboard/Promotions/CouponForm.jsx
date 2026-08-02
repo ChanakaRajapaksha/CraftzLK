@@ -16,6 +16,7 @@ export default function CouponForm({
   setAlertBox,
   isLoading = false,
   submitLabel = "Save coupon",
+  variant = "page",
   onSubmit,
 }) {
   const [tab, setTab] = useState("basic");
@@ -44,7 +45,11 @@ export default function CouponForm({
   };
 
   return (
-    <form className="admin-dash__product-form" onSubmit={handleSubmit}>
+    <form
+      id={variant === "modal" ? "coupon-form-modal" : undefined}
+      className="admin-dash__product-form"
+      onSubmit={handleSubmit}
+    >
       <nav className="admin-dash__product-tabs" aria-label="Coupon form sections">
         {COUPON_FORM_TABS.map((item) => (
           <button
@@ -119,9 +124,11 @@ export default function CouponForm({
         )}
 
         <div className="admin-dash__product-form-actions">
-          <button type="submit" className="admin-dash__btn" disabled={isLoading}>
-            {isLoading ? "Saving…" : submitLabel}
-          </button>
+          {variant !== "modal" && (
+            <button type="submit" className="admin-dash__btn" disabled={isLoading}>
+              {isLoading ? "Saving…" : submitLabel}
+            </button>
+          )}
         </div>
       </section>
     </form>

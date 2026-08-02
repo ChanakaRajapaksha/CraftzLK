@@ -1,6 +1,7 @@
 const { Category } = require('../models/category.js');
 const { Product } = require('../models/products.js');
 const { listProductsForAdmin } = require('../utils/productAdmin');
+const promoDiscountsService = require('./promoDiscountsService');
 const { MyList } = require('../models/myList');
 const { Cart } = require('../models/cart');
 const { RecentlyViewd } = require('../models/recentlyViewd.js');
@@ -215,6 +216,36 @@ class ProductService {
 
   async adminList(query) {
     return listProductsForAdmin(query);
+  }
+
+  async listActive() {
+    const products = await Product.find({ status: 'active' })
+      .sort({ dateCreated: -1 })
+      .select('_id name catName catId images status variants')
+      .lean();
+
+    return {
+      success: true,
+      products: products.map((product) => ({
+        _id: product._id,
+        id: product._id,
+        name: product.name,
+        catName: product.catName || '',
+        catId: product.catId || '',
+        images: product.images || [],
+        status: product.status || 'active',
+        variants: (product.variants || []).map((group) => ({
+          variantName: group.variantName || '',
+          options: (group.options || [])
+            .map((option) => ({
+              _id: option._id,
+              id: option._id,
+              label: option.label || '',
+            }))
+            .filter((option) => option.label),
+        })),
+      })),
+    };
   }
 
   async list(query) {
@@ -623,6 +654,8 @@ class ProductService {
 
     let product = new Product(mapProductBody(body, images_Array));
     product = await product.save();
+    await promoDiscountsService.syncFromProduct(product);
+    product = await Product.findById(product._id);
 
     return { product, isFalsy: !product };
   }
@@ -691,6 +724,8 @@ class ProductService {
       }
     }
 
+    await promoDiscountsService.removeBySourceProductId(id);
+
     const deletedProduct = await Product.findByIdAndDelete(id);
 
     const myListItems = await MyList.find({ productId: id });
@@ -707,6 +742,8 @@ class ProductService {
   }
 
   async update(id, body) {
+    const previous = await Product.findById(id);
+
     if (body.category || body.catId) {
       const categoryId = body.category || body.catId;
       const category = await Category.findById(categoryId);
@@ -727,7 +764,23 @@ class ProductService {
       { new: true }
     );
 
-    return { product, isFalsy: !product };
+    if (product) {
+      const pricingChanged =
+        !previous ||
+        Number(previous.price) !== Number(product.price) ||
+        Number(previous.oldPrice) !== Number(product.oldPrice) ||
+        Number(previous.discount) !== Number(product.discount) ||
+        Number(previous.discountPrice) !== Number(product.discountPrice) ||
+        String(previous.discountType || '') !== String(product.discountType || '');
+
+      if (pricingChanged) {
+        await promoDiscountsService.syncFromProduct(product);
+      }
+    }
+
+    const refreshed = product ? await Product.findById(product._id) : null;
+
+    return { product: refreshed, isFalsy: !refreshed };
   }
 }
 

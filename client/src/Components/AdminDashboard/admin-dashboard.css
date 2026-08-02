@@ -1164,7 +1164,9 @@
 .admin-dash__table-wrap--modern {
   border-radius: 12px;
   border: 1px solid rgba(201, 169, 97, 0.2);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .admin-dash__table--modern thead th {
@@ -2384,6 +2386,81 @@
 
 .admin-dash__table--products {
   font-size: 0.84rem;
+  min-width: 78rem;
+  width: max-content;
+}
+
+.admin-dash__table--products th,
+.admin-dash__table--products td {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.admin-dash__table--products .admin-dash__actions {
+  flex-wrap: nowrap;
+}
+
+.admin-dash__price-stack {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  white-space: nowrap;
+}
+
+.admin-dash__price-old {
+  font-size: 0.78rem;
+  color: #8b7355;
+  text-decoration: line-through;
+}
+
+.admin-dash__price-badge {
+  display: inline-block;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(90, 122, 94, 0.12);
+  color: #3d5a41;
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.admin-dash__product-discount-cell {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  max-width: none;
+  white-space: nowrap;
+}
+
+.admin-dash__product-discount-cell .admin-dash__promo-type-pill {
+  margin-left: 0;
+  flex-shrink: 0;
+}
+
+.admin-dash__product-discount-name {
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: #5c4d3a;
+  line-height: 1.35;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.admin-dash__promo-source-pill {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(107, 83, 68, 0.12);
+  color: #6b5344;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 .admin-dash__product-tabs {
@@ -3642,6 +3719,82 @@
   color: #5c4d3a;
 }
 
+.admin-dash__checkbox-item--product {
+  align-items: flex-start;
+  padding: 0.35rem 0;
+}
+
+.admin-dash__checkbox-item--product input {
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+.admin-dash__checkbox-list--products {
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.admin-dash__discount-product-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(201, 169, 97, 0.2);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.admin-dash__discount-product-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.admin-dash__discount-product-name {
+  font-weight: 600;
+  color: #3d2f1f;
+  line-height: 1.35;
+}
+
+.admin-dash__discount-variant-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-left: 0.15rem;
+}
+
+.admin-dash__discount-variant-group-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #8b7355;
+}
+
+.admin-dash__discount-variant-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.85rem;
+}
+
+.admin-dash__checkbox-item--variant {
+  min-width: 5rem;
+}
+
+.admin-dash__discount-product-variants {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.admin-dash__discount-product-variant-line {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #8b7355;
+  line-height: 1.35;
+}
+
 .admin-dash__table-thumb--empty {
   display: inline-flex;
   align-items: center;
@@ -3672,9 +3825,38 @@
 
 /* ——— Promotions & Marketing ——— */
 .admin-dash__table--coupons,
-.admin-dash__table--discounts,
+.admin-dash__table--discounts {
+  font-size: 0.84rem;
+  width: 100%;
+  min-width: 56rem;
+}
+
 .admin-dash__table--promo-banners {
   font-size: 0.84rem;
+  width: 100%;
+}
+
+.admin-dash__table--coupons th,
+.admin-dash__table--coupons td,
+.admin-dash__table--discounts th,
+.admin-dash__table--discounts td {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.admin-dash__table--promo-banners th,
+.admin-dash__table--promo-banners td {
+  vertical-align: middle;
+}
+
+.admin-dash__table--promo-banners .admin-dash__actions {
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.admin-dash__table--coupons .admin-dash__actions,
+.admin-dash__table--discounts .admin-dash__actions {
+  flex-wrap: nowrap;
 }
 
 .admin-dash__coupon-code {
@@ -3693,6 +3875,11 @@
   font-weight: 700;
   text-transform: uppercase;
   vertical-align: middle;
+}
+
+.admin-dash__table--discounts td .admin-dash__promo-type-pill:first-child,
+.admin-dash__promo-type-pill:first-child {
+  margin-left: 0;
 }
 
 .admin-dash__banner-thumb {

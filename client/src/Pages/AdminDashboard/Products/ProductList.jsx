@@ -29,6 +29,47 @@ function formatDate(value) {
   return new Date(value).toLocaleDateString("en-LK", { year: "numeric", month: "short", day: "numeric" });
 }
 
+function formatPromoTypeLabel(type) {
+  const map = {
+    product: "Product Discount",
+    category: "Category Discount",
+    seasonal: "Seasonal Sale",
+  };
+  return map[type] || type || "Discount";
+}
+
+function renderProductDiscountCell(item) {
+  const hasPriceDiscount =
+    Number(item.discount) > 0 && Number(item.oldPrice) > Number(item.price);
+
+  if (!item.promoDiscountName && !hasPriceDiscount) {
+    return "—";
+  }
+
+  const valueLabel =
+    item.discountType === "fixed" && hasPriceDiscount
+      ? `Rs ${Number(item.oldPrice - item.price).toLocaleString()} off`
+      : hasPriceDiscount
+        ? `-${Math.round(Number(item.discount))}%`
+        : "";
+
+  return (
+    <div className="admin-dash__product-discount-cell">
+      {item.promoDiscountType ? (
+        <span className="admin-dash__promo-type-pill">
+          {formatPromoTypeLabel(item.promoDiscountType)}
+        </span>
+      ) : null}
+      {valueLabel ? (
+        <span className="admin-dash__price-badge">{valueLabel}</span>
+      ) : null}
+      {item.promoDiscountName ? (
+        <span className="admin-dash__product-discount-name">{item.promoDiscountName}</span>
+      ) : null}
+    </div>
+  );
+}
+
 function exportCsv(products) {
   const headers = ["Name", "SKU", "Category", "Price", "Stock", "Status", "Featured", "Created"];
   const rows = products.map((p) => [
@@ -406,6 +447,7 @@ export default function ProductList() {
                 <th>SKU</th>
                 <th>Category</th>
                 <th>Price</th>
+                <th>Discount</th>
                 <th>Stock</th>
                 <th>Status</th>
                 <th>Featured</th>
@@ -416,13 +458,13 @@ export default function ProductList() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={11} className="admin-dash__table-empty">
+                  <td colSpan={12} className="admin-dash__table-empty">
                     <AdminLoadingState message="Loading products…" compact />
                   </td>
                 </tr>
               ) : products.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="admin-dash__table-empty">{emptyMessage}</td>
+                  <td colSpan={12} className="admin-dash__table-empty">{emptyMessage}</td>
                 </tr>
               ) : (
                 products.map((item) => {
@@ -443,7 +485,20 @@ export default function ProductList() {
                     <td><strong>{item.name}</strong></td>
                     <td>{item.sku || "—"}</td>
                     <td>{item.catName || "—"}</td>
-                    <td><strong>Rs {Number(item.price).toLocaleString()}</strong></td>
+                    <td>
+                      {Number(item.discount) > 0 && Number(item.oldPrice) > Number(item.price) ? (
+                        <span className="admin-dash__price-stack">
+                          <span className="admin-dash__price-old">
+                            Rs {Number(item.oldPrice).toLocaleString()}
+                          </span>
+                          <strong>Rs {Number(item.price).toLocaleString()}</strong>
+                          <span className="admin-dash__price-badge">-{Math.round(Number(item.discount))}%</span>
+                        </span>
+                      ) : (
+                        <strong>Rs {Number(item.price).toLocaleString()}</strong>
+                      )}
+                    </td>
+                    <td>{renderProductDiscountCell(item)}</td>
                     <td>
                       <span className={`admin-dash__stock-pill${Number(item.countInStock) <= 0 ? " admin-dash__stock-pill--out" : Number(item.countInStock) <= (item.minStockAlert || 5) ? " admin-dash__stock-pill--low" : ""}`}>
                         {item.countInStock ?? 0}

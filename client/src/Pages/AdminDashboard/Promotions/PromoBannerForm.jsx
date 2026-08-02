@@ -21,6 +21,7 @@ export default function PromoBannerForm({
   isLoading = false,
   isEdit = false,
   submitLabel = "Save banner",
+  variant = "page",
   onSubmit,
 }) {
   const changeInput = (e) => {
@@ -44,7 +45,11 @@ export default function PromoBannerForm({
   };
 
   return (
-    <form className="admin-dash__product-form" onSubmit={handleSubmit}>
+    <form
+      id={variant === "modal" ? "promo-banner-form-modal" : undefined}
+      className="admin-dash__product-form"
+      onSubmit={handleSubmit}
+    >
       <section className="admin-dash__panel admin-dash__product-panel">
         <div className="admin-dash__form-grid admin-dash__form-grid--2">
           <Field label="Heading" htmlFor="heading" full>
@@ -69,16 +74,45 @@ export default function PromoBannerForm({
             />
           </Field>
           <Field label="Button Text" htmlFor="buttonText">
-            <input className="admin-dash__input" id="buttonText" name="buttonText" value={formFields.buttonText} onChange={changeInput} placeholder="Shop Now" />
+            <input
+              className="admin-dash__input"
+              id="buttonText"
+              name="buttonText"
+              value={formFields.buttonText}
+              onChange={changeInput}
+              placeholder="Shop Now"
+            />
           </Field>
           <Field label="Button URL" htmlFor="buttonUrl">
-            <input className="admin-dash__input" id="buttonUrl" name="buttonUrl" value={formFields.buttonUrl} onChange={changeInput} placeholder="/collections" />
+            <input
+              className="admin-dash__input"
+              id="buttonUrl"
+              name="buttonUrl"
+              value={formFields.buttonUrl}
+              onChange={changeInput}
+              placeholder="/collections"
+            />
           </Field>
           <Field label="Display Order" htmlFor="displayOrder">
-            <input className="admin-dash__input" id="displayOrder" name="displayOrder" type="number" min="0" value={formFields.displayOrder} onChange={changeInput} placeholder="1" />
+            <input
+              className="admin-dash__input"
+              id="displayOrder"
+              name="displayOrder"
+              type="number"
+              min="0"
+              value={formFields.displayOrder}
+              onChange={changeInput}
+              placeholder="1"
+            />
           </Field>
           <Field label="Status" htmlFor="status">
-            <select className="admin-dash__select admin-dash__select--compact" id="status" name="status" value={formFields.status} onChange={changeInput}>
+            <select
+              className="admin-dash__select admin-dash__select--compact"
+              id="status"
+              name="status"
+              value={formFields.status}
+              onChange={changeInput}
+            >
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
@@ -114,9 +148,11 @@ export default function PromoBannerForm({
         </div>
 
         <div className="admin-dash__product-form-actions">
-          <button type="submit" className="admin-dash__btn" disabled={isLoading}>
-            {isLoading ? "Saving…" : submitLabel}
-          </button>
+          {variant !== "modal" && (
+            <button type="submit" className="admin-dash__btn" disabled={isLoading}>
+              {isLoading ? "Saving…" : submitLabel}
+            </button>
+          )}
         </div>
       </section>
     </form>
