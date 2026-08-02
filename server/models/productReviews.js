@@ -23,6 +23,18 @@ const productReviewsSchema = mongoose.Schema({
         required:true,
         default:1
     },
+    title: {
+        type: String,
+        default: "",
+    },
+    email: {
+        type: String,
+        default: "",
+    },
+    images: {
+        type: [String],
+        default: [],
+    },
     productName: {
         type: String,
         default: "",

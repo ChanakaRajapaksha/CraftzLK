@@ -41,7 +41,11 @@ function isStorefrontBrowseRoute(req) {
   }
 
   if (path.startsWith('/api/productReviews')) {
-    return true;
+    return (
+      path === '/api/productReviews/stats' ||
+      path === '/api/productReviews/getall' ||
+      Boolean(req.query?.productId)
+    );
   }
 
   if (path.startsWith('/api/artisans')) {
