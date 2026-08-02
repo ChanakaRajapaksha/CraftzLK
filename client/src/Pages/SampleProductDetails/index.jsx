@@ -80,6 +80,7 @@ export default function SampleProductDetails() {
   const navigate = useNavigate();
   const context = useContext(MyContext);
   const isAuthInitialized = useAppSelector((state) => state.auth.isAuthInitialized);
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -315,6 +316,28 @@ export default function SampleProductDetails() {
         msg: "The quantity is greater than product count in stock",
       });
     }
+  };
+
+  const requireAuthForInteraction = (featureLabel) => {
+    if (isAuthenticated) return true;
+
+    context.setAlertBox({
+      open: true,
+      error: true,
+      msg: `Please login to ${featureLabel}.`,
+    });
+    navigate("/signIn", { state: { from: window.location.pathname } });
+    return false;
+  };
+
+  const openWriteReview = () => {
+    if (!requireAuthForInteraction("write a review")) return;
+    setWriteReviewOpen(true);
+  };
+
+  const openAskQuestion = () => {
+    if (!requireAuthForInteraction("ask a question")) return;
+    setAskQuestionOpen(true);
   };
 
   const isAddingToCart =
@@ -563,14 +586,14 @@ export default function SampleProductDetails() {
               <button
                 type="button"
                 className="spd-reviews__btn spd-reviews__btn--primary"
-                onClick={() => setWriteReviewOpen(true)}
+                onClick={openWriteReview}
               >
                 Write a review
               </button>
               <button
                 type="button"
                 className="spd-reviews__btn spd-reviews__btn--outline"
-                onClick={() => setAskQuestionOpen(true)}
+                onClick={openAskQuestion}
               >
                 Ask a question
               </button>

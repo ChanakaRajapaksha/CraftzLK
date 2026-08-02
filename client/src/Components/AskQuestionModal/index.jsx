@@ -1,6 +1,8 @@
 import { forwardRef, useCallback, useEffect, useState } from "react";
 import Dialog from "@mui/material/Dialog";
 import Zoom from "@mui/material/Zoom";
+import { useNavigate } from "react-router-dom";
+import { useAppSelector } from "../../store/hooks";
 import "./AskQuestionModal.css";
 
 const AQM_TRANSITION_MS = { enter: 300, exit: 220 };
@@ -28,6 +30,9 @@ const getInitialForm = () => ({
 });
 
 export default function AskQuestionModal({ open, onClose, onSubmit }) {
+  const navigate = useNavigate();
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const authUser = useAppSelector((state) => state.auth.user);
   const [form, setForm] = useState(getInitialForm);
   const [errors, setErrors] = useState({});
 
@@ -43,6 +48,13 @@ export default function AskQuestionModal({ open, onClose, onSubmit }) {
     }
     return undefined;
   }, [open, resetForm]);
+
+  useEffect(() => {
+    if (!open) return;
+    if (isAuthenticated && authUser?.userId) return;
+    onClose();
+    navigate("/signIn", { state: { from: window.location.pathname } });
+  }, [open, isAuthenticated, authUser?.userId, onClose, navigate]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -72,6 +84,11 @@ export default function AskQuestionModal({ open, onClose, onSubmit }) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    if (!isAuthenticated || !authUser?.userId) {
+      onClose();
+      navigate("/signIn", { state: { from: window.location.pathname } });
+      return;
+    }
     if (!validate()) return;
     onSubmit?.({
       displayName: form.displayName.trim(),

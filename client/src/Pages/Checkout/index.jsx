@@ -6,6 +6,7 @@ import { MyContext } from "../../App";
 import { COLLECTIONS_ALL_PATH } from "../Collections/collectionsConstants";
 import { getCartSubtotal, isSampleProductId, parsePriceValue } from "../../utils/cartHelpers";
 import { deleteData, postData } from "../../utils/api";
+import { useAppSelector } from "../../store/hooks";
 import CheckoutCouponSection from "./CheckoutCouponSection";
 import "./Checkout.css";
 
@@ -48,6 +49,7 @@ const Checkout = () => {
 
   const context = useContext(MyContext);
   const history = useNavigate();
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
   const cartItems = useMemo(
     () => (Array.isArray(context.cartData) ? context.cartData : []),
@@ -151,6 +153,15 @@ const Checkout = () => {
     setCouponFeedback(null);
     setLastFailedCode("");
   };
+
+  useEffect(() => {
+    if (isAuthenticated) return;
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponFeedback(null);
+    setLastFailedCode("");
+    setCouponApplying(false);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (!appliedCoupon?.code) return;
@@ -754,16 +765,18 @@ const Checkout = () => {
           </section>
 
           <aside className="checkout-page__order" aria-labelledby="checkout-order-heading">
-            <CheckoutCouponSection
-              appliedCoupon={appliedCoupon}
-              couponCode={couponCode}
-              couponFeedback={couponFeedback}
-              couponApplying={couponApplying}
-              applyDisabled={applyDisabled}
-              onCouponCodeChange={handleCouponCodeChange}
-              onApplyCoupon={handleApplyCoupon}
-              onRemoveCoupon={handleRemoveCoupon}
-            />
+            {isAuthenticated && (
+              <CheckoutCouponSection
+                appliedCoupon={appliedCoupon}
+                couponCode={couponCode}
+                couponFeedback={couponFeedback}
+                couponApplying={couponApplying}
+                applyDisabled={applyDisabled}
+                onCouponCodeChange={handleCouponCodeChange}
+                onApplyCoupon={handleApplyCoupon}
+                onRemoveCoupon={handleRemoveCoupon}
+              />
+            )}
 
             <h2 id="checkout-order-heading" className="checkout-page__section-title">
               Your order
