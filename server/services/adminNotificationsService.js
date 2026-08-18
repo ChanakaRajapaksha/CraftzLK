@@ -1,7 +1,32 @@
-const {
-  AdminNotification,
-  DEFAULT_ADMIN_NOTIFICATIONS,
-} = require('../models/adminNotification');
+const { AdminNotification } = require('../models/adminNotification');
+const { emitAdminNotification } = require('../realtime/adminNotificationSocket');
+
+const SEED_ADMIN_NOTIFICATIONS = [
+  {
+    title: 'New order received',
+    message: 'Order #1042 was placed by Nimal Perera — Rs 12,450.',
+  },
+  {
+    title: 'Low stock alert',
+    message: 'Handwoven Clay Pot is down to 3 units.',
+  },
+  {
+    title: 'New customer registered',
+    message: 'Anuki Silva signed up via the storefront.',
+  },
+  {
+    title: 'Payment confirmed',
+    message: 'Bank transfer for order #1038 was marked completed.',
+  },
+  {
+    title: 'New product review',
+    message: '5-star review on Batik Wall Hanging — awaiting moderation.',
+  },
+  {
+    title: 'SMTP settings updated',
+    message: 'Email delivery settings were saved successfully.',
+  },
+];
 
 class AdminNotificationsService {
   mapNotification(doc) {
@@ -18,14 +43,21 @@ class AdminNotificationsService {
     };
   }
 
-  async ensureDefaults() {
-    const count = await AdminNotification.countDocuments();
-    if (count === 0) {
-      await AdminNotification.insertMany(DEFAULT_ADMIN_NOTIFICATIONS);
-    }
+  async removeSeedNotifications() {
+    if (!SEED_ADMIN_NOTIFICATIONS.length) return 0;
+
+    const result = await AdminNotification.deleteMany({
+      $or: SEED_ADMIN_NOTIFICATIONS.map(({ title, message }) => ({
+        title,
+        message,
+      })),
+    });
+
+    return result.deletedCount || 0;
   }
 
   async list() {
+    await this.removeSeedNotifications();
     return AdminNotification.find().sort({ createdAt: -1 }).limit(50);
   }
 
@@ -39,6 +71,37 @@ class AdminNotificationsService {
 
   async markRead(id) {
     return AdminNotification.findByIdAndUpdate(id, { read: true }, { new: true });
+  }
+
+  async remove(id) {
+    const deleted = await AdminNotification.findByIdAndDelete(id);
+    if (!deleted) return null;
+    return this.mapNotification(deleted);
+  }
+
+  async create({ type, title, message, link }) {
+    const doc = await AdminNotification.create({
+      type,
+      title,
+      message,
+      link,
+      read: false,
+    });
+    return this.mapNotification(doc);
+  }
+
+  async notifyNewReview({ productName, customerRating }) {
+    const stars = Math.round(Number(customerRating) || 0);
+    const safeProductName = String(productName || '').trim() || 'a product';
+    const notification = await this.create({
+      type: 'review',
+      title: 'New product review',
+      message: `${stars}-star review submitted for ${safeProductName} — awaiting moderation.`,
+      link: '/dashboard/reviews',
+    });
+    const unreadCount = await this.countUnread();
+    emitAdminNotification({ notification, unreadCount });
+    return notification;
   }
 }
 

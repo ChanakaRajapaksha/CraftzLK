@@ -9,8 +9,12 @@ import {
   MdShoppingCart,
   MdSettings,
 } from "react-icons/md";
-import { editData, fetchDataFromApi } from "../../utils/api";
-import { formatNotificationTime, getAdminNotificationSample } from "./adminNotificationUtils";
+import { deleteData, editData, fetchDataFromApi } from "../../utils/api";
+import {
+  connectAdminNotificationSocket,
+  subscribeAdminNotifications,
+} from "../../utils/adminNotificationSocket";
+import { formatNotificationTime, normalizeAdminNotification } from "./adminNotificationUtils";
 
 const TYPE_ICONS = {
   order: MdShoppingCart,
@@ -24,37 +28,78 @@ const TYPE_ICONS = {
 export default function AdminNotificationsPanel({ open, onClose, onUnreadChange }) {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [usingSample, setUsingSample] = useState(false);
   const panelRef = useRef(null);
   const navigate = useNavigate();
+
+  const syncUnreadCount = useCallback(
+    (list) => {
+      onUnreadChange?.(list.filter((entry) => !entry.read).length);
+    },
+    [onUnreadChange]
+  );
 
   const loadNotifications = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetchDataFromApi("/api/admin-notifications");
       if (res?.notificationList) {
-        setNotifications(res.notificationList);
-        setUsingSample(false);
-        onUnreadChange?.(res.unreadCount ?? 0);
+        const list = res.notificationList
+          .map(normalizeAdminNotification)
+          .filter(Boolean);
+        setNotifications(list);
+        onUnreadChange?.(
+          typeof res.unreadCount === "number"
+            ? res.unreadCount
+            : list.filter((entry) => !entry.read).length
+        );
       } else {
-        const sample = getAdminNotificationSample();
-        setNotifications(sample.notificationList);
-        setUsingSample(true);
-        onUnreadChange?.(sample.unreadCount);
+        setNotifications([]);
+        onUnreadChange?.(0);
       }
     } catch {
-      const sample = getAdminNotificationSample();
-      setNotifications(sample.notificationList);
-      setUsingSample(true);
-      onUnreadChange?.(sample.unreadCount);
+      setNotifications([]);
+      onUnreadChange?.(0);
     } finally {
       setLoading(false);
     }
   }, [onUnreadChange]);
 
   useEffect(() => {
+    loadNotifications();
+  }, [loadNotifications]);
+
+  useEffect(() => {
     if (open) loadNotifications();
   }, [open, loadNotifications]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    connectAdminNotificationSocket().catch(() => {});
+
+    const unsubscribe = subscribeAdminNotifications((payload) => {
+      if (cancelled) return;
+
+      const incoming = normalizeAdminNotification(payload?.notification);
+      if (!incoming) return;
+
+      setNotifications((prev) => {
+        const withoutDuplicate = prev.filter((entry) => entry.id !== incoming.id);
+        const next = [incoming, ...withoutDuplicate];
+        syncUnreadCount(next);
+        return next;
+      });
+
+      if (typeof payload?.unreadCount === "number") {
+        onUnreadChange?.(payload.unreadCount);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [onUnreadChange, syncUnreadCount]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -77,29 +122,9 @@ export default function AdminNotificationsPanel({ open, onClose, onUnreadChange 
     };
   }, [open, onClose]);
 
-  const markRead = async (item) => {
-    if (item.read) return;
-    setNotifications((prev) => {
-      const next = prev.map((entry) => (entry.id === item.id ? { ...entry, read: true } : entry));
-      onUnreadChange?.(next.filter((entry) => !entry.read).length);
-      return next;
-    });
-
-    if (usingSample || String(item.id).startsWith("sample-")) return;
-
-    try {
-      const res = await editData(`/api/admin-notifications/${item.id}/read`, {});
-      if (typeof res?.unreadCount === "number") onUnreadChange?.(res.unreadCount);
-    } catch {
-      /* keep optimistic UI */
-    }
-  };
-
   const markAllRead = async () => {
     setNotifications((prev) => prev.map((entry) => ({ ...entry, read: true })));
     onUnreadChange?.(0);
-
-    if (usingSample) return;
 
     try {
       const res = await editData("/api/admin-notifications/read-all", {});
@@ -110,9 +135,25 @@ export default function AdminNotificationsPanel({ open, onClose, onUnreadChange 
   };
 
   const openNotification = async (item) => {
-    await markRead(item);
+    const targetLink = item.link || "/dashboard/reviews";
+
+    setNotifications((prev) => {
+      const next = prev.filter((entry) => entry.id !== item.id);
+      syncUnreadCount(next);
+      return next;
+    });
+
     onClose?.();
-    if (item.link) navigate(item.link);
+    navigate(targetLink);
+
+    try {
+      const res = await deleteData(`/api/admin-notifications/${item.id}`);
+      if (typeof res?.unreadCount === "number") {
+        onUnreadChange?.(res.unreadCount);
+      }
+    } catch {
+      /* notification already removed from UI */
+    }
   };
 
   if (!open) return null;
@@ -134,10 +175,6 @@ export default function AdminNotificationsPanel({ open, onClose, onUnreadChange 
           </button>
         )}
       </div>
-
-      {usingSample && (
-        <p className="admin-dash__notif-sample">Showing sample notifications</p>
-      )}
 
       <div className="admin-dash__notif-list">
         {loading ? (

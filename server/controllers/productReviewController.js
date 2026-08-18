@@ -1,4 +1,5 @@
 const productReviewService = require('../services/productReviewService');
+const adminNotificationsService = require('../services/adminNotificationsService');
 
 class ProductReviewController {
   async list(req, res) {
@@ -108,6 +109,14 @@ class ProductReviewController {
           : req.body?.customerId,
       };
       const review = await productReviewService.add(body);
+      try {
+        await adminNotificationsService.notifyNewReview({
+          productName: review.productName || body.productName,
+          customerRating: review.customerRating || body.customerRating,
+        });
+      } catch (notifyError) {
+        console.error('Failed to create admin review notification:', notifyError);
+      }
       return res.status(201).json({ success: true, ...review });
     } catch (error) {
       if (error.statusCode === 400 || error.statusCode === 401) {

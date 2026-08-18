@@ -6,5 +6,6 @@ const asyncHandler = require('../middleware/asyncHandler');
 router.get('/', asyncHandler(adminNotificationsController.list.bind(adminNotificationsController)));
 router.put('/read-all', asyncHandler(adminNotificationsController.readAll.bind(adminNotificationsController)));
 router.put('/:id/read', asyncHandler(adminNotificationsController.markRead.bind(adminNotificationsController)));
+router.delete('/:id', asyncHandler(adminNotificationsController.remove.bind(adminNotificationsController)));
 
 module.exports = router;

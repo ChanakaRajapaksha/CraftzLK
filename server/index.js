@@ -167,15 +167,27 @@ app.use('*', (req, res) => {
 app.use(errorHandler);
 
 // Connect to database and start server
+const http = require('http');
+const { initAdminNotificationSocket } = require('./realtime/adminNotificationSocket');
+
 const startServer = async () => {
   try {
     await connectDB();
+
+    const adminNotificationsService = require('./services/adminNotificationsService');
+    const removedSeedNotifications = await adminNotificationsService.removeSeedNotifications();
+    if (removedSeedNotifications > 0) {
+      console.log(`Removed ${removedSeedNotifications} seeded admin notification(s).`);
+    }
 
     // Start background jobs for cleanup tasks
     const backgroundJobs = require('./utils/backgroundJobs');
     backgroundJobs.start();
 
-    app.listen(process.env.PORT, () => {
+    const server = http.createServer(app);
+    initAdminNotificationSocket(server);
+
+    server.listen(process.env.PORT, () => {
       console.log(`Server is running on http://localhost:${process.env.PORT}`);
       console.log(`API Documentation available at http://localhost:${process.env.PORT}/api`);
       console.log(`Health check available at http://localhost:${process.env.PORT}/health`);

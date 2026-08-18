@@ -1,17 +1,18 @@
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { MdDarkMode, MdLightMode, MdNotificationsNone, MdStorefront } from "react-icons/md";
-import { MyContext } from "../../App";
 import { fetchDataFromApi } from "../../utils/api";
-import { DEFAULT_STORE_LOGO } from "../../utils/storeBrand";
 import { STOREFRONT_HOME_PATH } from "./adminNav";
 import AdminNotificationsPanel from "./AdminNotificationsPanel";
 import { useAdminTheme } from "./AdminThemeContext";
-import { getAdminNotificationSample } from "./adminNotificationUtils";
+import {
+  connectAdminNotificationSocket,
+  subscribeAdminNotifications,
+} from "../../utils/adminNotificationSocket";
+import { normalizeAdminNotification } from "./adminNotificationUtils";
 
 export default function AdminTopBar() {
   const { isDark, toggleTheme } = useAdminTheme();
-  const { storeLogo } = useContext(MyContext);
   const [panelOpen, setPanelOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -21,16 +22,34 @@ export default function AdminTopBar() {
       if (typeof res?.unreadCount === "number") {
         setUnreadCount(res.unreadCount);
       } else {
-        setUnreadCount(getAdminNotificationSample().unreadCount);
+        setUnreadCount(0);
       }
     } catch {
-      setUnreadCount(getAdminNotificationSample().unreadCount);
+      setUnreadCount(0);
     }
   }, []);
 
   useEffect(() => {
     loadUnreadCount();
   }, [loadUnreadCount]);
+
+  useEffect(() => {
+    connectAdminNotificationSocket().catch(() => {});
+
+    const unsubscribe = subscribeAdminNotifications((payload) => {
+      if (typeof payload?.unreadCount === "number") {
+        setUnreadCount(payload.unreadCount);
+        return;
+      }
+
+      const incoming = normalizeAdminNotification(payload?.notification);
+      if (incoming && !incoming.read) {
+        setUnreadCount((count) => count + 1);
+      }
+    });
+
+    return unsubscribe;
+  }, []);
 
   const badgeLabel = unreadCount > 99 ? "99+" : String(unreadCount);
 
