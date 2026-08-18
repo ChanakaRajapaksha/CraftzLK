@@ -20,6 +20,7 @@ export default function ShippingMethodForm({
   setAlertBox,
   isLoading = false,
   submitLabel = "Save method",
+  variant = "page",
   onSubmit,
 }) {
   const changeInput = (e) => {
@@ -51,7 +52,11 @@ export default function ShippingMethodForm({
   };
 
   return (
-    <form className="admin-dash__product-form" onSubmit={handleSubmit}>
+    <form
+      id={variant === "modal" ? "shipping-method-form-modal" : undefined}
+      className="admin-dash__product-form"
+      onSubmit={handleSubmit}
+    >
       <section className="admin-dash__panel admin-dash__product-panel">
         <div className="admin-dash__form-grid admin-dash__form-grid--2">
           <Field label="Name" htmlFor="name" full>
@@ -114,11 +119,13 @@ export default function ShippingMethodForm({
           </div>
         </div>
 
-        <div className="admin-dash__product-form-actions">
-          <button type="submit" className="admin-dash__btn" disabled={isLoading}>
-            {isLoading ? "Saving…" : submitLabel}
-          </button>
-        </div>
+        {variant !== "modal" && (
+          <div className="admin-dash__product-form-actions">
+            <button type="submit" className="admin-dash__btn" disabled={isLoading}>
+              {isLoading ? "Saving…" : submitLabel}
+            </button>
+          </div>
+        )}
       </section>
     </form>
   );

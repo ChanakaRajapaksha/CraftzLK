@@ -92,6 +92,10 @@ function isGuestBrowsableProductQuestions(url = '') {
   }
 }
 
+function isGuestBrowsableShippingMethods(url = '') {
+  return normalizeRequestPath(url) === '/api/shipping-methods/active';
+}
+
 function isGuestBrowsableEndpoint(url = '') {
   const path = normalizeRequestPath(url);
   if (reqMethodIsGet(path, url) === false) return false;
@@ -111,6 +115,7 @@ function isGuestBrowsableEndpoint(url = '') {
   if (path.startsWith('/api/products') && !path.startsWith('/api/products/admin')) return true;
   if (isGuestBrowsableProductReviews(url)) return true;
   if (isGuestBrowsableProductQuestions(url)) return true;
+  if (isGuestBrowsableShippingMethods(url)) return true;
   if (path.startsWith('/api/artisans')) return true;
   if (path.startsWith('/api/cms-pages')) return true;
 

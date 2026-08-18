@@ -1,6 +1,18 @@
 const shippingMethodsService = require('../services/shippingMethodsService');
 
 class ShippingMethodsController {
+  async listActive(_req, res) {
+    try {
+      const list = await shippingMethodsService.listActive();
+      return res.status(200).json({
+        success: true,
+        methodList: list.map((doc) => shippingMethodsService.mapMethod(doc)),
+      });
+    } catch {
+      return res.status(500).json({ success: false, message: 'Failed to load shipping methods.' });
+    }
+  }
+
   async list(req, res) {
     try {
       const list = await shippingMethodsService.list();

@@ -18,6 +18,10 @@ class ShippingMethodsService {
     return ShippingMethod.find().sort({ createdAt: -1 });
   }
 
+  async listActive() {
+    return ShippingMethod.find({ status: 'active' }).sort({ cost: 1, createdAt: -1 });
+  }
+
   async findById(id) {
     return ShippingMethod.findById(id);
   }

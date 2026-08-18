@@ -5,12 +5,11 @@ import { toast } from "sonner";
 import { MyContext } from "../../App";
 import { COLLECTIONS_ALL_PATH } from "../Collections/collectionsConstants";
 import { getCartSubtotal, isSampleProductId, parsePriceValue } from "../../utils/cartHelpers";
-import { deleteData, postData } from "../../utils/api";
+import { deleteData, fetchDataFromApi, postData } from "../../utils/api";
 import { useAppSelector } from "../../store/hooks";
 import CheckoutCouponSection from "./CheckoutCouponSection";
 import "./Checkout.css";
 
-const FLAT_SHIPPING_LKR = 450;
 const MIN_LOADING_MS = 550;
 
 function formatRsDecimal(amount) {
@@ -45,6 +44,8 @@ const Checkout = () => {
   const [couponFeedback, setCouponFeedback] = useState(null);
   const [couponApplying, setCouponApplying] = useState(false);
   const [lastFailedCode, setLastFailedCode] = useState("");
+  const [shippingMethods, setShippingMethods] = useState([]);
+  const [selectedShippingMethodId, setSelectedShippingMethodId] = useState("");
   const cartRevalidateRef = useRef(false);
 
   const context = useContext(MyContext);
@@ -57,7 +58,21 @@ const Checkout = () => {
   );
 
   const subtotal = useMemo(() => getCartSubtotal(cartItems), [cartItems]);
-  const shipping = cartItems.length > 0 ? FLAT_SHIPPING_LKR : 0;
+
+  const selectedShippingMethod = useMemo(
+    () =>
+      shippingMethods.find(
+        (method) => String(method._id || method.id) === String(selectedShippingMethodId)
+      ) || null,
+    [shippingMethods, selectedShippingMethodId]
+  );
+
+  const shipping = useMemo(() => {
+    if (cartItems.length === 0) return 0;
+    if (selectedShippingMethod) return Number(selectedShippingMethod.cost) || 0;
+    return 0;
+  }, [cartItems.length, selectedShippingMethod]);
+
   const discount = appliedCoupon?.discount ?? 0;
   const orderTotal = Math.max(0, subtotal + shipping - discount);
 
@@ -231,6 +246,23 @@ const Checkout = () => {
     };
 
     context.getCartData?.();
+
+    fetchDataFromApi("/api/shipping-methods/active")
+      .then((res) => {
+        if (cancelled) return;
+        const list =
+          res?.success !== false && Array.isArray(res?.methodList) ? res.methodList : [];
+        setShippingMethods(list);
+        if (list.length) {
+          setSelectedShippingMethodId(String(list[0]._id || list[0].id));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setShippingMethods([]);
+          setSelectedShippingMethodId("");
+        }
+      });
 
     const timer = setTimeout(() => {
       const elapsed = Date.now() - started;
@@ -822,7 +854,13 @@ const Checkout = () => {
                 )}
                 <tr>
                   <td>Shipping</td>
-                  <td>Flat rate: {formatRsDecimal(shipping)}</td>
+                  <td>
+                    {selectedShippingMethod
+                      ? `${selectedShippingMethod.name}: ${formatRsDecimal(shipping)}`
+                      : shipping > 0
+                        ? formatRsDecimal(shipping)
+                        : "—"}
+                  </td>
                 </tr>
                 <tr className="checkout-page__total-row">
                   <td>Total</td>
@@ -830,6 +868,32 @@ const Checkout = () => {
                 </tr>
               </tfoot>
             </table>
+
+            {cartItems.length > 0 && shippingMethods.length > 0 && (
+              <div className="checkout-page__payments">
+                <h3 className="checkout-page__section-title">Shipping method</h3>
+                {shippingMethods.map((method) => {
+                  const methodId = String(method._id || method.id);
+                  return (
+                    <label key={methodId} className="checkout-page__payment-option">
+                      <input
+                        type="radio"
+                        name="shippingMethod"
+                        value={methodId}
+                        checked={selectedShippingMethodId === methodId}
+                        onChange={() => setSelectedShippingMethodId(methodId)}
+                      />
+                      <span className="checkout-page__payment-label">
+                        {method.name} — {formatRsDecimal(method.cost)}
+                      </span>
+                      {method.deliveryTime && (
+                        <p className="checkout-page__payment-hint">{method.deliveryTime}</p>
+                      )}
+                    </label>
+                  );
+                })}
+              </div>
+            )}
 
             <div className="checkout-page__payments">
               <label className="checkout-page__payment-option">

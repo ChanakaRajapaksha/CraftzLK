@@ -52,6 +52,10 @@ function isStorefrontBrowseRoute(req) {
     return Boolean(req.query?.productId);
   }
 
+  if (path === '/api/shipping-methods/active') {
+    return true;
+  }
+
   if (path.startsWith('/api/artisans')) {
     return true;
   }

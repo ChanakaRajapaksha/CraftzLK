@@ -1,51 +1,88 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useOutletContext } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useOutletContext, useSearchParams } from "react-router-dom";
 import { FaPencilAlt, FaPlus, FaShippingFast } from "react-icons/fa";
 import { MdDelete, MdLocalShipping } from "react-icons/md";
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import AdminPagination from "../../../Components/AdminDashboard/AdminPagination";
 import AdminConfirmDialog from "../../../Components/AdminDashboard/AdminConfirmDialog";
+import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
 import { deleteData, fetchDataFromApi } from "../../../utils/api";
-import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import { formatCost, formatZones } from "./shippingFormDefaults";
-import { getShippingMethodSampleData, isSampleShippingMethodId } from "./shippingListUtils";
 import { getPromoStatusBadge } from "../Promotions/promoListHelpers";
+import ShippingMethodFormModal from "./ShippingMethodFormModal";
 
 export default function ShippingMethodList() {
   const { setAlertBox } = useOutletContext();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [methods, setMethods] = useState([]);
-  const [usingSampleData, setUsingSampleData] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingMethodId, setEditingMethodId] = useState(null);
 
-  const applySample = () => {
-    setMethods(getShippingMethodSampleData());
-    setUsingSampleData(true);
-  };
+  const loadMethods = useCallback(() => {
+    setLoading(true);
+    setLoadError(false);
 
-  const loadMethods = () => {
     fetchDataFromApi("/api/shipping-methods")
       .then((res) => {
-        const list = res?.methodList || [];
-        if (list.length) {
-          setMethods(list);
-          setUsingSampleData(false);
-        } else {
-          applySample();
+        if (res?.success === false) {
+          throw new Error(res?.message || "Failed to load shipping methods.");
         }
+        setMethods(Array.isArray(res?.methodList) ? res.methodList : []);
       })
-      .catch(() => applySample());
-  };
+      .catch(() => {
+        setMethods([]);
+        setLoadError(true);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    loadMethods();
   }, []);
+
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    const action = searchParams.get("action");
+
+    if (editId) {
+      setEditingMethodId(editId);
+      setModalOpen(true);
+    } else if (action === "add") {
+      setEditingMethodId(null);
+      setModalOpen(true);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    loadMethods();
+  }, [loadMethods]);
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setEditingMethodId(null);
+    if (searchParams.get("edit") || searchParams.get("action")) {
+      setSearchParams({}, { replace: true });
+    }
+  };
+
+  const openCreateModal = () => {
+    setEditingMethodId(null);
+    setModalOpen(true);
+  };
+
+  const openEditModal = (item) => {
+    setEditingMethodId(item._id || item.id);
+    setModalOpen(true);
+  };
 
   const stats = useMemo(() => {
     const activeCount = methods.filter((item) => item.status === "active").length;
@@ -79,16 +116,25 @@ export default function ShippingMethodList() {
   }, [page, totalPages]);
 
   const deleteMethod = (id) => {
-    if (usingSampleData || isSampleShippingMethodId(id)) {
-      setMethods((prev) => prev.filter((item) => (item._id || item.id) !== id));
-      setAlertBox?.({ open: true, error: false, msg: "Method removed from sample list." });
-      return;
-    }
-    deleteData(`/api/shipping-methods/${id}`).then(() => {
-      setAlertBox?.({ open: true, error: false, msg: "Shipping method deleted." });
-      loadMethods();
-    });
+    deleteData(`/api/shipping-methods/${id}`)
+      .then((res) => {
+        if (res?.success === false) {
+          setAlertBox?.({ open: true, error: true, msg: res?.message || "Failed to delete shipping method." });
+          return;
+        }
+        setAlertBox?.({ open: true, error: false, msg: "Shipping method deleted." });
+        loadMethods();
+      })
+      .catch(() => {
+        setAlertBox?.({ open: true, error: true, msg: "Failed to delete shipping method." });
+      });
   };
+
+  const emptyMessage = loadError
+    ? "Unable to load shipping methods. Please try again."
+    : filtered.length === 0 && methods.length === 0
+      ? "No shipping methods yet. Add your first delivery option."
+      : "No shipping methods match your filters.";
 
   return (
     <>
@@ -97,10 +143,10 @@ export default function ShippingMethodList() {
         subtitle="Configure delivery options, costs, and zones for checkout."
         breadcrumbs={[{ label: "Shipping Management" }]}
         action={
-          <Link to={`${ADMIN_BASE}/shipping/methods/add`} className="admin-dash__btn">
+          <button type="button" className="admin-dash__btn" onClick={openCreateModal}>
             <FaPlus />
             Add Method
-          </Link>
+          </button>
         }
       />
 
@@ -111,12 +157,6 @@ export default function ShippingMethodList() {
       </div>
 
       <section className="admin-dash__panel">
-        {usingSampleData && (
-          <p className="admin-dash__sample-banner">
-            Showing sample shipping methods — add live methods via Add Method.
-          </p>
-        )}
-
         <div className="admin-dash__toolbar admin-dash__toolbar--wrap admin-dash__toolbar--filters">
           <input
             className="admin-dash__input"
@@ -145,81 +185,94 @@ export default function ShippingMethodList() {
           </select>
         </div>
 
-        <div className="admin-dash__data-table">
-          <div className="admin-dash__table-wrap admin-dash__table-wrap--modern">
-            <table className="admin-dash__table admin-dash__table--modern admin-dash__table--shipping">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Cost</th>
-                  <th>Delivery time</th>
-                  <th>Shipping zones</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {slice.length === 0 ? (
+        {loading ? (
+          <AdminLoadingState message="Loading shipping methods…" />
+        ) : (
+          <div className="admin-dash__data-table">
+            <div className="admin-dash__table-wrap admin-dash__table-wrap--modern">
+              <table className="admin-dash__table admin-dash__table--modern admin-dash__table--shipping">
+                <thead>
                   <tr>
-                    <td colSpan={6} className="admin-dash__table-empty">
-                      No shipping methods match your filters.
-                    </td>
+                    <th>Name</th>
+                    <th>Cost</th>
+                    <th>Delivery time</th>
+                    <th>Shipping zones</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
-                ) : (
-                  slice.map((item) => {
-                    const id = item._id || item.id;
-                    const statusBadge = getPromoStatusBadge(item.status === "active" ? "active" : "inactive");
-                    return (
-                      <tr key={id}>
-                        <td><strong>{item.name}</strong></td>
-                        <td><strong>{formatCost(item.cost)}</strong></td>
-                        <td>{item.deliveryTime || "—"}</td>
-                        <td className="admin-dash__shipping-zones-cell">{formatZones(item.zones)}</td>
-                        <td>
-                          <span className={statusBadge.className}>{statusBadge.label}</span>
-                        </td>
-                        <td>
-                          <div className="admin-dash__actions">
-                            <Link
-                              to={`${ADMIN_BASE}/shipping/methods/edit/${id}`}
-                              className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
-                              title="Edit"
-                            >
-                              <FaPencilAlt />
-                            </Link>
-                            <button
-                              type="button"
-                              className="admin-dash__btn admin-dash__btn--danger admin-dash__btn--sm admin-dash__btn--icon"
-                              title="Delete"
-                              onClick={() => setDeleteTarget({ id, name: item.name })}
-                            >
-                              <MdDelete />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {slice.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="admin-dash__table-empty">
+                        {emptyMessage}
+                      </td>
+                    </tr>
+                  ) : (
+                    slice.map((item) => {
+                      const id = item._id || item.id;
+                      const statusBadge = getPromoStatusBadge(item.status === "active" ? "active" : "inactive");
+                      return (
+                        <tr key={id}>
+                          <td><strong>{item.name}</strong></td>
+                          <td><strong>{formatCost(item.cost)}</strong></td>
+                          <td>{item.deliveryTime || "—"}</td>
+                          <td className="admin-dash__shipping-zones-cell">{formatZones(item.zones)}</td>
+                          <td>
+                            <span className={statusBadge.className}>{statusBadge.label}</span>
+                          </td>
+                          <td>
+                            <div className="admin-dash__actions">
+                              <button
+                                type="button"
+                                className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
+                                title="Edit"
+                                onClick={() => openEditModal(item)}
+                              >
+                                <FaPencilAlt />
+                              </button>
+                              <button
+                                type="button"
+                                className="admin-dash__btn admin-dash__btn--danger admin-dash__btn--sm admin-dash__btn--icon"
+                                title="Delete"
+                                onClick={() => setDeleteTarget({ id, name: item.name })}
+                              >
+                                <MdDelete />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-          <AdminPagination
-            page={page}
-            totalPages={totalPages}
-            totalItems={filtered.length}
-            itemLabel="methods"
-            rowsPerPage={rowsPerPage}
-            rowsPerPageOptions={[10, 25, 50]}
-            onPageChange={setPage}
-            onRowsPerPageChange={(value) => {
-              setRowsPerPage(value);
-              setPage(0);
-            }}
-          />
-        </div>
+            <AdminPagination
+              page={page}
+              totalPages={totalPages}
+              totalItems={filtered.length}
+              itemLabel="methods"
+              rowsPerPage={rowsPerPage}
+              rowsPerPageOptions={[10, 25, 50]}
+              onPageChange={setPage}
+              onRowsPerPageChange={(value) => {
+                setRowsPerPage(value);
+                setPage(0);
+              }}
+            />
+          </div>
+        )}
       </section>
+
+      <ShippingMethodFormModal
+        open={modalOpen}
+        methodId={editingMethodId}
+        onClose={closeModal}
+        onSaved={loadMethods}
+        setAlertBox={setAlertBox}
+      />
 
       <AdminConfirmDialog
         open={Boolean(deleteTarget)}

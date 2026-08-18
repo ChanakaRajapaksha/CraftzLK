@@ -93,7 +93,7 @@ export const adminNavItems = [
     label: "Shipping Management",
     children: [
       { label: "Shipping Methods", path: `${ADMIN_BASE}/shipping/methods` },
-      { label: "Add Shipping Method", path: `${ADMIN_BASE}/shipping/methods/add` },
+      { label: "Add Shipping Method", path: `${ADMIN_BASE}/shipping/methods?action=add` },
     ],
   },
   {
