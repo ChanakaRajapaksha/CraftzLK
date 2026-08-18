@@ -77,6 +77,7 @@ export const adminNavItems = [
     label: "Review Management",
     children: [
       { label: "Reviews List", path: `${ADMIN_BASE}/reviews` },
+      { label: "Questions List", path: `${ADMIN_BASE}/questions` },
     ],
   },
   {

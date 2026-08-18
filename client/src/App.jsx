@@ -96,6 +96,7 @@ import NewArrivalsSection from "./Pages/AdminDashboard/HomepageContent/NewArriva
 import BestSellersSection from "./Pages/AdminDashboard/HomepageContent/BestSellersSection";
 import PopularCategoriesSection from "./Pages/AdminDashboard/HomepageContent/PopularCategoriesSection";
 import ReviewList from "./Pages/AdminDashboard/Reviews/ReviewList";
+import QuestionList from "./Pages/AdminDashboard/Questions/QuestionList";
 import StockList from "./Pages/AdminDashboard/Inventory/StockList";
 import StockAdjustment from "./Pages/AdminDashboard/Inventory/StockAdjustment";
 import ShippingMethodList from "./Pages/AdminDashboard/Shipping/ShippingMethodList";
@@ -625,6 +626,7 @@ function AppContent() {
           <Route path="homepage/best-sellers" element={<BestSellersSection />} />
           <Route path="homepage/popular-categories" element={<PopularCategoriesSection />} />
           <Route path="reviews" element={<ReviewList />} />
+          <Route path="questions" element={<QuestionList />} />
           <Route path="inventory/stock" element={<StockList />} />
           <Route path="inventory/adjust" element={<StockAdjustment />} />
           <Route path="shipping/methods" element={<ShippingMethodList />} />

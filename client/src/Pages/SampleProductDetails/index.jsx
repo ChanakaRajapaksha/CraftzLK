@@ -14,7 +14,7 @@ import WriteReviewModal from "../../Components/WriteReviewModal";
 import AskQuestionModal from "../../Components/AskQuestionModal";
 import YouMayAlsoLike from "../../Components/YouMayAlsoLike";
 import { fetchDataFromApi } from "../../utils/api";
-import { parseProductReviewsResponse } from "../../utils/productReviewUtils";
+import { parseProductQuestionsResponse, parseProductReviewsResponse } from "../../utils/productReviewUtils";
 import { useAppSelector } from "../../store/hooks";
 import ProductReviewsFeed from "./ProductReviewsFeed";
 import {
@@ -96,6 +96,8 @@ export default function SampleProductDetails() {
   const [reviewAverage, setReviewAverage] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
   const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [productQuestions, setProductQuestions] = useState([]);
+  const [questionsLoading, setQuestionsLoading] = useState(false);
   const [showReviewStickyCard, setShowReviewStickyCard] = useState(false);
   const [reviewStickyExpanded, setReviewStickyExpanded] = useState(false);
   const reviewsSectionRef = useRef(null);
@@ -119,6 +121,7 @@ export default function SampleProductDetails() {
       setProductReviews([]);
       setReviewAverage(0);
       setReviewCount(0);
+      setProductQuestions([]);
 
       if (isSampleProductId(id)) {
         const sample = getSampleProductById(id);
@@ -188,10 +191,28 @@ export default function SampleProductDetails() {
     }
   }, []);
 
+  const loadProductQuestions = useCallback(async (productId) => {
+    if (!productId) return;
+
+    setQuestionsLoading(true);
+    try {
+      const res = await fetchDataFromApi(
+        `/api/productQuestions?productId=${encodeURIComponent(productId)}`
+      );
+      const { questions } = parseProductQuestionsResponse(res);
+      setProductQuestions(questions);
+    } catch {
+      setProductQuestions([]);
+    } finally {
+      setQuestionsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (!product?.id) return;
     loadProductReviews(product.id);
-  }, [product?.id, loadProductReviews]);
+    loadProductQuestions(product.id);
+  }, [product?.id, loadProductReviews, loadProductQuestions]);
 
   useEffect(() => {
     if (product?.colors?.length) {
@@ -600,7 +621,12 @@ export default function SampleProductDetails() {
             </div>
           </div>
 
-          <ProductReviewsFeed reviews={productReviews} loading={reviewsLoading} />
+          <ProductReviewsFeed
+            reviews={productReviews}
+            loading={reviewsLoading}
+            questions={productQuestions}
+            questionsLoading={questionsLoading}
+          />
 
           <HomeCustomerReviewSummary variant="product" />
         </section>
@@ -617,9 +643,9 @@ export default function SampleProductDetails() {
       <AskQuestionModal
         open={askQuestionOpen}
         onClose={() => setAskQuestionOpen(false)}
-        onSubmit={({ displayName }) => {
-          setAskQuestionOpen(false);
-          context.setAlertBox({
+        product={{ id: product.id, name: product.name }}
+        onSubmitted={({ displayName }) => {
+          context?.setAlertBox?.({
             open: true,
             error: false,
             msg: `Thanks${displayName ? `, ${displayName}` : ""}! Your question has been submitted.`,

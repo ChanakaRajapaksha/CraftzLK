@@ -1,11 +1,10 @@
 import {
   FEED_PAGE_SIZE,
   FEED_SORT_OPTIONS,
-  PRODUCT_QUESTIONS,
   sortProductQuestions,
 } from "../Pages/SampleProductDetails/productReviewsQuestions";
 
-export { FEED_PAGE_SIZE, FEED_SORT_OPTIONS, PRODUCT_QUESTIONS, sortProductQuestions };
+export { FEED_PAGE_SIZE, FEED_SORT_OPTIONS, sortProductQuestions };
 
 export function formatReviewFeedDate(value) {
   if (!value) return "";
@@ -97,4 +96,49 @@ export function parseProductReviewsResponse(res) {
         ? Number(res.reviewCount)
         : computed.reviewCount,
   };
+}
+
+export function mapApiQuestionToFeedItem(question) {
+  const dateSource = question.dateCreated || question.date;
+  const replyDateSource = question.answerDate || question.reply?.date;
+  const sortSource = replyDateSource || dateSource;
+
+  return {
+    id: question._id || question.id,
+    name: question.customerName || question.name || "Customer",
+    date: formatReviewFeedDate(dateSource),
+    dateValue: new Date(dateSource).getTime() || 0,
+    sortValue: new Date(sortSource).getTime() || 0,
+    question: question.question || "",
+    reply:
+      question.answer || question.reply?.body
+        ? {
+            author: question.answerAuthor || question.reply?.author || "CraftzLK",
+            date: formatReviewFeedDate(replyDateSource),
+            body: question.answer || question.reply?.body || "",
+          }
+        : null,
+  };
+}
+
+export function parseProductQuestionsResponse(res) {
+  if (!res || res instanceof Error || res?.response || res?.success === false) {
+    return { questions: [] };
+  }
+
+  const list = Array.isArray(res.questionList)
+    ? res.questionList
+    : Array.isArray(res)
+      ? res
+      : [];
+
+  return {
+    questions: list.map(mapApiQuestionToFeedItem),
+  };
+}
+
+export function sortFeedQuestions(questions) {
+  return [...questions].sort(
+    (a, b) => (b.sortValue || b.dateValue || 0) - (a.sortValue || a.dateValue || 0)
+  );
 }

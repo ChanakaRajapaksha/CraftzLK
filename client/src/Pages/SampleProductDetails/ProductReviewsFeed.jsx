@@ -5,8 +5,7 @@ import { IoChevronDown } from "react-icons/io5";
 import {
   FEED_PAGE_SIZE,
   FEED_SORT_OPTIONS,
-  PRODUCT_QUESTIONS,
-  sortProductQuestions,
+  sortFeedQuestions,
   sortFeedReviews,
 } from "../../utils/productReviewUtils";
 import "./ProductReviewsFeed.css";
@@ -118,7 +117,12 @@ function QuestionCard({ item }) {
   );
 }
 
-export default function ProductReviewsFeed({ reviews = [], loading = false }) {
+export default function ProductReviewsFeed({
+  reviews = [],
+  loading = false,
+  questions = [],
+  questionsLoading = false,
+}) {
   const [activeTab, setActiveTab] = useState("reviews");
   const [sortBy, setSortBy] = useState("recent");
   const [sortOpen, setSortOpen] = useState(false);
@@ -130,7 +134,7 @@ export default function ProductReviewsFeed({ reviews = [], loading = false }) {
     () => sortFeedReviews(reviews, sortBy),
     [reviews, sortBy]
   );
-  const sortedQuestions = useMemo(() => sortProductQuestions(PRODUCT_QUESTIONS), []);
+  const sortedQuestions = useMemo(() => sortFeedQuestions(questions), [questions]);
 
   const visibleReviewItems = sortedReviews.slice(0, visibleReviews);
   const visibleQuestionItems = sortedQuestions.slice(0, visibleQuestions);
@@ -145,6 +149,10 @@ export default function ProductReviewsFeed({ reviews = [], loading = false }) {
   useEffect(() => {
     setVisibleReviews(FEED_PAGE_SIZE);
   }, [reviews]);
+
+  useEffect(() => {
+    setVisibleQuestions(FEED_PAGE_SIZE);
+  }, [questions]);
 
   useEffect(() => {
     if (!sortOpen) return undefined;
@@ -199,7 +207,7 @@ export default function ProductReviewsFeed({ reviews = [], loading = false }) {
           className={`spd-feed__tab${activeTab === "questions" ? " spd-feed__tab--active" : ""}`}
           onClick={() => setActiveTab("questions")}
         >
-          Questions ({PRODUCT_QUESTIONS.length})
+          Questions ({questions.length})
         </button>
       </div>
 
@@ -275,9 +283,19 @@ export default function ProductReviewsFeed({ reviews = [], loading = false }) {
           aria-labelledby="spd-feed-tab-questions"
           className="spd-feed__list"
         >
-          {visibleQuestionItems.map((item) => (
-            <QuestionCard key={item.id} item={item} />
-          ))}
+          {questionsLoading ? (
+            <li className="spd-feed__item spd-feed__item--question">
+              <p className="spd-feed__question-text">Loading questions…</p>
+            </li>
+          ) : visibleQuestionItems.length === 0 ? (
+            <li className="spd-feed__item spd-feed__item--question">
+              <p className="spd-feed__question-text">No answered questions yet.</p>
+            </li>
+          ) : (
+            visibleQuestionItems.map((item) => (
+              <QuestionCard key={item.id} item={item} />
+            ))
+          )}
         </ul>
       )}
 

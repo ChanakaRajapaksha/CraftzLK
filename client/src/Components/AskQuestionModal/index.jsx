@@ -2,6 +2,7 @@ import { forwardRef, useCallback, useEffect, useState } from "react";
 import Dialog from "@mui/material/Dialog";
 import Zoom from "@mui/material/Zoom";
 import { useNavigate } from "react-router-dom";
+import { postData, isApiSuccessResponse } from "../../utils/api";
 import { useAppSelector } from "../../store/hooks";
 import "./AskQuestionModal.css";
 
@@ -25,20 +26,21 @@ const AqmDialogTransition = forwardRef(function AqmDialogTransition(props, ref) 
 
 const getInitialForm = () => ({
   displayName: "",
-  email: "",
   question: "",
 });
 
-export default function AskQuestionModal({ open, onClose, onSubmit }) {
+export default function AskQuestionModal({ open, onClose, product, onSubmitted }) {
   const navigate = useNavigate();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const authUser = useAppSelector((state) => state.auth.user);
   const [form, setForm] = useState(getInitialForm);
   const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
 
   const resetForm = useCallback(() => {
     setForm(getInitialForm());
     setErrors({});
+    setSubmitting(false);
   }, []);
 
   useEffect(() => {
@@ -73,16 +75,12 @@ export default function AskQuestionModal({ open, onClose, onSubmit }) {
   const validate = () => {
     const nextErrors = {};
     if (!form.displayName.trim()) nextErrors.displayName = "This field is required";
-    if (!form.email.trim()) nextErrors.email = "This field is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-      nextErrors.email = "Please enter a valid email address";
-    }
     if (!form.question.trim()) nextErrors.question = "This field is required";
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     if (!isAuthenticated || !authUser?.userId) {
       onClose();
@@ -90,11 +88,43 @@ export default function AskQuestionModal({ open, onClose, onSubmit }) {
       return;
     }
     if (!validate()) return;
-    onSubmit?.({
-      displayName: form.displayName.trim(),
-      email: form.email.trim(),
+
+    if (!product?.id) {
+      setErrors({ submit: "Product details are unavailable. Please try again." });
+      return;
+    }
+
+    setSubmitting(true);
+    setErrors({});
+
+    const payload = {
+      productId: product.id,
+      productName: product.name || "",
+      customerId: authUser.userId,
+      customerName: form.displayName.trim(),
       question: form.question.trim(),
-    });
+    };
+
+    const res = await postData("/api/productQuestions/add", payload);
+
+    if (!isApiSuccessResponse(res)) {
+      setErrors({
+        submit: res?.message || "Failed to submit question. Please try again.",
+      });
+      setSubmitting(false);
+      return;
+    }
+
+    try {
+      onSubmitted?.({
+        displayName: form.displayName.trim(),
+      });
+    } catch (callbackError) {
+      console.error("Ask question success callback failed:", callbackError);
+    }
+
+    onClose();
+    setSubmitting(false);
   };
 
   return (
@@ -137,21 +167,6 @@ export default function AskQuestionModal({ open, onClose, onSubmit }) {
         </div>
 
         <div className="aqm-field">
-          <label htmlFor="aqm-email">Email address</label>
-          <input
-            id="aqm-email"
-            type="email"
-            value={form.email}
-            onChange={(event) => {
-              setForm((prev) => ({ ...prev, email: event.target.value }));
-              if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
-            }}
-            className={errors.email ? "aqm-input aqm-input--error" : "aqm-input"}
-          />
-          {errors.email && <p className="aqm-error">{errors.email}</p>}
-        </div>
-
-        <div className="aqm-field">
           <label htmlFor="aqm-question">Question</label>
           <textarea
             id="aqm-question"
@@ -166,9 +181,11 @@ export default function AskQuestionModal({ open, onClose, onSubmit }) {
           {errors.question && <p className="aqm-error">{errors.question}</p>}
         </div>
 
+        {errors.submit && <p className="aqm-error aqm-error--submit">{errors.submit}</p>}
+
         <div className="aqm-actions">
-          <button type="submit" className="aqm-btn aqm-btn--primary">
-            Submit Question
+          <button type="submit" className="aqm-btn aqm-btn--primary" disabled={submitting}>
+            {submitting ? "Submitting…" : "Submit Question"}
           </button>
         </div>
       </form>

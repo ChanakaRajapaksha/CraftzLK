@@ -78,6 +78,20 @@ function isGuestBrowsableProductReviews(url = '') {
   }
 }
 
+function isGuestBrowsableProductQuestions(url = '') {
+  const path = normalizeRequestPath(url);
+  if (path !== '/api/productQuestions') return false;
+
+  const query = url.includes('?') ? url.split('?')[1] : '';
+  if (!query) return false;
+
+  try {
+    return Boolean(new URLSearchParams(query).get('productId'));
+  } catch {
+    return query.includes('productId=');
+  }
+}
+
 function isGuestBrowsableEndpoint(url = '') {
   const path = normalizeRequestPath(url);
   if (reqMethodIsGet(path, url) === false) return false;
@@ -96,6 +110,7 @@ function isGuestBrowsableEndpoint(url = '') {
   if (exactPaths.has(path)) return true;
   if (path.startsWith('/api/products') && !path.startsWith('/api/products/admin')) return true;
   if (isGuestBrowsableProductReviews(url)) return true;
+  if (isGuestBrowsableProductQuestions(url)) return true;
   if (path.startsWith('/api/artisans')) return true;
   if (path.startsWith('/api/cms-pages')) return true;
 
@@ -287,15 +302,27 @@ export const fetchDataFromApi = async (url) => {
     }
 }
 
+export function isApiSuccessResponse(res) {
+    if (!res || typeof res !== "object") return false;
+    if (res instanceof Error || res.isAxiosError || res.response) return false;
+    if (res.success === false || res.status === false) return false;
+    if (res.success === true) return true;
+    return Boolean(res.id || res._id);
+}
+
 export const postData = async (url, formData) => {
     try {
         const { data } = await apiClient.post(url, formData, {
             headers: { 'Content-Type': 'application/json' },
+            validateStatus: (status) => status >= 200 && status < 300,
         });
         return data;
     } catch (error) {
-        if (error.response) return error.response.data;
-        throw error;
+        if (error.response?.data) return error.response.data;
+        return {
+            success: false,
+            message: error.message || "Network error. Please try again.",
+        };
     }
 }
 

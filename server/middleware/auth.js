@@ -48,6 +48,10 @@ function isStorefrontBrowseRoute(req) {
     );
   }
 
+  if (path === '/api/productQuestions') {
+    return Boolean(req.query?.productId);
+  }
+
   if (path.startsWith('/api/artisans')) {
     return true;
   }
