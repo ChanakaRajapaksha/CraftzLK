@@ -103,6 +103,47 @@ class AdminNotificationsService {
     emitAdminNotification({ notification, unreadCount });
     return notification;
   }
+
+  formatOrderAmount(amount) {
+    const value = Number.parseFloat(String(amount ?? 0).replace(/,/g, ''));
+    if (!Number.isFinite(value)) return 'Rs 0';
+    return `Rs ${value.toLocaleString('en-LK', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    })}`;
+  }
+
+  async notifyNewOrder(order) {
+    if (!order) return null;
+
+    const orderNumber = order.orderNumber || `#${String(order._id || order.id || '').slice(-6)}`;
+    const customerName = String(order.name || order.email || 'Customer').trim() || 'Customer';
+    const amountLabel = this.formatOrderAmount(order.amount);
+
+    const notification = await this.create({
+      type: 'order',
+      title: 'New order received',
+      message: `${orderNumber} placed by ${customerName} — ${amountLabel}.`,
+      link: '/dashboard/orders',
+    });
+
+    const unreadCount = await this.countUnread();
+    emitAdminNotification({
+      notification,
+      unreadCount,
+      event: 'order:placed',
+      order: {
+        id: String(order._id || order.id || ''),
+        orderNumber,
+        customerName,
+        amount: Number.parseFloat(String(order.amount ?? 0).replace(/,/g, '')) || 0,
+        paymentStatus: order.paymentStatus || 'pending',
+        status: order.status || 'placed',
+      },
+    });
+
+    return notification;
+  }
 }
 
 module.exports = new AdminNotificationsService();

@@ -777,9 +777,13 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #fff;
+  color: #fff !important;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.checkout-page__submit span {
+  color: inherit !important;
 }
 
 .checkout-page__submit:hover:not(:disabled) {

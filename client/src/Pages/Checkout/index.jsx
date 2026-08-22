@@ -1,5 +1,6 @@
 import CircularProgress from "@mui/material/CircularProgress";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { MyContext } from "../../App";
@@ -8,9 +9,11 @@ import { getCartSubtotal, isSampleProductId, parsePriceValue } from "../../utils
 import { deleteData, fetchDataFromApi, postData } from "../../utils/api";
 import { useAppSelector } from "../../store/hooks";
 import CheckoutCouponSection from "./CheckoutCouponSection";
+import PlaceOrderButton from "./PlaceOrderButton";
 import "./Checkout.css";
 
-const MIN_LOADING_MS = 550;
+const MIN_LOADING_MS = 1800;
+const SUCCESS_ANIMATION_MS = 1200;
 
 function formatRsDecimal(amount) {
   const n = parsePriceValue(amount);
@@ -37,7 +40,7 @@ const Checkout = () => {
   const [shipToDifferent, setShipToDifferent] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [isPageReady, setIsPageReady] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitPhase, setSubmitPhase] = useState("idle");
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
@@ -47,6 +50,7 @@ const Checkout = () => {
   const [shippingMethods, setShippingMethods] = useState([]);
   const [selectedShippingMethodId, setSelectedShippingMethodId] = useState("");
   const cartRevalidateRef = useRef(false);
+  const submitStartedAtRef = useRef(0);
 
   const context = useContext(MyContext);
   const history = useNavigate();
@@ -427,7 +431,10 @@ const Checkout = () => {
 
     if (!validateForm()) return;
 
-    setIsSubmitting(true);
+    flushSync(() => {
+      setSubmitPhase("loading");
+    });
+    submitStartedAtRef.current = Date.now();
 
     const fullName = `${formFields.firstName.trim()} ${formFields.lastName.trim()}`.trim();
     const address = buildAddressLine(
@@ -477,17 +484,25 @@ const Checkout = () => {
 
       if (!res?.order || res?.success === false) {
         toast.error(res?.message || "Failed to place order. Please try again.");
-        setIsSubmitting(false);
+        setSubmitPhase("idle");
         return;
       }
 
       const createdOrder = res.order;
 
       await clearBackendCart(cartItems);
-      submitOrder(createdOrder);
+
+      const elapsed = Date.now() - submitStartedAtRef.current;
+      const minLoadingRemaining = Math.max(0, MIN_LOADING_MS - elapsed);
+      if (minLoadingRemaining > 0) {
+        await new Promise((resolve) => setTimeout(resolve, minLoadingRemaining));
+      }
+
+      setSubmitPhase("success");
+      setTimeout(() => submitOrder(createdOrder), SUCCESS_ANIMATION_MS);
     } catch {
       toast.error("Failed to place order. Please try again.");
-      setIsSubmitting(false);
+      setSubmitPhase("idle");
     }
   };
 
@@ -966,13 +981,7 @@ const Checkout = () => {
               .
             </p>
 
-            <button
-              type="submit"
-              className="checkout-page__submit"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Processing…" : "Place order"}
-            </button>
+            <PlaceOrderButton phase={submitPhase} />
           </aside>
         </form>
       </div>

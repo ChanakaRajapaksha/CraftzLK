@@ -60,6 +60,17 @@ export default function OrderList() {
     loadOrders();
   }, []);
 
+  useEffect(() => {
+    const handleRefresh = (event) => {
+      if (event?.detail?.reason === "order:placed") {
+        loadOrders();
+      }
+    };
+
+    window.addEventListener("admin-dashboard:refresh", handleRefresh);
+    return () => window.removeEventListener("admin-dashboard:refresh", handleRefresh);
+  }, []);
+
   const stats = useMemo(() => {
     const revenue = sumOrderRevenue(orders, (value) => Number(value || 0));
     const pending = orders.filter((order) => order.paymentStatus === "pending").length;

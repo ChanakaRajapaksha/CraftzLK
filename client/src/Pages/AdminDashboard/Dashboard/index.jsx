@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import DateRangeFilter from "./components/DateRangeFilter";
 import SectionNav from "./components/SectionNav";
@@ -21,12 +21,21 @@ export default function AdminDashboardHome() {
   const [chartMetric, setChartMetric] = useState("revenue");
   const [section, setSection] = useState("overview");
 
-  const { data, loading, loadError } = useDashboard({
+  const { data, loading, loadError, reload } = useDashboard({
     preset: datePreset,
     customStart,
     customEnd,
     metric: chartMetric,
   });
+
+  useEffect(() => {
+    const handleRefresh = () => {
+      reload?.();
+    };
+
+    window.addEventListener("admin-dashboard:refresh", handleRefresh);
+    return () => window.removeEventListener("admin-dashboard:refresh", handleRefresh);
+  }, [reload]);
 
   const comparisonLabel = data?.comparisonLabel || "previous period";
   const kpis = data?.kpis || {

@@ -1,0 +1,427 @@
+.place-order-btn.checkout-page__submit {
+  position: relative;
+  overflow: hidden;
+  color: #ffffff !important;
+}
+
+.place-order-btn.checkout-page__submit:disabled {
+  opacity: 1 !important;
+  cursor: wait;
+}
+
+.place-order-btn__sizer {
+  display: block;
+  visibility: hidden;
+  pointer-events: none;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  line-height: 1.5;
+}
+
+.place-order-btn__label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  color: #ffffff !important;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.place-order-btn__label--success svg {
+  width: 12px;
+  height: 10px;
+  fill: none;
+  stroke: #8fd49a !important;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 16px;
+  stroke-dashoffset: 16px;
+  color: #8fd49a !important;
+}
+
+.place-order-btn__scene {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+  background: #1f1a14;
+}
+
+.place-order-btn__loading-caption {
+  position: absolute;
+  top: 0.35rem;
+  left: 0;
+  right: 0;
+  z-index: 6;
+  text-align: center;
+  color: #ffffff !important;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
+}
+
+.place-order-btn__stage {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.place-order-btn__sky {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 58%;
+  background: linear-gradient(180deg, #7ec8e3 0%, #b8e0f5 100%);
+}
+
+.place-order-btn__road {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 44%;
+  background: linear-gradient(180deg, #5a5348 0%, #3d3830 50%, #2a2620 100%);
+  overflow: hidden;
+}
+
+.place-order-btn__road-edge--top {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.place-order-btn__road-markings {
+  position: absolute;
+  left: -24px;
+  right: -24px;
+  top: 50%;
+  height: 3px;
+  transform: translateY(-50%);
+  background: repeating-linear-gradient(
+    90deg,
+    #ffffff 0 14px,
+    transparent 14px 28px
+  );
+  animation: place-order-road-scroll 3.2s linear infinite;
+}
+
+.place-order-btn__pickup-area {
+  position: absolute;
+  left: 8%;
+  bottom: 34%;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  z-index: 3;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.4));
+}
+
+.place-order-btn__package {
+  position: relative;
+  display: block;
+  width: 12px;
+  height: 12px;
+  transform-origin: center bottom;
+}
+
+.place-order-btn__package-face {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 2px;
+  border: 1px solid rgba(90, 60, 30, 0.5);
+  background: linear-gradient(145deg, #e8b87a 0%, #c9924d 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 2px 3px rgba(0, 0, 0, 0.3);
+}
+
+.place-order-btn__package-face::before,
+.place-order-btn__package-face::after {
+  content: "";
+  position: absolute;
+  background: rgba(90, 60, 30, 0.45);
+}
+
+.place-order-btn__package-face::before {
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  transform: translateX(-50%);
+}
+
+.place-order-btn__package-face::after {
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  transform: translateY(-50%);
+}
+
+.place-order-btn__package--2 {
+  width: 10px;
+  height: 10px;
+}
+
+.place-order-btn__package--3 {
+  width: 9px;
+  height: 9px;
+}
+
+.place-order-btn__van-wrap {
+  position: absolute;
+  left: 0;
+  bottom: 18%;
+  width: 6.2rem;
+  z-index: 4;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+  animation: place-order-van-route 3.2s ease-in-out infinite;
+}
+
+.place-order-btn__van-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.place-order-btn__cargo-slot {
+  opacity: 0;
+  fill: #d4a574;
+  stroke: #8f6840;
+  stroke-width: 0.5;
+}
+
+.place-order-btn--loading {
+  min-height: 5.25rem;
+  padding-top: 0.55rem;
+  padding-bottom: 0.55rem;
+}
+
+.place-order-btn--loading .place-order-btn__sizer {
+  display: none;
+}
+
+.place-order-btn--loading .place-order-btn__package--1 {
+  animation: place-order-pickup-1 3.2s ease-in-out infinite;
+}
+
+.place-order-btn--loading .place-order-btn__package--2 {
+  animation: place-order-pickup-2 3.2s ease-in-out infinite;
+}
+
+.place-order-btn--loading .place-order-btn__package--3 {
+  animation: place-order-pickup-3 3.2s ease-in-out infinite;
+}
+
+.place-order-btn--loading .place-order-btn__cargo-slot--1 {
+  animation: place-order-cargo-show-1 3.2s ease-in-out infinite;
+}
+
+.place-order-btn--loading .place-order-btn__cargo-slot--2 {
+  animation: place-order-cargo-show-2 3.2s ease-in-out infinite;
+}
+
+.place-order-btn--loading .place-order-btn__cargo-slot--3 {
+  animation: place-order-cargo-show-3 3.2s ease-in-out infinite;
+}
+
+.place-order-btn--success .place-order-btn__label--success svg {
+  animation: place-order-check-draw 0.45s ease forwards 0.12s;
+}
+
+@keyframes place-order-van-route {
+  0% {
+    transform: translateX(-110%);
+  }
+  14% {
+    transform: translateX(8%);
+  }
+  18% {
+    transform: translateX(6%);
+  }
+  62% {
+    transform: translateX(6%);
+  }
+  88% {
+    transform: translateX(120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes place-order-road-scroll {
+  0%,
+  62% {
+    transform: translateY(-50%) translateX(0);
+  }
+  88% {
+    transform: translateY(-50%) translateX(-70px);
+  }
+  100% {
+    transform: translateY(-50%) translateX(-70px);
+  }
+}
+
+@keyframes place-order-pickup-1 {
+  0%,
+  12% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  28% {
+    opacity: 1;
+    transform: translate(36px, -14px) scale(0.92);
+  }
+  34%,
+  90% {
+    opacity: 0;
+    transform: translate(48px, -6px) scale(0.45);
+  }
+  94%,
+  100% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes place-order-pickup-2 {
+  0%,
+  12% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  34% {
+    opacity: 1;
+    transform: translate(40px, -16px) scale(0.9);
+  }
+  40%,
+  90% {
+    opacity: 0;
+    transform: translate(52px, -7px) scale(0.45);
+  }
+  94%,
+  100% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes place-order-pickup-3 {
+  0%,
+  12% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  40% {
+    opacity: 1;
+    transform: translate(44px, -12px) scale(0.88);
+  }
+  46%,
+  90% {
+    opacity: 0;
+    transform: translate(54px, -5px) scale(0.45);
+  }
+  94%,
+  100% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes place-order-cargo-show-1 {
+  0%,
+  30% {
+    opacity: 0;
+  }
+  34%,
+  62% {
+    opacity: 1;
+  }
+  88%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes place-order-cargo-show-2 {
+  0%,
+  36% {
+    opacity: 0;
+  }
+  40%,
+  62% {
+    opacity: 1;
+  }
+  88%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes place-order-cargo-show-3 {
+  0%,
+  42% {
+    opacity: 0;
+  }
+  46%,
+  62% {
+    opacity: 1;
+  }
+  88%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes place-order-check-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .place-order-btn__road-markings,
+  .place-order-btn__van-wrap,
+  .place-order-btn__package,
+  .place-order-btn__cargo-slot,
+  .place-order-btn__label--success svg {
+    animation: none !important;
+  }
+
+  .place-order-btn--loading .place-order-btn__van-wrap {
+    transform: translateX(6%);
+  }
+
+  .place-order-btn--loading .place-order-btn__package {
+    opacity: 0;
+  }
+
+  .place-order-btn--loading .place-order-btn__cargo-slot {
+    opacity: 1;
+  }
+
+  .place-order-btn--success .place-order-btn__label--success svg {
+    stroke-dashoffset: 0;
+  }
+}
