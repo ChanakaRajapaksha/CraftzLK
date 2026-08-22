@@ -44,6 +44,11 @@ export default function RecentOrdersTable({ orders }) {
                   <span className={`admin-dash__status-badge admin-dash__status-badge--${getStatusBadgeClass(order.status)}`}>
                     {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                   </span>
+                  {order.paymentStatus && (
+                    <span className={`admin-dash__status-badge admin-dash__status-badge--${getStatusBadgeClass(order.paymentStatus)} admin-dash__status-badge--inline`}>
+                      {order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)}
+                    </span>
+                  )}
                 </td>
                 <td>
                   <Link

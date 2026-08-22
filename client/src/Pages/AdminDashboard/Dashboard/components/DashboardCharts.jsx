@@ -17,30 +17,30 @@ import {
 } from "recharts";
 import { useChartTooltipStyle } from "../../../../Components/AdminDashboard/useChartTooltipStyle";
 
-const METRIC_LABELS = {
-  revenue: "Revenue",
-  orders: "Orders",
-  profit: "Profit",
-};
-
-export function SalesTrendChart({ data, metric, onMetricChange }) {
+export function SalesTrendChart({ data, metric, onMetricChange, profitMetricLabel = "Profit" }) {
   const { tooltipStyle, axisTick, axisTickSm } = useChartTooltipStyle();
   const metrics = [
     { id: "revenue", label: "Revenue" },
-    { id: "orders", label: "Orders" },
-    { id: "profit", label: "Profit" },
+    { id: "orders", label: "Paid orders" },
+    { id: "profit", label: profitMetricLabel },
   ];
+
+  const chartTitle =
+    metric === "profit" ? profitMetricLabel : metric === "orders" ? "Paid Orders" : "Sales Revenue";
 
   const formatValue = (v) => {
     if (metric === "orders") return v;
-    return `Rs ${Number(v).toLocaleString()}`;
+    return `Rs ${Number(v || 0).toLocaleString()}`;
   };
+
+  const metricLabel =
+    metric === "profit" ? profitMetricLabel : metric === "orders" ? "Paid orders" : "Revenue";
 
   return (
     <section className="admin-dash__widget admin-dash__widget--chart">
       <div className="admin-dash__widget-head">
         <div>
-          <h2 className="admin-dash__widget-title">Sales Revenue</h2>
+          <h2 className="admin-dash__widget-title">{chartTitle}</h2>
           <div className="admin-dash__chart-legend-inline">
             <span className="admin-dash__chart-legend-item">
               <span className="admin-dash__chart-legend-line admin-dash__chart-legend-line--current" />
@@ -74,7 +74,12 @@ export function SalesTrendChart({ data, metric, onMetricChange }) {
               <YAxis tick={axisTick} axisLine={false} tickLine={false} />
               <Tooltip
                 contentStyle={tooltipStyle}
-                formatter={(v) => [formatValue(v), METRIC_LABELS[metric]]}
+                formatter={(v, _name, item) => {
+                  if (metric === "profit" && item?.payload?.profitAvailable === false) {
+                    return ["N/A", metricLabel];
+                  }
+                  return [formatValue(v), metricLabel];
+                }}
               />
               <Line
                 type="monotone"

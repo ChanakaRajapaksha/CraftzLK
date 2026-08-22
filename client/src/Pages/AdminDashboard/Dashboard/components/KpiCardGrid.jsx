@@ -1,9 +1,25 @@
 import { formatCurrency, formatPercentChange } from "../dashboardAnalytics";
 import LowStockAlertWidget from "./LowStockAlertWidget";
 
-function KpiCard({ label, value, change, direction, comparisonLabel, accent, format = "currency" }) {
-  const displayValue =
-    format === "currency" ? formatCurrency(value) : format === "percent" ? `${Math.round(value)}%` : value;
+function KpiCard({
+  label,
+  value,
+  change,
+  direction,
+  comparisonLabel,
+  accent,
+  format = "currency",
+  displayOverride,
+}) {
+  let displayValue = displayOverride;
+  if (displayValue === undefined) {
+    displayValue =
+      format === "currency"
+        ? formatCurrency(value)
+        : format === "percent"
+          ? `${Math.round(value)}%`
+          : value;
+  }
 
   return (
     <div className={`admin-dash__kpi-card admin-dash__kpi-card--${accent}`}>
@@ -26,6 +42,8 @@ function KpiCard({ label, value, change, direction, comparisonLabel, accent, for
 }
 
 export default function KpiCardGrid({ kpis, productSummary, customerSummary, comparisonLabel, lowStockProducts }) {
+  const profitDisplay = kpis.profitAvailable ? kpis.profit.value : null;
+
   return (
     <div className="admin-dash__kpi-grid">
       <div className="admin-dash__kpi-row admin-dash__kpi-row--primary">
@@ -38,7 +56,7 @@ export default function KpiCardGrid({ kpis, productSummary, customerSummary, com
           accent="revenue"
         />
         <KpiCard
-          label="Orders"
+          label="Paid orders"
           value={kpis.orders.value}
           change={kpis.orders.change}
           direction={kpis.orders.direction}
@@ -47,12 +65,16 @@ export default function KpiCardGrid({ kpis, productSummary, customerSummary, com
           format="number"
         />
         <KpiCard
-          label="Profit"
-          value={kpis.profit.value}
-          change={kpis.profit.change}
-          direction={kpis.profit.direction}
-          comparisonLabel={comparisonLabel}
+          label={kpis.profitLabel || "Profit"}
+          value={profitDisplay ?? 0}
+          change={kpis.profitAvailable ? kpis.profit.change : undefined}
+          direction={kpis.profitAvailable ? kpis.profit.direction : undefined}
+          comparisonLabel={
+            kpis.profitAvailable ? comparisonLabel : "Add product & shipping costs"
+          }
           accent="profit"
+          format={kpis.profitAvailable ? "currency" : "text"}
+          displayOverride={kpis.profitAvailable ? undefined : "N/A"}
         />
       </div>
       <div className="admin-dash__kpi-row admin-dash__kpi-row--secondary">
@@ -66,7 +88,7 @@ export default function KpiCardGrid({ kpis, productSummary, customerSummary, com
         <KpiCard
           label="Customers"
           value={customerSummary.totalCustomers}
-          comparisonLabel={`${customerSummary.newCustomers} new`}
+          comparisonLabel={`${customerSummary.periodCustomers} active in period`}
           accent="customers"
           format="number"
         />

@@ -2,10 +2,11 @@ import { formatCurrency } from "../dashboardAnalytics";
 
 export default function SalesOverviewWidget({ metrics }) {
   const items = [
-    { label: "Revenue", value: formatCurrency(metrics.revenue), accent: "revenue" },
-    { label: "Orders", value: metrics.orderCount, accent: "orders" },
-    { label: "Average Order", value: formatCurrency(metrics.avgOrderValue), accent: "avg" },
-    { label: "Items Sold", value: metrics.itemsSold, accent: "items" },
+    { label: "Recognized revenue", value: formatCurrency(metrics.revenue), accent: "revenue" },
+    { label: "Paid orders", value: metrics.orderCount, accent: "orders" },
+    { label: "Average order", value: formatCurrency(metrics.avgOrderValue), accent: "avg" },
+    { label: "Items sold", value: metrics.itemsSold, accent: "items" },
+    { label: "Delivered & paid", value: metrics.completedOrderCount ?? 0, accent: "completed" },
   ];
 
   return (

@@ -1,31 +1,18 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import DateRangeFilter from "./components/DateRangeFilter";
 import SectionNav from "./components/SectionNav";
 import KpiCardGrid from "./components/KpiCardGrid";
 import SalesOverviewWidget from "./components/SalesOverviewWidget";
 import OrderStatusWidget from "./components/OrderStatusWidget";
+import PaymentOverviewWidget from "./components/PaymentOverviewWidget";
 import { SalesTrendChart } from "./components/DashboardCharts";
 import RecentOrdersTable from "./components/RecentOrdersTable";
 import TopSellingProductsWidget from "./components/TopSellingProductsWidget";
 import InventoryOverviewWidget from "./components/InventoryOverviewWidget";
 import CustomerInsightsWidget from "./components/CustomerInsightsWidget";
 import CategoryPerformanceWidget from "./components/CategoryPerformanceWidget";
-import {
-  buildKpiComparisons,
-  buildOrderStatusChart,
-  buildRecentOrders,
-  buildSalesTrendComparison,
-  buildTopCategories,
-  buildTopProducts,
-  computeCustomerSummary,
-  computeOrderSummary,
-  computeProductSummary,
-  getComparisonLabel,
-  getDateRange,
-  getLowStockProducts,
-} from "./dashboardAnalytics";
-import { getDashboardSampleData } from "./dashboardSampleData";
+import useDashboard from "./useDashboard";
 
 export default function AdminDashboardHome() {
   const [datePreset, setDatePreset] = useState("today");
@@ -33,73 +20,52 @@ export default function AdminDashboardHome() {
   const [customEnd, setCustomEnd] = useState("");
   const [chartMetric, setChartMetric] = useState("revenue");
   const [section, setSection] = useState("overview");
-  const [loading, setLoading] = useState(true);
-  const [orders, setOrders] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [catData, setCatData] = useState({ categoryList: [] });
-  const [totalCustomers, setTotalCustomers] = useState(0);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    setLoading(true);
-    const timer = setTimeout(() => {
-      const sample = getDashboardSampleData();
-      setOrders(sample.orders);
-      setProducts(sample.products);
-      setCatData(sample.catData);
-      setTotalCustomers(sample.totalCustomers);
-      setLoading(false);
-    }, 350);
-    return () => clearTimeout(timer);
-  }, []);
+  const { data, loading, loadError } = useDashboard({
+    preset: datePreset,
+    customStart,
+    customEnd,
+    metric: chartMetric,
+  });
 
-  const dateRange = useMemo(
-    () => getDateRange(datePreset, customStart, customEnd),
-    [datePreset, customStart, customEnd]
-  );
-
-  const comparisonLabel = useMemo(() => getComparisonLabel(datePreset), [datePreset]);
-
-  const kpis = useMemo(
-    () => buildKpiComparisons(orders, datePreset, customStart, customEnd),
-    [orders, datePreset, customStart, customEnd]
-  );
-
-  const orderSummary = useMemo(
-    () => computeOrderSummary(orders, dateRange.start, dateRange.end),
-    [orders, dateRange]
-  );
-
-  const productSummary = useMemo(() => computeProductSummary(products), [products]);
-
-  const customerSummary = useMemo(
-    () => computeCustomerSummary(orders, totalCustomers, dateRange.start, dateRange.end),
-    [orders, totalCustomers, dateRange]
-  );
-
-  const orderStatusData = useMemo(() => buildOrderStatusChart(orderSummary), [orderSummary]);
-
-  const salesTrendData = useMemo(
-    () => buildSalesTrendComparison(orders, chartMetric),
-    [orders, chartMetric]
-  );
-
-  const recentOrders = useMemo(
-    () => buildRecentOrders(orders, 5, dateRange.start, dateRange.end),
-    [orders, dateRange]
-  );
-
-  const topProducts = useMemo(
-    () => buildTopProducts(orders, products, 5, dateRange.start, dateRange.end),
-    [orders, products, dateRange]
-  );
-
-  const topCategories = useMemo(
-    () => buildTopCategories(orders, catData, 5, dateRange.start, dateRange.end),
-    [orders, catData, dateRange]
-  );
-
-  const lowStockProducts = useMemo(() => getLowStockProducts(products, 5), [products]);
+  const comparisonLabel = data?.comparisonLabel || "previous period";
+  const kpis = data?.kpis || {
+    revenue: { value: 0, change: 0, direction: "flat" },
+    orders: { value: 0, change: 0, direction: "flat" },
+    profit: { value: 0, change: 0, direction: "flat" },
+    profitAvailable: false,
+    profitLabel: "Profit",
+    period: {
+      revenue: 0,
+      orderCount: 0,
+      avgOrderValue: 0,
+      itemsSold: 0,
+      completedOrderCount: 0,
+      pendingPaymentCount: 0,
+    },
+  };
+  const orderSummary = data?.orderSummary || {
+    total: 0,
+    pending: 0,
+    processing: 0,
+    completed: 0,
+    cancelled: 0,
+    returned: 0,
+  };
+  const productSummary = data?.productSummary || {
+    total: 0,
+    active: 0,
+    available: 0,
+    lowStock: 0,
+    outOfStock: 0,
+    draft: 0,
+  };
+  const customerSummary = data?.customerSummary || {
+    totalCustomers: 0,
+    newCustomers: 0,
+    returningRate: 0,
+    periodCustomers: 0,
+  };
 
   const handleCustomDateChange = ({ start, end }) => {
     if (start !== undefined) setCustomStart(start);
@@ -109,7 +75,7 @@ export default function AdminDashboardHome() {
   const showSales = section === "overview" || section === "sales";
   const showProducts = section === "overview" || section === "products";
 
-  if (loading) {
+  if (loading && !data) {
     return (
       <div className="admin-dash__loading">
         <div className="admin-dash__loading-spinner" />
@@ -123,7 +89,7 @@ export default function AdminDashboardHome() {
       <AdminPageHeader
         eyebrow="CraftzLK Admin"
         title="Dashboard Overview"
-        subtitle="Monitor sales, orders, products, and customers"
+        subtitle="Live sales, orders, products, and customer insights"
         action={
           <DateRangeFilter
             value={datePreset}
@@ -135,6 +101,12 @@ export default function AdminDashboardHome() {
         }
       />
 
+      {loadError && (
+        <p className="admin-dash__sample-banner admin-dash__sample-banner--report">
+          Could not load dashboard data. Check your connection and try again.
+        </p>
+      )}
+
       <SectionNav active={section} onChange={setSection} />
 
       <div className="admin-dash__dashboard-stack">
@@ -143,41 +115,53 @@ export default function AdminDashboardHome() {
           productSummary={productSummary}
           customerSummary={customerSummary}
           comparisonLabel={comparisonLabel}
-          lowStockProducts={lowStockProducts}
+          lowStockProducts={data?.lowStockProducts || []}
         />
 
         {showSales && (
           <>
             <div className="admin-dash__dashboard-row admin-dash__dashboard-row--2">
               <SalesOverviewWidget metrics={kpis.period} />
-              <OrderStatusWidget orderSummary={orderSummary} chartData={orderStatusData} />
+              <OrderStatusWidget
+                orderSummary={orderSummary}
+                chartData={data?.orderStatusChart || []}
+              />
+            </div>
+
+            <div className="admin-dash__dashboard-row admin-dash__dashboard-row--2">
+              <PaymentOverviewWidget metrics={kpis.period} />
+              <TopSellingProductsWidget products={data?.topProducts || []} />
             </div>
 
             <SalesTrendChart
-              data={salesTrendData}
+              data={data?.salesTrend || []}
               metric={chartMetric}
               onMetricChange={setChartMetric}
+              profitMetricLabel={kpis.profitLabel || "Profit"}
             />
 
-            <div className="admin-dash__dashboard-row admin-dash__dashboard-row--2">
-              <RecentOrdersTable orders={recentOrders} />
-              <TopSellingProductsWidget products={topProducts} />
-            </div>
+            <RecentOrdersTable orders={data?.recentOrders || []} />
           </>
         )}
 
         {showProducts && (
           <div className="admin-dash__dashboard-row admin-dash__dashboard-row--2">
             <InventoryOverviewWidget productSummary={productSummary} />
-            {section === "overview" && <CustomerInsightsWidget customerSummary={customerSummary} />}
-            {section === "products" && <CategoryPerformanceWidget categories={topCategories} />}
+            {section === "overview" && (
+              <CustomerInsightsWidget customerSummary={customerSummary} />
+            )}
+            {section === "products" && (
+              <CategoryPerformanceWidget categories={data?.topCategories || []} />
+            )}
           </div>
         )}
 
-        {section === "customers" && <CustomerInsightsWidget customerSummary={customerSummary} />}
+        {section === "customers" && (
+          <CustomerInsightsWidget customerSummary={customerSummary} />
+        )}
 
         {(section === "overview" || section === "customers") && (
-          <CategoryPerformanceWidget categories={topCategories} />
+          <CategoryPerformanceWidget categories={data?.topCategories || []} />
         )}
       </div>
     </>

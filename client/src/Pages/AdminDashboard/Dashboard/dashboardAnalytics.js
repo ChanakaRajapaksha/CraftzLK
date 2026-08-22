@@ -603,8 +603,13 @@ export function formatPercentChange(change) {
 
 export function getStatusBadgeClass(status) {
   const s = normalizeStatus(status);
+  if (s === "paid") return "completed";
+  if (s === "failed") return "cancelled";
+  if (s === "refunded") return "returned";
   if (s.includes("complete") || s.includes("deliver")) return "completed";
-  if (s.includes("process")) return "processing";
+  if (s.includes("process") || s === "confirmed" || s === "packed" || s === "shipped") {
+    return "processing";
+  }
   if (s.includes("cancel")) return "cancelled";
   if (s.includes("return")) return "returned";
   return "pending";

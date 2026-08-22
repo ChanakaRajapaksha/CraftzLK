@@ -1653,6 +1653,38 @@
   }
 }
 
+@media (min-width: 1100px) {
+  .admin-dash__widget--sales-overview .admin-dash__sales-overview-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.admin-dash__widget-desc {
+  margin: 0.25rem 0 0;
+  font-size: 0.82rem;
+  color: #9a8b78;
+}
+
+.admin-dash__status-badge--inline {
+  margin-left: 0.35rem;
+}
+
+.admin-dash__sales-metric--completed .admin-dash__sales-metric-value {
+  color: #5a7a5e;
+}
+
+.admin-dash__sales-metric--pending .admin-dash__sales-metric-value {
+  color: #b8860b;
+}
+
+.admin-dash__sales-metric--failed .admin-dash__sales-metric-value {
+  color: #c45c5c;
+}
+
+.admin-dash__sales-metric--refunded .admin-dash__sales-metric-value {
+  color: #9a8b78;
+}
+
 .admin-dash__sales-metric {
   display: flex;
   flex-direction: column;

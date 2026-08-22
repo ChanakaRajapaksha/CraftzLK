@@ -78,8 +78,32 @@ function parseAmount(value) {
   return Number.isFinite(n) ? n : 0;
 }
 
+function getPreviousDateRange(preset, customStart, customEnd) {
+  const current = getDateRange(preset, customStart, customEnd);
+  const duration = current.end.getTime() - current.start.getTime();
+  const prevEnd = new Date(current.start.getTime() - 1);
+  const prevStart = new Date(prevEnd.getTime() - duration);
+  return { start: prevStart, end: prevEnd };
+}
+
+function getComparisonLabel(preset) {
+  const labels = {
+    today: 'yesterday',
+    yesterday: 'the day before',
+    last7days: 'previous 7 days',
+    thisWeek: 'last week',
+    thisMonth: 'last month',
+    lastMonth: 'previous month',
+    thisYear: 'last year',
+    custom: 'previous period',
+  };
+  return labels[preset] || 'previous period';
+}
+
 module.exports = {
   getDateRange,
+  getPreviousDateRange,
+  getComparisonLabel,
   parseOrderDate,
   filterOrdersInRange,
   parseAmount,
