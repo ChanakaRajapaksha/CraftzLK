@@ -2,6 +2,7 @@ import { useState, useEffect, useContext, useLayoutEffect, useMemo, useCallback 
 import { Outlet } from "react-router-dom";
 import AdminSidebar from "./AdminSidebar";
 import AdminTopBar from "./AdminTopBar";
+import AdminRealtimeAlerts from "./AdminRealtimeAlerts";
 import AdminThemeContext from "./AdminThemeContext";
 import { MyContext } from "../../App";
 import { fetchDataFromApi } from "../../utils/api";
@@ -72,6 +73,7 @@ export default function AdminLayout() {
       <div className={`admin-dash${isAdminDarkTheme(theme) ? " admin-dash--dark" : ""}`}>
         <AdminSidebar />
         <main className="admin-dash__main">
+          <AdminRealtimeAlerts />
           <AdminTopBar />
           <div className="admin-dash__page-content">
             <Outlet context={adminContextValue} />

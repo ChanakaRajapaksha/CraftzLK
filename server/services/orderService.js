@@ -5,6 +5,7 @@ const customerService = require('./customerService');
 const couponsService = require('./couponsService');
 const paymentService = require('./paymentService');
 const stockService = require('./stockService');
+const adminNotificationsService = require('./adminNotificationsService');
 const { isCostAvailable } = require('../utils/reportProfit');
 
 const ORDER_TO_PAYMENT_STATUS = {
@@ -242,6 +243,13 @@ class OrderService {
       userId: userid,
       paymentMethod,
     });
+
+    try {
+      await adminNotificationsService.notifyNewOrder(savedOrder.toObject?.() || savedOrder);
+    } catch (error) {
+      console.error('[orderService.create] Failed to notify admin of new order:', error.message);
+    }
+
     return savedOrder;
   }
 

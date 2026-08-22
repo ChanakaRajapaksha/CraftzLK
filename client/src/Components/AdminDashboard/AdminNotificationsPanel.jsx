@@ -135,7 +135,14 @@ export default function AdminNotificationsPanel({ open, onClose, onUnreadChange 
   };
 
   const openNotification = async (item) => {
-    const targetLink = item.link || "/dashboard/reviews";
+    const fallbackLinks = {
+      order: "/dashboard/orders",
+      review: "/dashboard/reviews",
+      payment: "/dashboard/payments/transactions",
+      customer: "/dashboard/customers",
+      stock: "/dashboard/products",
+    };
+    const targetLink = item.link || fallbackLinks[item.type] || "/dashboard";
 
     setNotifications((prev) => {
       const next = prev.filter((entry) => entry.id !== item.id);
