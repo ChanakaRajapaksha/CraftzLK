@@ -194,7 +194,8 @@ export default function ShippingMethodList() {
                 <thead>
                   <tr>
                     <th>Name</th>
-                    <th>Cost</th>
+                    <th>Customer cost</th>
+                    <th>Actual shipping cost</th>
                     <th>Delivery time</th>
                     <th>Shipping zones</th>
                     <th>Status</th>
@@ -204,7 +205,7 @@ export default function ShippingMethodList() {
                 <tbody>
                   {slice.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="admin-dash__table-empty">
+                      <td colSpan={7} className="admin-dash__table-empty">
                         {emptyMessage}
                       </td>
                     </tr>
@@ -216,6 +217,7 @@ export default function ShippingMethodList() {
                         <tr key={id}>
                           <td><strong>{item.name}</strong></td>
                           <td><strong>{formatCost(item.cost)}</strong></td>
+                          <td>{formatCost(item.actualShippingCost)}</td>
                           <td>{item.deliveryTime || "—"}</td>
                           <td className="admin-dash__shipping-zones-cell">{formatZones(item.zones)}</td>
                           <td>

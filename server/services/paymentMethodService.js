@@ -1,6 +1,5 @@
 const { PaymentMethod } = require('../models/paymentMethod');
 const { Payment } = require('../models/payment');
-const { Orders } = require('../models/orders');
 
 const DEFAULT_METHODS = [
   {
@@ -108,48 +107,21 @@ class PaymentMethodService {
   }
 
   async getTransactions() {
-    const [payments, orders] = await Promise.all([
-      Payment.find().sort({ createdAt: -1 }),
-      Orders.find().sort({ date: -1 }),
-    ]);
+    const payments = await Payment.find().sort({ createdAt: -1 });
 
-    const paymentOrderIds = new Set(payments.map((item) => String(item.orderId)));
-    const entries = [];
-
-    payments.forEach((item) => {
-      entries.push({
+    return payments.map((item) =>
+      mapTransaction({
         _id: item._id,
         transactionId: item.paymentId,
         orderId: item.orderId,
-        orderLabel: item.orderId,
+        orderLabel: item.orderNumber || item.orderId,
         amount: item.amount,
         currency: item.currency,
         status: item.status,
         paymentMethod: item.paymentMethod,
         date: item.createdAt,
-      });
-    });
-
-    orders.forEach((order) => {
-      const orderKey = order.orderNumber || order.paymentId || String(order._id);
-      if (paymentOrderIds.has(String(orderKey))) return;
-
-      entries.push({
-        _id: order._id,
-        transactionId: order.paymentId || orderKey,
-        orderId: orderKey,
-        orderLabel: order.orderNumber || orderKey,
-        amount: Number(order.total ?? order.amount ?? 0),
-        currency: 'LKR',
-        status: order.paymentStatus || 'pending',
-        paymentMethod: order.paymentMethod,
-        date: order.date,
-      });
-    });
-
-    entries.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    return entries.map(mapTransaction);
+      })
+    );
   }
 }
 

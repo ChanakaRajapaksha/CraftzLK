@@ -459,6 +459,7 @@ const Checkout = () => {
           productId: item.productId,
           productTitle: item.productTitle,
           variant: item.variantLabel || "",
+          variantSku: item.variantSku || "",
           quantity: item.quantity || 1,
           price: parsePriceValue(item.price),
           image: item.image,
@@ -471,6 +472,7 @@ const Checkout = () => {
         shipping,
         discount,
         couponCode: appliedCoupon?.code || "",
+        shippingMethodId: selectedShippingMethodId || "",
       });
 
       if (!res?.order || res?.success === false) {

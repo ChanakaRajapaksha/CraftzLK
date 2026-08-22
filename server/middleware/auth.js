@@ -11,6 +11,7 @@ const PUBLIC_API_ROUTES = new Set([
   'POST /api/auth/request-password-reset',
   'POST /api/auth/reset-password',
   'POST /api/coupons/validate',
+  'POST /api/payment/notify',
 ]);
 
 function isPublicApiRoute(req) {

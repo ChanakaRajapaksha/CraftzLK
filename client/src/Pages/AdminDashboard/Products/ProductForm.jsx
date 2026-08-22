@@ -537,6 +537,19 @@ export default function ProductForm({
                 aria-required="true"
               />
             </Field>
+            <Field label="Product Cost (Rs)" htmlFor="productCost" size="short">
+              <input
+                className="admin-dash__input"
+                id="productCost"
+                name="productCost"
+                type="number"
+                min="0"
+                step="0.01"
+                value={formFields.productCost}
+                onChange={changeInput}
+                placeholder="0.00"
+              />
+            </Field>
             <Field label="Compare Price (Rs)" htmlFor="oldPrice" size="short">
               <input className="admin-dash__input" id="oldPrice" name="oldPrice" type="number" value={formFields.oldPrice} onChange={changeInput} />
             </Field>

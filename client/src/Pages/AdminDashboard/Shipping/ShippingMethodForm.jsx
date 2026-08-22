@@ -69,7 +69,7 @@ export default function ShippingMethodForm({
               placeholder="Standard Delivery"
             />
           </Field>
-          <Field label="Cost (Rs.)" htmlFor="cost">
+          <Field label="Customer cost (Rs.)" htmlFor="cost">
             <input
               className="admin-dash__input"
               id="cost"
@@ -79,6 +79,18 @@ export default function ShippingMethodForm({
               value={formFields.cost}
               onChange={changeInput}
               placeholder="350"
+            />
+          </Field>
+          <Field label="Actual shipping cost (Rs.)" htmlFor="actualShippingCost">
+            <input
+              className="admin-dash__input"
+              id="actualShippingCost"
+              name="actualShippingCost"
+              type="number"
+              min="0"
+              value={formFields.actualShippingCost}
+              onChange={changeInput}
+              placeholder="250"
             />
           </Field>
           <Field label="Delivery time" htmlFor="deliveryTime">

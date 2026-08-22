@@ -1,4 +1,5 @@
 const { ShippingMethod } = require('../models/shippingMethod');
+const { parseOptionalCost } = require('../utils/reportProfit');
 
 class ShippingMethodsService {
   mapMethod(doc) {
@@ -7,6 +8,7 @@ class ShippingMethodsService {
       id: doc._id,
       name: doc.name,
       cost: doc.cost ?? 0,
+      actualShippingCost: doc.actualShippingCost ?? null,
       deliveryTime: doc.deliveryTime || '',
       zones: doc.zones || [],
       status: doc.status || 'active',
@@ -30,6 +32,7 @@ class ShippingMethodsService {
     const entry = new ShippingMethod({
       name: body.name,
       cost: Number(body.cost) || 0,
+      actualShippingCost: parseOptionalCost(body.actualShippingCost),
       deliveryTime: body.deliveryTime || '',
       zones: body.zones || [],
       status: body.status || 'active',
@@ -44,6 +47,7 @@ class ShippingMethodsService {
       {
         name: body.name,
         cost: Number(body.cost) || 0,
+        actualShippingCost: parseOptionalCost(body.actualShippingCost),
         deliveryTime: body.deliveryTime || '',
         zones: body.zones || [],
         status: body.status || 'active',

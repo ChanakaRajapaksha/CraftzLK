@@ -23,12 +23,16 @@ const paymentSchema = mongoose.Schema({
   status: {
     type: String,
     required: true,
-    enum: ["pending", "success", "failed", "cancelled", "chargedback"],
+    enum: ["pending", "success", "failed", "cancelled", "chargedback", "refunded"],
     default: "pending",
   },
   userId: {
     type: String,
     required: true,
+  },
+  orderNumber: {
+    type: String,
+    default: "",
   },
   paymentMethod: {
     type: String,

@@ -1309,6 +1309,10 @@
   position: relative;
 }
 
+.admin-dash__date-filter--open {
+  z-index: 120;
+}
+
 .admin-dash__date-filter--active .admin-dash__date-filter-btn {
   border-color: #b8860b;
   background: rgba(201, 169, 97, 0.1);
@@ -1345,7 +1349,7 @@
   position: absolute;
   top: calc(100% + 0.5rem);
   right: 0;
-  z-index: 50;
+  z-index: 130;
   min-width: 11rem;
   padding: 0.5rem;
   border-radius: 14px;
@@ -4334,6 +4338,9 @@
   gap: 1rem;
   margin-bottom: 0;
   padding: 1.25rem 1.35rem;
+  position: relative;
+  z-index: 5;
+  overflow: visible;
 }
 
 .admin-dash__sample-banner--report {
@@ -4343,6 +4350,7 @@
 .admin-dash__report-filters {
   margin-bottom: 0;
   gap: 0.75rem 1rem;
+  overflow: visible;
 }
 
 .admin-dash__stats--report {
@@ -4351,6 +4359,8 @@
 
 .admin-dash__report-page .admin-dash__charts-row {
   gap: 1.25rem;
+  position: relative;
+  z-index: 1;
 }
 
 .admin-dash__charts-row > .admin-dash__panel,
@@ -4382,6 +4392,50 @@
 .admin-dash__table--reports td:nth-child(3),
 .admin-dash__table--reports th:nth-child(3) {
   white-space: nowrap;
+}
+
+.admin-dash__chart--rank {
+  min-height: 220px;
+  max-height: 380px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.admin-dash__chart-meta {
+  font-size: 0.78rem;
+  color: #9a8b78;
+  white-space: nowrap;
+}
+
+.admin-dash__rank-table-scroll {
+  max-height: 320px;
+  overflow: auto;
+}
+
+.admin-dash__table--rank td:first-child,
+.admin-dash__table--rank th:first-child {
+  width: 2.5rem;
+  color: #9a8b78;
+}
+
+.admin-dash__table--rank td:nth-child(2) {
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-dash__table--rank td:nth-child(3),
+.admin-dash__table--rank th:nth-child(3),
+.admin-dash__table--rank td:nth-child(4),
+.admin-dash__table--rank th:nth-child(4) {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.admin-dash__table--rank th:nth-child(3),
+.admin-dash__table--rank th:nth-child(4) {
+  text-align: right;
 }
 
 /* ——— CMS pages ——— */

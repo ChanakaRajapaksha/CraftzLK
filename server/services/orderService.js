@@ -1,6 +1,18 @@
 const { Orders } = require('../models/orders');
+const { Payment } = require('../models/payment');
+const { ShippingMethod } = require('../models/shippingMethod');
 const customerService = require('./customerService');
 const couponsService = require('./couponsService');
+const paymentService = require('./paymentService');
+const stockService = require('./stockService');
+const { isCostAvailable } = require('../utils/reportProfit');
+
+const ORDER_TO_PAYMENT_STATUS = {
+  paid: 'success',
+  pending: 'pending',
+  failed: 'failed',
+  refunded: 'refunded',
+};
 
 function resolveUserId(authUser, bodyUserId) {
   const id = authUser?._id || authUser?.id || bodyUserId;
@@ -16,6 +28,7 @@ function normalizeProducts(products = []) {
     productId: String(item.productId || ''),
     productTitle: item.productTitle || '',
     variant: String(item.variant || item.variantLabel || ''),
+    variantSku: String(item.variantSku || ''),
     quantity: Number(item.quantity) || 1,
     price: Number(item.price) || 0,
     image: item.image || '',
@@ -153,6 +166,28 @@ class OrderService {
 
     const computedAmount = Math.round(Math.max(0, subtotal + shipping - discount) * 100) / 100;
 
+    await stockService.validateOrderStock(products);
+
+    let shippingMethodId = String(body.shippingMethodId || '').trim();
+    let actualShippingCost = null;
+
+    if (shippingMethodId) {
+      const method = await ShippingMethod.findById(shippingMethodId).lean();
+      if (method && isCostAvailable(method.actualShippingCost)) {
+        actualShippingCost = Number(method.actualShippingCost);
+      }
+    } else if (isCostAvailable(body.actualShippingCost)) {
+      actualShippingCost = Number(body.actualShippingCost);
+    } else {
+      const method = await ShippingMethod.findOne({ cost: shipping, status: 'active' }).lean();
+      if (method) {
+        shippingMethodId = String(method._id);
+        if (isCostAvailable(method.actualShippingCost)) {
+          actualShippingCost = Number(method.actualShippingCost);
+        }
+      }
+    }
+
     const paymentMethod = body.paymentMethod || 'cod';
     const paymentStatus = resolvePaymentStatus(paymentMethod);
     const status = 'placed';
@@ -182,11 +217,31 @@ class OrderService {
       couponCode,
       tax: Number(body.tax) || 0,
       shipping,
+      shippingMethodId,
+      actualShippingCost,
       date: body.date ? new Date(body.date) : now,
     });
 
     const savedOrder = await order.save();
+
+    try {
+      await stockService.deductForOrder(savedOrder);
+      savedOrder.stockDeducted = true;
+      await savedOrder.save();
+    } catch (error) {
+      await Orders.findByIdAndDelete(savedOrder._id);
+      throw error;
+    }
+
     await customerService.upsertFromOrder(savedOrder);
+    await paymentService.createForOrder({
+      orderId: savedOrder._id,
+      orderNumber: savedOrder.orderNumber,
+      paymentId: savedOrder.paymentId,
+      amount: computedAmount,
+      userId: userid,
+      paymentMethod,
+    });
     return savedOrder;
   }
 
@@ -197,6 +252,7 @@ class OrderService {
 
   async update(id, body, authUser) {
     const order = await this.getById(id, authUser);
+    const previousStatus = order.status;
 
     const nextStatus = body.status ?? body.orderStatus ?? order.status;
     if (nextStatus && nextStatus !== order.status) {
@@ -205,7 +261,23 @@ class OrderService {
       order.status = nextStatus;
     }
 
-    if (body.paymentStatus !== undefined) order.paymentStatus = body.paymentStatus;
+    if (
+      nextStatus === 'cancelled' &&
+      previousStatus !== 'cancelled' &&
+      order.stockDeducted &&
+      !order.stockRestored
+    ) {
+      await stockService.restoreForOrder(order);
+      order.stockRestored = true;
+    }
+
+    if (body.paymentStatus !== undefined) {
+      order.paymentStatus = body.paymentStatus;
+      await Payment.findOneAndUpdate(
+        { orderId: String(order._id) },
+        { status: ORDER_TO_PAYMENT_STATUS[body.paymentStatus] || 'pending' }
+      );
+    }
     if (body.name !== undefined) order.name = body.name;
     if (body.phoneNumber !== undefined) order.phoneNumber = body.phoneNumber;
     if (body.address !== undefined) order.address = body.address;

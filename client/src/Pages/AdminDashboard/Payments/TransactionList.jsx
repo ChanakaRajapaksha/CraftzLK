@@ -1,57 +1,58 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaEye } from "react-icons/fa";
 import { MdPayments, MdReceiptLong } from "react-icons/md";
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import AdminPagination from "../../../Components/AdminDashboard/AdminPagination";
+import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
 import { fetchDataFromApi } from "../../../utils/api";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
-import { getTransactionSampleData } from "./paymentListUtils";
 import {
   formatTransactionAmount,
   formatTransactionDate,
   getTransactionStatusBadge,
   TRANSACTION_STATUSES,
 } from "./paymentUtils";
+import { sumTransactionVolume } from "../../../utils/orderFinancialRules";
 
 export default function TransactionList() {
   const [transactions, setTransactions] = useState([]);
-  const [usingSampleData, setUsingSampleData] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const applySample = () => {
-    setTransactions(getTransactionSampleData());
-    setUsingSampleData(true);
-  };
+  const loadTransactions = useCallback(() => {
+    setLoading(true);
+    setLoadError(false);
 
-  const loadTransactions = () => {
     fetchDataFromApi("/api/payments/transactions")
       .then((res) => {
-        const list = res?.transactionList || [];
-        if (list.length) {
-          setTransactions(list);
-          setUsingSampleData(false);
-        } else {
-          applySample();
+        if (res?.success === false) {
+          throw new Error(res?.message || "Failed to load transactions.");
         }
+        setTransactions(Array.isArray(res?.transactionList) ? res.transactionList : []);
       })
-      .catch(() => applySample());
-  };
+      .catch(() => {
+        setTransactions([]);
+        setLoadError(true);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     loadTransactions();
-  }, []);
+  }, [loadTransactions]);
 
   const stats = useMemo(() => {
     const successCount = transactions.filter((item) => item.status === "success").length;
     const pendingCount = transactions.filter((item) => item.status === "pending").length;
-    const volume = transactions.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    const volume = sumTransactionVolume(transactions);
     return { total: transactions.length, successCount, pendingCount, volume };
   }, [transactions]);
 
@@ -80,11 +81,17 @@ export default function TransactionList() {
     }
   }, [page, totalPages]);
 
+  const emptyMessage = loadError
+    ? "Unable to load transactions. Please try again."
+    : filtered.length === 0 && transactions.length === 0
+      ? "No payment transactions yet. Transactions are created when customers place orders."
+      : "No transactions match your filters.";
+
   return (
     <>
       <AdminPageHeader
         title="Transactions"
-        subtitle="View payment activity across orders and gateways."
+        subtitle="View payment activity recorded for customer orders."
         breadcrumbs={[
           { label: "Payment Management", to: `${ADMIN_BASE}/payments/methods` },
           { label: "Transactions" },
@@ -114,12 +121,6 @@ export default function TransactionList() {
       </div>
 
       <section className="admin-dash__panel">
-        {usingSampleData && (
-          <p className="admin-dash__sample-banner">
-            Showing sample transactions — live data appears when orders and payments are recorded.
-          </p>
-        )}
-
         <div className="admin-dash__toolbar admin-dash__toolbar--wrap admin-dash__toolbar--filters">
           <input
             className="admin-dash__input"
@@ -148,72 +149,76 @@ export default function TransactionList() {
           </select>
         </div>
 
-        <div className="admin-dash__data-table">
-          <div className="admin-dash__table-wrap admin-dash__table-wrap--modern">
-            <table className="admin-dash__table admin-dash__table--modern admin-dash__table--payments">
-              <thead>
-                <tr>
-                  <th>Transaction ID</th>
-                  <th>Order</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {slice.length === 0 ? (
+        {loading ? (
+          <AdminLoadingState message="Loading transactions…" />
+        ) : (
+          <div className="admin-dash__data-table">
+            <div className="admin-dash__table-wrap admin-dash__table-wrap--modern">
+              <table className="admin-dash__table admin-dash__table--modern admin-dash__table--payments">
+                <thead>
                   <tr>
-                    <td colSpan={6} className="admin-dash__table-empty">
-                      No transactions match your filters.
-                    </td>
+                    <th>Transaction ID</th>
+                    <th>Order</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
                   </tr>
-                ) : (
-                  slice.map((item) => {
-                    const id = item._id || item.id;
-                    const statusBadge = getTransactionStatusBadge(item.status);
-                    return (
-                      <tr key={id}>
-                        <td><strong>{item.transactionId || "—"}</strong></td>
-                        <td>{item.orderLabel || item.orderId || "—"}</td>
-                        <td><strong>{formatTransactionAmount(item.amount, item.currency)}</strong></td>
-                        <td>
-                          <span className={statusBadge.className}>{statusBadge.label}</span>
-                        </td>
-                        <td>{formatTransactionDate(item.date)}</td>
-                        <td>
-                          <div className="admin-dash__actions">
-                            <Link
-                              to={`${ADMIN_BASE}/orders`}
-                              className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
-                              title="View orders"
-                            >
-                              <FaEye />
-                            </Link>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {slice.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="admin-dash__table-empty">
+                        {emptyMessage}
+                      </td>
+                    </tr>
+                  ) : (
+                    slice.map((item) => {
+                      const id = item._id || item.id;
+                      const statusBadge = getTransactionStatusBadge(item.status);
+                      return (
+                        <tr key={id}>
+                          <td><strong>{item.transactionId || "—"}</strong></td>
+                          <td>{item.orderLabel || item.orderId || "—"}</td>
+                          <td><strong>{formatTransactionAmount(item.amount, item.currency)}</strong></td>
+                          <td>
+                            <span className={statusBadge.className}>{statusBadge.label}</span>
+                          </td>
+                          <td>{formatTransactionDate(item.date)}</td>
+                          <td>
+                            <div className="admin-dash__actions">
+                              <Link
+                                to={`${ADMIN_BASE}/orders`}
+                                className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
+                                title="View orders"
+                              >
+                                <FaEye />
+                              </Link>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-          <AdminPagination
-            page={page}
-            totalPages={totalPages}
-            totalItems={filtered.length}
-            itemLabel="transactions"
-            rowsPerPage={rowsPerPage}
-            rowsPerPageOptions={[10, 25, 50]}
-            onPageChange={setPage}
-            onRowsPerPageChange={(value) => {
-              setRowsPerPage(value);
-              setPage(0);
-            }}
-          />
-        </div>
+            <AdminPagination
+              page={page}
+              totalPages={totalPages}
+              totalItems={filtered.length}
+              itemLabel="transactions"
+              rowsPerPage={rowsPerPage}
+              rowsPerPageOptions={[10, 25, 50]}
+              onPageChange={setPage}
+              onRowsPerPageChange={(value) => {
+                setRowsPerPage(value);
+                setPage(0);
+              }}
+            />
+          </div>
+        )}
       </section>
     </>
   );

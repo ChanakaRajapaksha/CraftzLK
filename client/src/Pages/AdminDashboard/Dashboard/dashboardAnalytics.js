@@ -1,3 +1,10 @@
+import {
+  filterRevenueEligibleOrders,
+  isRevenueEligibleOrder,
+  isCompletedOrder,
+  sumOrderRevenue,
+} from "../../../utils/orderFinancialRules";
+
 const LOW_STOCK_THRESHOLD = 5;
 const MS_DAY = 86400000;
 const PROFIT_MARGIN = 0.386;
@@ -113,7 +120,7 @@ export function getComparisonLabel(preset) {
 export function sumOrdersInRange(orders, start, end) {
   return orders.reduce((sum, order) => {
     const d = parseOrderDate(order);
-    if (!d || !isInRange(d, start, end)) return sum;
+    if (!d || !isInRange(d, start, end) || !isRevenueEligibleOrder(order)) return sum;
     return sum + parseAmount(order.amount);
   }, 0);
 }
@@ -126,18 +133,22 @@ export function filterOrdersInRange(orders, start, end) {
 }
 
 export function countItemsSold(orders, start, end) {
-  return filterOrdersInRange(orders, start, end).reduce((sum, order) => {
-    const items = (order.products || []).reduce((s, item) => s + Number(item.quantity || 1), 0);
-    return sum + items;
-  }, 0);
+  return filterOrdersInRange(orders, start, end)
+    .filter(isRevenueEligibleOrder)
+    .reduce((sum, order) => {
+      const items = (order.products || []).reduce((s, item) => s + Number(item.quantity || 1), 0);
+      return sum + items;
+    }, 0);
 }
 
 export function countUniqueCustomers(orders, start, end) {
   const keys = new Set();
-  filterOrdersInRange(orders, start, end).forEach((order) => {
-    const key = order.userid || order.userId || order.email;
-    if (key) keys.add(key);
-  });
+  filterOrdersInRange(orders, start, end)
+    .filter(isRevenueEligibleOrder)
+    .forEach((order) => {
+      const key = order.userid || order.userId || order.email;
+      if (key) keys.add(key);
+    });
   return keys.size;
 }
 
@@ -146,8 +157,8 @@ export function estimateProfit(revenue) {
 }
 
 export function computePeriodMetrics(orders, start, end) {
-  const filtered = filterOrdersInRange(orders, start, end);
-  const revenue = filtered.reduce((s, o) => s + parseAmount(o.amount), 0);
+  const filtered = filterRevenueEligibleOrders(filterOrdersInRange(orders, start, end));
+  const revenue = sumOrderRevenue(filtered, parseAmount);
   const orderCount = filtered.length;
   const customers = countUniqueCustomers(orders, start, end);
   const itemsSold = countItemsSold(orders, start, end);
@@ -199,8 +210,9 @@ export function computeSalesSummary(orders) {
   const yesterdaySales = sumOrdersInRange(orders, yesterdayStart, yesterdayEnd);
   const weekSales = sumOrdersInRange(orders, weekStart, now);
   const monthSales = sumOrdersInRange(orders, monthStart, now);
-  const totalRevenue = orders.reduce((s, o) => s + parseAmount(o.amount), 0);
-  const avgOrderValue = orders.length ? totalRevenue / orders.length : 0;
+  const totalRevenue = sumOrderRevenue(orders, parseAmount);
+  const eligibleOrders = filterRevenueEligibleOrders(orders);
+  const avgOrderValue = eligibleOrders.length ? totalRevenue / eligibleOrders.length : 0;
 
   return {
     todaySales,
@@ -229,11 +241,12 @@ export function computeOrderSummary(orders, start, end) {
 
   list.forEach((order) => {
     const s = normalizeStatus(order.status);
-    if (s.includes("process")) counts.processing += 1;
-    else if (s.includes("complete") || s.includes("deliver")) counts.completed += 1;
-    else if (s.includes("cancel")) counts.cancelled += 1;
+    if (s.includes("cancel")) counts.cancelled += 1;
     else if (s.includes("return")) counts.returned += 1;
-    else counts.pending += 1;
+    else if (isCompletedOrder(order)) counts.completed += 1;
+    else if (s.includes("process") || s === "confirmed" || s === "packed" || s === "shipped") {
+      counts.processing += 1;
+    } else counts.pending += 1;
   });
 
   return counts;
@@ -273,7 +286,9 @@ export function computeProductSummary(products) {
 }
 
 export function computeCustomerSummary(orders, totalCustomers = 0, start, end) {
-  const rangeOrders = start && end ? filterOrdersInRange(orders, start, end) : orders;
+  const rangeOrders = filterRevenueEligibleOrders(
+    start && end ? filterOrdersInRange(orders, start, end) : orders
+  );
   const customerOrders = new Map();
 
   rangeOrders.forEach((order) => {
@@ -366,11 +381,11 @@ export function buildSalesTrendComparison(orders, metric = "revenue") {
     const lastStart = new Date(lastYear, idx, 1);
     const lastEnd = new Date(lastYear, idx + 1, 0, 23, 59, 59, 999);
 
-    const thisOrders = filterOrdersInRange(orders, thisStart, thisEnd);
-    const lastOrders = filterOrdersInRange(orders, lastStart, lastEnd);
+    const thisOrders = filterRevenueEligibleOrders(filterOrdersInRange(orders, thisStart, thisEnd));
+    const lastOrders = filterRevenueEligibleOrders(filterOrdersInRange(orders, lastStart, lastEnd));
 
-    const thisRevenue = thisOrders.reduce((s, o) => s + parseAmount(o.amount), 0);
-    const lastRevenue = lastOrders.reduce((s, o) => s + parseAmount(o.amount), 0);
+    const thisRevenue = sumOrderRevenue(thisOrders, parseAmount);
+    const lastRevenue = sumOrderRevenue(lastOrders, parseAmount);
 
     if (metric === "orders") {
       return { name, current: thisOrders.length, previous: lastOrders.length };
@@ -393,7 +408,9 @@ export function buildOrderStatusChart(orderSummary) {
 }
 
 export function buildTopProducts(orders, products, limit = 5, start, end) {
-  const orderList = start && end ? filterOrdersInRange(orders, start, end) : orders;
+  const orderList = filterRevenueEligibleOrders(
+    start && end ? filterOrdersInRange(orders, start, end) : orders
+  );
   const qtyMap = new Map();
 
   orderList.forEach((order) => {
@@ -429,7 +446,9 @@ export function buildTopProducts(orders, products, limit = 5, start, end) {
 }
 
 export function buildTopCategories(orders, catData, limit = 5, start, end) {
-  const orderList = start && end ? filterOrdersInRange(orders, start, end) : orders;
+  const orderList = filterRevenueEligibleOrders(
+    start && end ? filterOrdersInRange(orders, start, end) : orders
+  );
   const salesByCat = new Map();
 
   orderList.forEach((order) => {
@@ -463,7 +482,7 @@ export function buildCustomerGrowth(orders) {
   return Array.from({ length: 6 }, (_, i) => {
     const monthDate = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
     const end = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0, 23, 59, 59);
-    const monthOrders = filterOrdersInRange(orders, monthDate, end);
+    const monthOrders = filterRevenueEligibleOrders(filterOrdersInRange(orders, monthDate, end));
     const unique = new Set(
       monthOrders.map((o) => o.userid || o.userId || o.email).filter(Boolean)
     );

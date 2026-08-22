@@ -4,6 +4,7 @@ const shippingMethodSchema = mongoose.Schema(
   {
     name: { type: String, required: true },
     cost: { type: Number, default: 0 },
+    actualShippingCost: { type: Number, default: null },
     deliveryTime: { type: String, default: "" },
     zones: [{ type: String }],
     status: { type: String, enum: ["active", "inactive"], default: "active" },

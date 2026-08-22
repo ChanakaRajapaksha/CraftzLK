@@ -275,6 +275,7 @@ export default function ProductDetails() {
         <DetailSection title="Pricing">
           <dl className="admin-dash__detail-grid">
             <DetailItem label="Selling price" value={formatCurrency(product.price)} />
+            <DetailItem label="Product cost" value={formatCurrency(product.productCost)} />
             <DetailItem label="Old price" value={formatCurrency(product.oldPrice)} />
             <DetailItem label="Discount price" value={formatCurrency(product.discountPrice)} />
             <DetailItem label="Discount type" value={product.discountType === "fixed" ? "Fixed amount" : "Percentage"} />

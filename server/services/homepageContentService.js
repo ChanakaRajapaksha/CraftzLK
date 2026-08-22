@@ -50,7 +50,7 @@ class HomepageContentService {
 
   async getBestSellerIds(limit = 10) {
     const orders = await Orders.find({
-      paymentStatus: { $in: ["paid", "pending"] },
+      paymentStatus: "paid",
       status: { $nin: ["cancelled", "returned"] },
     });
 

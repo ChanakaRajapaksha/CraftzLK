@@ -43,7 +43,7 @@ export default function DateRangeFilter({
 
   return (
     <div
-      className={`admin-dash__date-filter${isFiltered ? " admin-dash__date-filter--active" : ""}`}
+      className={`admin-dash__date-filter${isFiltered ? " admin-dash__date-filter--active" : ""}${open ? " admin-dash__date-filter--open" : ""}`}
       ref={ref}
     >
       <button

@@ -46,16 +46,16 @@ export function ReportPanel({ title, subtitle, children, actions }) {
   );
 }
 
-export function SalesTrendReportChart({ data, metric, onMetricChange }) {
+export function SalesTrendReportChart({ data, metric, onMetricChange, profitMetricLabel = "Profit" }) {
   const { tooltipStyle, axisTick, axisTickSm } = useChartTooltipStyle();
   const metrics = [
     { id: "revenue", label: "Revenue" },
-    { id: "profit", label: "Profit" },
+    { id: "profit", label: profitMetricLabel },
     { id: "orders", label: "Orders" },
   ];
 
   const formatValue = (value) =>
-    metric === "orders" ? value : formatMoney(value);
+    metric === "orders" ? value : formatMoney(value ?? 0);
 
   return (
     <ReportPanel
@@ -98,7 +98,15 @@ export function SalesTrendReportChart({ data, metric, onMetricChange }) {
                 <CartesianGrid strokeDasharray="4 4" stroke="rgba(201,169,97,0.2)" vertical={false} />
                 <XAxis dataKey="name" tick={axisTick} axisLine={false} tickLine={false} />
                 <YAxis tick={axisTick} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(value) => [formatValue(value), metric === "profit" ? "Profit" : "Revenue"]} />
+                <Tooltip
+                  contentStyle={tooltipStyle}
+                  formatter={(value, name, item) => {
+                    if (metric === "profit" && item?.payload?.profitAvailable === false) {
+                      return ["N/A", profitMetricLabel];
+                    }
+                    return [formatValue(value), metric === "profit" ? profitMetricLabel : "Revenue"];
+                  }}
+                />
                 <Area
                   type="monotone"
                   dataKey={metric}
@@ -143,18 +151,48 @@ export function SalesOverviewChart({ data }) {
   );
 }
 
-export function ProductRankChart({ data, title, subtitle, dataKey = "qty", color = CHART_COLORS.top, emptyLabel }) {
-  const { tooltipStyle, axisTick, axisTickSm } = useChartTooltipStyle();
+export function ProductRankChart({
+  data,
+  title,
+  subtitle,
+  dataKey = "qty",
+  color = CHART_COLORS.top,
+  emptyLabel,
+  maxItems = 8,
+}) {
+  const { tooltipStyle, axisTick } = useChartTooltipStyle();
+  const chartData = (data || []).slice(0, maxItems);
+  const rowHeight = 44;
+  const chartHeight = Math.max(220, chartData.length * rowHeight + 16);
+
+  const truncateLabel = (value) => {
+    const label = String(value || "");
+    return label.length > 24 ? `${label.slice(0, 22)}…` : label;
+  };
+
   return (
     <ReportPanel title={title} subtitle={subtitle}>
-      <div className="admin-dash__chart">
-        {data?.length ? (
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data} layout="vertical" margin={{ top: 8, right: 16, left: 8, bottom: 8 }}>
+      <div className="admin-dash__chart admin-dash__chart--rank">
+        {chartData.length ? (
+          <ResponsiveContainer width="100%" height={chartHeight}>
+            <BarChart
+              data={chartData}
+              layout="vertical"
+              margin={{ top: 8, right: 16, left: 4, bottom: 8 }}
+            >
               <CartesianGrid strokeDasharray="4 4" stroke="rgba(201,169,97,0.2)" horizontal={false} />
-              <XAxis type="number" tick={axisTick} />
-              <YAxis type="category" dataKey="name" width={110} tick={axisTick} />
-              <Tooltip contentStyle={tooltipStyle} />
+              <XAxis type="number" tick={axisTick} allowDecimals={false} />
+              <YAxis
+                type="category"
+                dataKey="name"
+                width={128}
+                tick={axisTick}
+                tickFormatter={truncateLabel}
+              />
+              <Tooltip
+                contentStyle={tooltipStyle}
+                labelFormatter={(label) => String(label || "")}
+              />
               <Bar dataKey={dataKey} fill={color} radius={[0, 8, 8, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -162,6 +200,65 @@ export function ProductRankChart({ data, title, subtitle, dataKey = "qty", color
           <div className="admin-dash__chart-empty">{emptyLabel}</div>
         )}
       </div>
+    </ReportPanel>
+  );
+}
+
+function formatRankMoney(value) {
+  return `Rs ${Number(value || 0).toLocaleString()}`;
+}
+
+export function ProductRankTable({
+  data,
+  title,
+  subtitle,
+  emptyLabel,
+  totalCount,
+  maxVisible = 10,
+}) {
+  const rows = (data || []).slice(0, maxVisible);
+  const catalogTotal = totalCount ?? data?.length ?? 0;
+  const footer =
+    catalogTotal > rows.length
+      ? `Showing bottom ${rows.length} of ${catalogTotal} products`
+      : null;
+
+  return (
+    <ReportPanel
+      title={title}
+      subtitle={subtitle}
+      actions={
+        footer ? <span className="admin-dash__chart-meta">{footer}</span> : null
+      }
+    >
+      {rows.length ? (
+        <div className="admin-dash__rank-table-scroll">
+          <table className="admin-dash__table admin-dash__table--modern admin-dash__table--rank">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Product</th>
+                <th>Units sold</th>
+                <th>Revenue</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((item, index) => (
+                <tr key={item.id || item.name}>
+                  <td>{index + 1}</td>
+                  <td>
+                    <strong title={item.name}>{item.name}</strong>
+                  </td>
+                  <td>{item.qty ?? 0}</td>
+                  <td>{formatRankMoney(item.revenue)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="admin-dash__chart-empty">{emptyLabel}</div>
+      )}
     </ReportPanel>
   );
 }

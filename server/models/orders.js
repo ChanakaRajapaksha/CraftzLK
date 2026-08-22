@@ -46,6 +46,7 @@ const ordersSchema = mongoose.Schema({
       productId: { type: String },
       productTitle: { type: String },
       variant: { type: String, default: '' },
+      variantSku: { type: String, default: '' },
       quantity: { type: Number },
       price: { type: Number },
       image: { type: String },
@@ -89,6 +90,14 @@ const ordersSchema = mongoose.Schema({
     type: Number,
     default: 0,
   },
+  shippingMethodId: {
+    type: String,
+    default: '',
+  },
+  actualShippingCost: {
+    type: Number,
+    default: null,
+  },
   statusHistory: [
     {
       status: { type: String },
@@ -98,6 +107,14 @@ const ordersSchema = mongoose.Schema({
   status: {
     type: String,
     default: 'placed',
+  },
+  stockDeducted: {
+    type: Boolean,
+    default: false,
+  },
+  stockRestored: {
+    type: Boolean,
+    default: false,
   },
   date: {
     type: Date,

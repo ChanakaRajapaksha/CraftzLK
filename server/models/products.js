@@ -40,6 +40,7 @@ const productSchema = mongoose.Schema({
   images: [{ type: String, required: true }],
   brand: { type: String, default: "" },
   price: { type: Number, default: 0 },
+  productCost: { type: Number, default: null },
   oldPrice: { type: Number, default: 0 },
   discountPrice: { type: Number, default: 0 },
   discountType: { type: String, enum: ["percentage", "fixed"], default: "percentage" },

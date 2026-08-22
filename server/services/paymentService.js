@@ -1,5 +1,15 @@
 const crypto = require('crypto');
 const { Payment } = require('../models/payment');
+const { Orders } = require('../models/orders');
+
+const ORDER_PAYMENT_STATUS_MAP = {
+  success: 'paid',
+  pending: 'pending',
+  failed: 'failed',
+  cancelled: 'failed',
+  chargedback: 'failed',
+  refunded: 'refunded',
+};
 
 function generatePayHereHash(merchantId, orderId, amount, currency, merchantSecret) {
   const formattedAmount = Number(amount).toFixed(2);
@@ -84,6 +94,40 @@ class PaymentService {
     return { hash };
   }
 
+  async createForOrder({
+    orderId,
+    orderNumber,
+    paymentId,
+    amount,
+    userId,
+    paymentMethod,
+    currency = 'LKR',
+  }) {
+    const orderKey = String(orderId);
+    const existing = await Payment.findOne({ orderId: orderKey });
+    if (existing) return existing;
+
+    return Payment.create({
+      orderId: orderKey,
+      orderNumber: orderNumber || '',
+      paymentId,
+      amount: Number(amount) || 0,
+      currency,
+      status: 'pending',
+      userId: String(userId),
+      paymentMethod: paymentMethod || '',
+    });
+  }
+
+  async syncOrderPaymentStatus(orderId, paymentStatus) {
+    if (!orderId || !paymentStatus) return null;
+    return Orders.findByIdAndUpdate(
+      orderId,
+      { paymentStatus },
+      { new: true }
+    );
+  }
+
   async processNotify(body) {
     const merchantSecret = process.env.PAYHERE_MERCHANT_SECRET;
 
@@ -117,10 +161,8 @@ class PaymentService {
       { new: true, upsert: true }
     );
 
-    if (payment.status === 'success') {
-      // Add your order update logic here
-      // Example: await Order.findOneAndUpdate({ orderId: body.order_id }, { status: 'paid' });
-    }
+    const orderPaymentStatus = ORDER_PAYMENT_STATUS_MAP[payment.status] || 'pending';
+    await this.syncOrderPaymentStatus(body.order_id, orderPaymentStatus);
 
     return payment;
   }

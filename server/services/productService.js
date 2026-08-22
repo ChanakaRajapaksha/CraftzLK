@@ -6,6 +6,7 @@ const { MyList } = require('../models/myList');
 const { Cart } = require('../models/cart');
 const { RecentlyViewd } = require('../models/recentlyViewd.js');
 const { ImageUpload } = require('../models/imageUpload.js');
+const { parseOptionalCost } = require('../utils/reportProfit');
 const fs = require('fs');
 
 const cloudinary = require('cloudinary').v2;
@@ -155,6 +156,7 @@ function mapProductBody(body, images = []) {
     images,
     brand: body.brand || '',
     price: Number(body.price) || 0,
+    productCost: parseOptionalCost(body.productCost),
     oldPrice: Number(body.oldPrice) || 0,
     discountPrice: Number(body.discountPrice) || 0,
     discountType: body.discountType || 'percentage',

@@ -13,6 +13,10 @@ import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import OrderStatusDialog from "./OrderStatusDialog";
 import { downloadOrderPdf, printOrderInvoice } from "./orderInvoice";
 import {
+  isCompletedOrder,
+  sumOrderRevenue,
+} from "../../../utils/orderFinancialRules";
+import {
   formatCurrency,
   formatOrderDate,
   getOrderDisplayId,
@@ -57,9 +61,9 @@ export default function OrderList() {
   }, []);
 
   const stats = useMemo(() => {
-    const revenue = orders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+    const revenue = sumOrderRevenue(orders, (value) => Number(value || 0));
     const pending = orders.filter((order) => order.paymentStatus === "pending").length;
-    const delivered = orders.filter((order) => order.status === "delivered").length;
+    const delivered = orders.filter(isCompletedOrder).length;
     return { total: orders.length, revenue, pending, delivered };
   }, [orders]);
 

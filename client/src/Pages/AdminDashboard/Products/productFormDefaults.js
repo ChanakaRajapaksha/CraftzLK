@@ -23,6 +23,7 @@ export const defaultProductFields = {
   },
   brand: "",
   price: "",
+  productCost: "",
   oldPrice: "",
   discountPrice: "",
   discountType: "percentage",
@@ -155,6 +156,7 @@ export function productToForm(product) {
     },
     brand: product.brand || "",
     price: product.price ?? "",
+    productCost: product.productCost ?? "",
     oldPrice: product.oldPrice ?? "",
     discountPrice: product.discountPrice ?? "",
     discountType: product.discountType || "percentage",
@@ -219,6 +221,9 @@ export function formToPayload(formFields) {
     },
     description: { points: descriptionPoints },
     price: Number(formFields.price) || 0,
+    productCost: formFields.productCost === "" || formFields.productCost == null
+      ? null
+      : Number(formFields.productCost),
     oldPrice: Number(formFields.oldPrice || formFields.price) || 0,
     discountPrice: Number(formFields.discountPrice) || 0,
     countInStock: Number(formFields.countInStock) || 0,
