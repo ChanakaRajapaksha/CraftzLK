@@ -9,6 +9,8 @@ import {
   Legend,
   Line,
   LineChart,
+  Pie,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -25,6 +27,14 @@ const CHART_COLORS = {
   stock: "#d4a574",
   customers: "#8b6f47",
   spending: "#b8860b",
+  paid: "#6b8f71",
+  pending: "#d4a574",
+  failed: "#c45c5c",
+  refunded: "#9a8b78",
+  delivered: "#6b8f71",
+  cancelled: "#c45c5c",
+  discount: "#b8860b",
+  usage: "#8b6f47",
 };
 
 function formatMoney(value) {
@@ -339,6 +349,187 @@ export function CustomerSpendingChart({ data }) {
           </ResponsiveContainer>
         ) : (
           <div className="admin-dash__chart-empty">No customer spending data</div>
+        )}
+      </div>
+    </ReportPanel>
+  );
+}
+
+export function StatusDonutChart({ data, title, subtitle, emptyLabel = "No details available" }) {
+  const { tooltipStyle } = useChartTooltipStyle();
+  const total = (data || []).reduce((sum, item) => sum + Number(item.value || 0), 0);
+
+  return (
+    <ReportPanel title={title} subtitle={subtitle}>
+      <div className="admin-dash__chart admin-dash__chart--split">
+        {data?.length ? (
+          <>
+            <ResponsiveContainer width="100%" height={260}>
+              <PieChart>
+                <Pie
+                  data={data}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={54}
+                  outerRadius={86}
+                  paddingAngle={3}
+                >
+                  {data.map((entry) => (
+                    <Cell key={entry.name} fill={entry.fill || CHART_COLORS.revenue} />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={tooltipStyle} />
+              </PieChart>
+            </ResponsiveContainer>
+            <ul className="admin-dash__legend-list">
+              {data.map((item) => (
+                <li key={item.name}>
+                  <span className="admin-dash__legend-dot" style={{ background: item.fill }} />
+                  <span>{item.name}</span>
+                  <strong>
+                    {item.value}
+                    {total ? ` (${Math.round((item.value / total) * 100)}%)` : ""}
+                  </strong>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <div className="admin-dash__chart-empty">{emptyLabel}</div>
+        )}
+      </div>
+    </ReportPanel>
+  );
+}
+
+export function PaymentTrendChart({ data }) {
+  const { tooltipStyle, axisTick } = useChartTooltipStyle();
+  return (
+    <ReportPanel title="Payments by date" subtitle="Paid, pending, failed, and refunded amounts">
+      <div className="admin-dash__chart">
+        {data?.length ? (
+          <ResponsiveContainer width="100%" height={320}>
+            <AreaChart data={data} margin={{ top: 12, right: 16, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="4 4" stroke="rgba(201,169,97,0.2)" vertical={false} />
+              <XAxis dataKey="name" tick={axisTick} axisLine={false} tickLine={false} />
+              <YAxis tick={axisTick} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={tooltipStyle} formatter={(value) => [formatMoney(value)]} />
+              <Legend />
+              <Area type="monotone" dataKey="paid" stackId="1" stroke={CHART_COLORS.paid} fill={CHART_COLORS.paid} fillOpacity={0.55} name="Paid" />
+              <Area type="monotone" dataKey="pending" stackId="1" stroke={CHART_COLORS.pending} fill={CHART_COLORS.pending} fillOpacity={0.45} name="Pending" />
+              <Area type="monotone" dataKey="failed" stackId="1" stroke={CHART_COLORS.failed} fill={CHART_COLORS.failed} fillOpacity={0.4} name="Failed" />
+              <Area type="monotone" dataKey="refunded" stackId="1" stroke={CHART_COLORS.refunded} fill={CHART_COLORS.refunded} fillOpacity={0.35} name="Refunded" />
+            </AreaChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="admin-dash__chart-empty">No payment details for this period</div>
+        )}
+      </div>
+    </ReportPanel>
+  );
+}
+
+export function PaymentMethodChart({ data }) {
+  const { tooltipStyle, axisTick } = useChartTooltipStyle();
+  return (
+    <ReportPanel title="Payment method performance" subtitle="Total amount by payment method">
+      <div className="admin-dash__chart">
+        {data?.length ? (
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={data} margin={{ top: 12, right: 16, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="4 4" stroke="rgba(201,169,97,0.2)" vertical={false} />
+              <XAxis dataKey="label" tick={axisTick} />
+              <YAxis tick={axisTick} />
+              <Tooltip contentStyle={tooltipStyle} formatter={(value) => [formatMoney(value), "Amount"]} />
+              <Bar dataKey="totalAmount" fill={CHART_COLORS.revenue} radius={[8, 8, 0, 0]} name="Amount" />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="admin-dash__chart-empty">No payment method details</div>
+        )}
+      </div>
+    </ReportPanel>
+  );
+}
+
+export function OrderTrendChart({ data }) {
+  const { tooltipStyle, axisTick } = useChartTooltipStyle();
+  return (
+    <ReportPanel title="Orders over time" subtitle="Orders, deliveries, and cancellations">
+      <div className="admin-dash__chart">
+        {data?.length ? (
+          <ResponsiveContainer width="100%" height={300}>
+            <ComposedChart data={data} margin={{ top: 12, right: 16, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="4 4" stroke="rgba(201,169,97,0.2)" vertical={false} />
+              <XAxis dataKey="name" tick={axisTick} />
+              <YAxis tick={axisTick} allowDecimals={false} />
+              <Tooltip contentStyle={tooltipStyle} />
+              <Legend />
+              <Bar dataKey="orders" fill={CHART_COLORS.orders} radius={[6, 6, 0, 0]} name="Orders" />
+              <Line type="monotone" dataKey="delivered" stroke={CHART_COLORS.delivered} strokeWidth={2.5} name="Delivered" />
+              <Line type="monotone" dataKey="cancelled" stroke={CHART_COLORS.cancelled} strokeWidth={2} name="Cancelled" />
+            </ComposedChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="admin-dash__chart-empty">No order details for this period</div>
+        )}
+      </div>
+    </ReportPanel>
+  );
+}
+
+export function CouponUsageChart({ data }) {
+  const { tooltipStyle, axisTick } = useChartTooltipStyle();
+  return (
+    <ReportPanel title="Coupon usage trend" subtitle="Usage count and discount amount over time">
+      <div className="admin-dash__chart">
+        {data?.length ? (
+          <ResponsiveContainer width="100%" height={300}>
+            <ComposedChart data={data} margin={{ top: 12, right: 16, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="4 4" stroke="rgba(201,169,97,0.2)" vertical={false} />
+              <XAxis dataKey="name" tick={axisTick} />
+              <YAxis yAxisId="left" tick={axisTick} allowDecimals={false} />
+              <YAxis yAxisId="right" orientation="right" tick={axisTick} />
+              <Tooltip
+                contentStyle={tooltipStyle}
+                formatter={(value, name) =>
+                  name === "Discount" ? [formatMoney(value), name] : [value, name]
+                }
+              />
+              <Legend />
+              <Bar yAxisId="left" dataKey="usage" fill={CHART_COLORS.usage} radius={[6, 6, 0, 0]} name="Usage" />
+              <Line yAxisId="right" type="monotone" dataKey="discount" stroke={CHART_COLORS.discount} strokeWidth={2.5} name="Discount" />
+            </ComposedChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="admin-dash__chart-empty">No coupon usage details</div>
+        )}
+      </div>
+    </ReportPanel>
+  );
+}
+
+export function InventoryCategoryChart({ data }) {
+  const { tooltipStyle, axisTick } = useChartTooltipStyle();
+  return (
+    <ReportPanel title="Stock by category" subtitle="Product count and units by category">
+      <div className="admin-dash__chart">
+        {data?.length ? (
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={data.slice(0, 8)} margin={{ top: 12, right: 16, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="4 4" stroke="rgba(201,169,97,0.2)" vertical={false} />
+              <XAxis dataKey="name" tick={axisTick} interval={0} angle={-15} textAnchor="end" height={60} />
+              <YAxis tick={axisTick} allowDecimals={false} />
+              <Tooltip contentStyle={tooltipStyle} />
+              <Legend />
+              <Bar dataKey="products" fill={CHART_COLORS.orders} radius={[6, 6, 0, 0]} name="Products" />
+              <Bar dataKey="units" fill={CHART_COLORS.stock} radius={[6, 6, 0, 0]} name="Units" />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="admin-dash__chart-empty">No inventory category details</div>
         )}
       </div>
     </ReportPanel>

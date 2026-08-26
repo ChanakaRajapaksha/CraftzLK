@@ -15,6 +15,7 @@ import {
   getCategoryCollectionsPath,
   getSubcategoryCollectionsPath,
 } from "../../../Pages/Collections/collectionsConstants";
+import { getPagePath } from "../../../Pages/AdminDashboard/Cms/cmsFormDefaults";
 
 /** Path the "Shop" header link routes to (Collections / "All" landing page). */
 export const SHOP_PATH = "/collections/all";
@@ -36,6 +37,23 @@ function normalizeName(s) {
     .toLowerCase()
     .replace(/['’]/g, "'")
     .replace(/\s+/g, " ");
+}
+
+function buildStorefrontNav(cmsNavPages = []) {
+  const pages = Array.isArray(cmsNavPages) ? cmsNavPages : [];
+  const bySlug = (slug) => pages.find((page) => page.slug === slug);
+
+  return {
+    home: bySlug("home"),
+    shop: bySlug("shop"),
+    categories: bySlug("categories"),
+    extras: pages.filter((page) => !["home", "shop", "categories"].includes(page.slug)),
+    hasCmsNav: pages.length > 0,
+  };
+}
+
+function navLinkPath(page) {
+  return page?.path || page?.routePath || getPagePath(page);
 }
 
 function formatCartTotal(cartData) {
@@ -63,12 +81,19 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
 
   const shopPath = SHOP_PATH;
   const menuCategories = Array.isArray(navData) ? navData : [];
-
-  const tailLinks = [
-    { label: "Gifts", to: "/gifts" },
-    { label: "Eco", to: "/eco" },
-    { label: "About", to: "/about" },
-  ];
+  const storefrontNav = buildStorefrontNav(context?.cmsNavPages);
+  const showHome = storefrontNav.hasCmsNav ? Boolean(storefrontNav.home) : true;
+  const showShop = storefrontNav.hasCmsNav ? Boolean(storefrontNav.shop) : true;
+  const showCategories = storefrontNav.hasCmsNav ? Boolean(storefrontNav.categories) : true;
+  const extraLinks = storefrontNav.hasCmsNav
+    ? storefrontNav.extras.map((page) => ({
+        label: page.title,
+        to: navLinkPath(page),
+      }))
+    : [
+        { label: "Gifts", to: "/gifts" },
+        { label: "Eco", to: "/eco" },
+      ];
 
   const isHomeActive = location.pathname === "/";
   const isShopActive = location.pathname === shopPath && !megaOpen;
@@ -233,30 +258,36 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
               >
                 <ul className="list list-inline ml-auto w-100 secondary-category-nav__drawer-root-list">
                   <li className="list-inline-item w-100">
-                    <Link to="/" onClick={closeNav}>
-                      <Button>Home</Button>
-                    </Link>
+                    {showHome && (
+                      <Link to="/" onClick={closeNav}>
+                        <Button>{storefrontNav.home?.title || "Home"}</Button>
+                      </Link>
+                    )}
                   </li>
                   <li className="list-inline-item w-100">
-                    <Link to={shopPath} onClick={closeNav}>
-                      <Button>Shop</Button>
-                    </Link>
+                    {showShop && (
+                      <Link to={shopPath} onClick={closeNav}>
+                        <Button>{storefrontNav.shop?.title || "Shop"}</Button>
+                      </Link>
+                    )}
                   </li>
-                  <li className="list-inline-item w-100">
-                    <Button
-                      type="button"
-                      className="d-flex align-items-center w-100 secondary-category-nav__drawer-categories-btn"
-                      onClick={openCategoriesPanel}
-                    >
-                      Categories
-                      <FaAngleRight
-                        className="secondary-category-nav__drawer-chev"
-                        aria-hidden
-                      />
-                    </Button>
-                  </li>
-                  {tailLinks.map((link) => (
-                    <li key={link.label} className="list-inline-item w-100">
+                  {showCategories && (
+                    <li className="list-inline-item w-100">
+                      <Button
+                        type="button"
+                        className="d-flex align-items-center w-100 secondary-category-nav__drawer-categories-btn"
+                        onClick={openCategoriesPanel}
+                      >
+                        {storefrontNav.categories?.title || "Categories"}
+                        <FaAngleRight
+                          className="secondary-category-nav__drawer-chev"
+                          aria-hidden
+                        />
+                      </Button>
+                    </li>
+                  )}
+                  {extraLinks.map((link) => (
+                    <li key={`${link.to}-${link.label}`} className="list-inline-item w-100">
                       <Link to={link.to} onClick={closeNav}>
                         <Button>{link.label}</Button>
                       </Link>
@@ -364,40 +395,46 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
       <div className="secondary-category-nav__bar d-none d-lg-block" ref={wrapRef}>
         <div className="container">
           <div className="secondary-category-nav__inner d-none d-lg-flex align-items-center justify-content-center flex-wrap">
-            <Link
-              to="/"
-              className={`secondary-category-nav__link ${isHomeActive ? "is-active" : ""}`}
-            >
-              Home
-            </Link>
-            <Link
-              to={shopPath}
-              className={`secondary-category-nav__link ${isShopActive ? "is-active" : ""}`}
-            >
-              Shop
-            </Link>
-
-            <div className="secondary-category-nav__dropdown-trigger">
-              <button
-                type="button"
-                className={`secondary-category-nav__link secondary-category-nav__link--button ${megaOpen ? "is-active" : ""}`}
-                aria-expanded={megaOpen}
-                aria-haspopup="true"
-                onClick={() => setMegaOpen((v) => !v)}
+            {showHome && (
+              <Link
+                to="/"
+                className={`secondary-category-nav__link ${isHomeActive ? "is-active" : ""}`}
               >
-                Categories
-                <FaAngleDown
-                  className={`secondary-category-nav__chev ${megaOpen ? "secondary-category-nav__chev--open" : ""}`}
-                  aria-hidden
-                />
-              </button>
-            </div>
+                {storefrontNav.home?.title || "Home"}
+              </Link>
+            )}
+            {showShop && (
+              <Link
+                to={shopPath}
+                className={`secondary-category-nav__link ${isShopActive ? "is-active" : ""}`}
+              >
+                {storefrontNav.shop?.title || "Shop"}
+              </Link>
+            )}
 
-            {tailLinks.map((link) => {
+            {showCategories && (
+              <div className="secondary-category-nav__dropdown-trigger">
+                <button
+                  type="button"
+                  className={`secondary-category-nav__link secondary-category-nav__link--button ${megaOpen ? "is-active" : ""}`}
+                  aria-expanded={megaOpen}
+                  aria-haspopup="true"
+                  onClick={() => setMegaOpen((v) => !v)}
+                >
+                  {storefrontNav.categories?.title || "Categories"}
+                  <FaAngleDown
+                    className={`secondary-category-nav__chev ${megaOpen ? "secondary-category-nav__chev--open" : ""}`}
+                    aria-hidden
+                  />
+                </button>
+              </div>
+            )}
+
+            {extraLinks.map((link) => {
               const tailActive = location.pathname === link.to;
               return (
                 <Link
-                  key={link.label}
+                  key={`${link.to}-${link.label}`}
                   to={link.to}
                   className={`secondary-category-nav__link ${tailActive ? "is-active" : ""}`}
                 >

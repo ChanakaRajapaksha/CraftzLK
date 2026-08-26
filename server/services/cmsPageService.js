@@ -1,6 +1,11 @@
 const fs = require("fs");
 const { ImageUpload } = require("../models/imageUpload");
-const { CmsPage, DEFAULT_CMS_PAGES } = require("../models/cmsPage");
+const {
+  CmsPage,
+  SYSTEM_CMS_SLUGS,
+  DEFAULT_CMS_PAGES,
+  DEFAULT_CUSTOM_CMS_PAGES,
+} = require("../models/cmsPage");
 
 const cloudinary = require("cloudinary").v2;
 
@@ -11,26 +16,109 @@ cloudinary.config({
   secure: true,
 });
 
+const RESERVED_CMS_SLUGS = new Set([
+  ...SYSTEM_CMS_SLUGS,
+  "collections",
+  "products",
+  "product",
+  "cart",
+  "signin",
+  "signup",
+  "orders",
+  "checkout",
+  "search",
+  "dashboard",
+  "my-account",
+  "my-list",
+  "compare",
+  "thank-you",
+]);
+
+const COMING_SOON_PLACEHOLDER = "";
+
+function resolvePagePath(doc) {
+  if (doc?.routePath) return doc.routePath;
+  if (doc?.slug === "home") return "/";
+  if (!doc?.slug) return "/";
+  return `/${doc.slug}`;
+}
+
+function isComingSoonContent(content, pageType) {
+  if (pageType === "system") return false;
+  return !String(content || "").trim();
+}
+
 class CmsPageService {
   mapPage(doc) {
+    const content = doc.content || "";
+    const pageType = doc.pageType || "custom";
     return {
       _id: doc._id,
       id: doc._id,
       title: doc.title,
       slug: doc.slug,
-      content: doc.content || "",
+      content,
       images: doc.images || [],
       status: doc.status || "active",
+      showInNav: doc.showInNav !== false,
+      pageType,
+      isSystem: pageType === "system",
+      routePath: doc.routePath || "",
+      sortOrder: doc.sortOrder ?? 100,
+      path: resolvePagePath(doc),
+      isComingSoon: isComingSoonContent(content, pageType),
       seo: doc.seo || {},
       dateCreated: doc.createdAt,
       dateUpdated: doc.updatedAt,
     };
   }
 
+  assertAdmin(authUser) {
+    if (authUser?.role !== "admin") {
+      const error = new Error("Insufficient permissions.");
+      error.statusCode = 403;
+      error.payload = { success: false, message: error.message };
+      throw error;
+    }
+  }
+
+  assertAllowedSlug(slug) {
+    const normalized = String(slug || "").trim().toLowerCase();
+    if (RESERVED_CMS_SLUGS.has(normalized)) {
+      const error = new Error("This slug is reserved for a built-in storefront page.");
+      error.statusCode = 400;
+      error.payload = { success: false, message: error.message };
+      throw error;
+    }
+  }
+
   async ensureDefaultPages() {
-    const count = await CmsPage.countDocuments();
-    if (count > 0) return;
-    await CmsPage.insertMany(DEFAULT_CMS_PAGES);
+    const allDefaults = [...DEFAULT_CMS_PAGES, ...DEFAULT_CUSTOM_CMS_PAGES];
+
+    for (const defaults of allDefaults) {
+      const existing = await CmsPage.findOne({ slug: defaults.slug });
+      if (!existing) {
+        await CmsPage.create(defaults);
+        continue;
+      }
+
+      if (defaults.pageType === "system") {
+        await CmsPage.updateOne(
+          { _id: existing._id },
+          {
+            $set: {
+              pageType: "system",
+              routePath: defaults.routePath,
+              sortOrder: defaults.sortOrder,
+            },
+          }
+        );
+      }
+    }
+  }
+
+  async preparePages() {
+    await this.ensureDefaultPages();
   }
 
   async upload(files) {
@@ -62,13 +150,25 @@ class CmsPageService {
   }
 
   async list() {
-    await this.ensureDefaultPages();
-    const list = await CmsPage.find().sort({ title: 1 });
+    await this.preparePages();
+    const list = await CmsPage.find().sort({ sortOrder: 1, title: 1 });
     return list.map((doc) => this.mapPage(doc));
   }
 
+  async listPublic() {
+    await this.preparePages();
+    const list = await CmsPage.find({ status: "active" }).sort({ sortOrder: 1, title: 1 });
+    return list.map((doc) => this.mapPage(doc));
+  }
+
+  async listPublicNav() {
+    const pages = await this.listPublic();
+    return pages.filter((page) => page.showInNav);
+  }
+
   async getPublicBySlug(slug) {
-    const page = await CmsPage.findOne({ slug, status: "active" });
+    await this.preparePages();
+    const page = await CmsPage.findOne({ slug, status: "active", pageType: "custom" });
     if (!page) {
       const error = new Error("Page not found.");
       error.statusCode = 404;
@@ -79,6 +179,7 @@ class CmsPageService {
   }
 
   async getById(id) {
+    await this.preparePages();
     const page = await CmsPage.findById(id);
     if (!page) {
       const error = new Error("Page not found.");
@@ -89,7 +190,10 @@ class CmsPageService {
     return this.mapPage(page);
   }
 
-  async create(body) {
+  async create(body, authUser) {
+    this.assertAdmin(authUser);
+    this.assertAllowedSlug(body.slug);
+
     const existing = await CmsPage.findOne({ slug: body.slug });
     if (existing) {
       const error = new Error("Slug already exists.");
@@ -101,18 +205,37 @@ class CmsPageService {
     const page = new CmsPage({
       title: body.title,
       slug: body.slug,
-      content: body.content || "",
+      content: body.content || COMING_SOON_PLACEHOLDER,
       images: body.images || [],
       status: body.status || "active",
+      showInNav: body.showInNav !== false,
+      pageType: "custom",
+      routePath: body.slug ? `/${body.slug}` : "",
+      sortOrder: 100,
       seo: body.seo || {},
     });
     const saved = await page.save();
     return this.mapPage(saved);
   }
 
-  async update(id, body) {
+  async update(id, body, authUser) {
+    this.assertAdmin(authUser);
+
+    const existing = await CmsPage.findById(id);
+    if (!existing) {
+      const error = new Error("Page not found.");
+      error.statusCode = 404;
+      error.payload = { success: false, message: error.message };
+      throw error;
+    }
+
+    const nextSlug = existing.pageType === "system" ? existing.slug : body.slug;
+    if (existing.pageType !== "system") {
+      this.assertAllowedSlug(nextSlug);
+    }
+
     const duplicate = await CmsPage.findOne({
-      slug: body.slug,
+      slug: nextSlug,
       _id: { $ne: id },
     });
     if (duplicate) {
@@ -126,12 +249,33 @@ class CmsPageService {
       id,
       {
         title: body.title,
-        slug: body.slug,
+        slug: nextSlug,
         content: body.content || "",
         images: body.images || [],
         status: body.status || "active",
+        showInNav: body.showInNav !== false,
+        routePath: existing.pageType === "system" ? existing.routePath : `/${nextSlug}`,
         seo: body.seo || {},
       },
+      { new: true }
+    );
+
+    return this.mapPage(updated);
+  }
+
+  async updateStatus(id, status, authUser) {
+    this.assertAdmin(authUser);
+
+    if (!["active", "inactive"].includes(status)) {
+      const error = new Error("Status must be active or inactive.");
+      error.statusCode = 400;
+      error.payload = { success: false, message: error.message };
+      throw error;
+    }
+
+    const updated = await CmsPage.findByIdAndUpdate(
+      id,
+      { status },
       { new: true }
     );
 
@@ -145,14 +289,25 @@ class CmsPageService {
     return this.mapPage(updated);
   }
 
-  async remove(id) {
-    const deleted = await CmsPage.findByIdAndDelete(id);
-    if (!deleted) {
+  async remove(id, authUser) {
+    this.assertAdmin(authUser);
+
+    const existing = await CmsPage.findById(id);
+    if (!existing) {
       const error = new Error("Page not found.");
       error.statusCode = 404;
       error.payload = { success: false, message: error.message };
       throw error;
     }
+
+    if (existing.pageType === "system") {
+      const error = new Error("Built-in storefront pages cannot be deleted.");
+      error.statusCode = 400;
+      error.payload = { success: false, message: error.message };
+      throw error;
+    }
+
+    await CmsPage.findByIdAndDelete(id);
     return { success: true, message: "Page deleted." };
   }
 }

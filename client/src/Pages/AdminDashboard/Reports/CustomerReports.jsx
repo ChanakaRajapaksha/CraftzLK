@@ -3,6 +3,7 @@ import { MdPeople, MdPayments, MdTrendingUp } from "react-icons/md";
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
+import ReportExportButtons from "./ReportExportButtons";
 import ReportFilters from "./ReportFilters";
 import { CustomerGrowthReportChart, CustomerSpendingChart } from "./ReportCharts";
 import useCustomerReport from "./useCustomerReport";
@@ -35,6 +36,17 @@ export default function CustomerReports() {
         title="Customer Reports"
         subtitle="Track customer growth and spending patterns over time."
         breadcrumbs={[{ label: "Reports" }, { label: "Customer Reports" }]}
+        action={
+          <ReportExportButtons
+            reportType="customers"
+            disabled={loading}
+            filters={{
+              preset: appliedDatePreset,
+              customStart,
+              customEnd,
+            }}
+          />
+        }
       />
 
       <div className="admin-dash__report-page">

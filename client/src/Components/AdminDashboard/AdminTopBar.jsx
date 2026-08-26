@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { IoMdClose, IoMdMenu } from "react-icons/io";
 import { MdDarkMode, MdLightMode, MdNotificationsNone, MdStorefront } from "react-icons/md";
 import { fetchDataFromApi } from "../../utils/api";
 import { STOREFRONT_HOME_PATH } from "./adminNav";
@@ -11,7 +12,7 @@ import {
 } from "../../utils/adminNotificationSocket";
 import { normalizeAdminNotification } from "./adminNotificationUtils";
 
-export default function AdminTopBar() {
+export default function AdminTopBar({ mobileNavOpen = false, onToggleMobileNav }) {
   const { isDark, toggleTheme } = useAdminTheme();
   const [panelOpen, setPanelOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -56,6 +57,17 @@ export default function AdminTopBar() {
   return (
     <header className="admin-dash__topbar">
       <div className="admin-dash__topbar-start">
+        <button
+          type="button"
+          className={`admin-dash__menu-toggle${mobileNavOpen ? " admin-dash__menu-toggle--open" : ""}`}
+          onClick={onToggleMobileNav}
+          aria-label={mobileNavOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-expanded={mobileNavOpen}
+          aria-controls="admin-dash-sidebar"
+        >
+          {mobileNavOpen ? <IoMdClose aria-hidden /> : <IoMdMenu aria-hidden />}
+        </button>
+
         <div>
           <p className="admin-dash__topbar-eyebrow">CraftzLK Admin</p>
           <p className="admin-dash__topbar-tagline">Store management console</p>

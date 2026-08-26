@@ -7,7 +7,7 @@ export default function RecentOrdersTable({ orders }) {
     return (
       <section className="admin-dash__widget">
         <h2 className="admin-dash__widget-title">Recent Orders</h2>
-        <p className="admin-dash__widget-empty">No orders in this period</p>
+        <p className="admin-dash__widget-empty">No order details for this period</p>
       </section>
     );
   }

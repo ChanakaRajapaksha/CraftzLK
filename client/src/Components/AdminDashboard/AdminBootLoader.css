@@ -1,0 +1,213 @@
+.admin-boot {
+  --boot-bg: #f7f1e8;
+  --boot-bg-deep: #efe6d8;
+  --boot-ink: #1f1a14;
+  --boot-muted: #6b5d4d;
+  --boot-gold: #b8860b;
+  --boot-gold-soft: #c9a961;
+  --boot-card: rgba(255, 252, 246, 0.82);
+  --boot-stroke: rgba(184, 134, 11, 0.28);
+  --boot-track: rgba(31, 26, 20, 0.08);
+
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(1200px 700px at 18% -10%, rgba(201, 169, 97, 0.22), transparent 55%),
+    radial-gradient(900px 600px at 92% 110%, rgba(139, 111, 71, 0.16), transparent 50%),
+    linear-gradient(165deg, var(--boot-bg) 0%, var(--boot-bg-deep) 100%);
+  color: var(--boot-ink);
+  font-family: "Segoe UI", "Trebuchet MS", sans-serif;
+}
+
+.admin-boot--dark {
+  --boot-bg: #15110e;
+  --boot-bg-deep: #1f1a14;
+  --boot-ink: #fff8ec;
+  --boot-muted: #c4b5a2;
+  --boot-card: rgba(34, 28, 22, 0.78);
+  --boot-stroke: rgba(201, 169, 97, 0.34);
+  --boot-track: rgba(255, 248, 236, 0.1);
+}
+
+.admin-boot__glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.admin-boot__glow--a {
+  width: min(42vw, 320px);
+  height: min(42vw, 320px);
+  top: 12%;
+  left: 10%;
+  background: rgba(184, 134, 11, 0.28);
+  animation: admin-boot-drift 7s ease-in-out infinite alternate;
+}
+
+.admin-boot__glow--b {
+  width: min(48vw, 380px);
+  height: min(48vw, 380px);
+  right: 4%;
+  bottom: 8%;
+  background: rgba(107, 83, 68, 0.26);
+  animation: admin-boot-drift 9s ease-in-out infinite alternate-reverse;
+}
+
+.admin-boot__grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.18;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  mix-blend-mode: soft-light;
+}
+
+.admin-boot__card {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(92vw, 24rem);
+  padding: 2.1rem 1.75rem 1.85rem;
+  border: 1px solid var(--boot-stroke);
+  border-radius: 1.25rem;
+  background: var(--boot-card);
+  box-shadow:
+    0 24px 60px rgba(31, 26, 20, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(10px);
+  text-align: center;
+}
+
+.admin-boot__mark {
+  position: relative;
+  width: 5.5rem;
+  height: 5.5rem;
+  margin-bottom: 1.15rem;
+  display: grid;
+  place-items: center;
+}
+
+.admin-boot__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: var(--boot-gold);
+  border-right-color: rgba(201, 169, 97, 0.35);
+  animation: admin-boot-spin 1.15s linear infinite;
+}
+
+.admin-boot__ring--delay {
+  inset: 0.45rem;
+  border-top-color: var(--boot-gold-soft);
+  border-right-color: transparent;
+  animation-duration: 1.7s;
+  animation-direction: reverse;
+}
+
+.admin-boot__logo {
+  width: 3.1rem;
+  height: 3.1rem;
+  object-fit: contain;
+  border-radius: 0.65rem;
+  animation: admin-boot-breathe 2.4s ease-in-out infinite;
+}
+
+.admin-boot__eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--boot-gold);
+}
+
+.admin-boot__title {
+  margin: 0;
+  font-size: clamp(1.2rem, 2.4vw, 1.45rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--boot-ink);
+}
+
+.admin-boot__hint {
+  margin: 0.45rem 0 1.25rem;
+  font-size: 0.9rem;
+  color: var(--boot-muted);
+}
+
+.admin-boot__progress {
+  width: 100%;
+  height: 0.28rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--boot-track);
+}
+
+.admin-boot__progress-bar {
+  display: block;
+  width: 42%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--boot-gold), var(--boot-gold-soft), var(--boot-gold));
+  background-size: 200% 100%;
+  animation: admin-boot-slide 1.35s ease-in-out infinite;
+}
+
+@keyframes admin-boot-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes admin-boot-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+@keyframes admin-boot-slide {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(280%);
+  }
+}
+
+@keyframes admin-boot-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(18px, -14px, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-boot__glow,
+  .admin-boot__ring,
+  .admin-boot__ring--delay,
+  .admin-boot__logo,
+  .admin-boot__progress-bar,
+  .admin-boot__card {
+    animation: none !important;
+  }
+
+  .admin-boot__progress-bar {
+    width: 70%;
+    transform: none;
+  }
+}

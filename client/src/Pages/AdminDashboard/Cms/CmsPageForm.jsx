@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ProductImageUploadField from "../../../Components/AdminDashboard/ProductImageUploadField";
-import { CMS_FORM_TABS, slugify } from "./cmsFormDefaults";
+import { CMS_FORM_TABS, CMS_COMING_SOON_HINT, getPagePath, isReservedCmsSlug, slugify } from "./cmsFormDefaults";
 
 function Field({ label, htmlFor, children, full = false }) {
   return (
@@ -20,8 +20,13 @@ export default function CmsPageForm({
   isEdit = false,
   isLoading = false,
   submitLabel = "Save page",
+  variant = "page",
   onSubmit,
 }) {
+  const isSystem = formFields.pageType === "system";
+  const visibleTabs = isSystem
+    ? CMS_FORM_TABS.filter((item) => item.id !== "images")
+    : CMS_FORM_TABS;
   const [tab, setTab] = useState("title");
 
   const changeInput = (e) => {
@@ -61,13 +66,26 @@ export default function CmsPageForm({
       setTab("title");
       return;
     }
+    if (isReservedCmsSlug(formFields.slug)) {
+      setAlertBox?.({
+        open: true,
+        error: true,
+        msg: "That slug is reserved for a built-in storefront page. Choose a different slug.",
+      });
+      setTab("title");
+      return;
+    }
     onSubmit(e);
   };
 
   return (
-    <form className="admin-dash__product-form" onSubmit={handleSubmit}>
+    <form
+      id={variant === "modal" ? "cms-page-form-modal" : undefined}
+      className="admin-dash__product-form"
+      onSubmit={handleSubmit}
+    >
       <nav className="admin-dash__product-tabs" aria-label="CMS page form sections">
-        {CMS_FORM_TABS.map((item) => (
+        {visibleTabs.map((item) => (
           <button
             key={item.id}
             type="button"
@@ -89,7 +107,7 @@ export default function CmsPageForm({
                 name="title"
                 value={formFields.title}
                 onChange={onTitleChange}
-                placeholder="About Us"
+                placeholder="Craftz stories"
               />
             </Field>
             <Field label="URL slug" htmlFor="slug">
@@ -99,9 +117,22 @@ export default function CmsPageForm({
                 name="slug"
                 value={formFields.slug}
                 onChange={changeInput}
-                placeholder="about"
+                placeholder="craft-stories"
+                readOnly={isSystem}
+                disabled={isSystem}
               />
             </Field>
+            {isSystem && (
+              <Field label="Storefront route" htmlFor="routePath">
+                <input
+                  className="admin-dash__input"
+                  id="routePath"
+                  value={formFields.routePath || getPagePath(formFields)}
+                  readOnly
+                  disabled
+                />
+              </Field>
+            )}
             <Field label="Status" htmlFor="status">
               <select
                 className="admin-dash__select admin-dash__select--compact"
@@ -114,26 +145,64 @@ export default function CmsPageForm({
                 <option value="inactive">Inactive</option>
               </select>
             </Field>
+            <Field label="Show in header nav" htmlFor="showInNav">
+              <select
+                className="admin-dash__select admin-dash__select--compact"
+                id="showInNav"
+                name="showInNav"
+                value={formFields.showInNav ? "yes" : "no"}
+                onChange={(e) =>
+                  setFormFields((prev) => ({
+                    ...prev,
+                    showInNav: e.target.value === "yes",
+                  }))
+                }
+              >
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </Field>
             <div className="admin-dash__field admin-dash__field--full">
-              <p className="admin-dash__hint">
-                Examples: <code>about</code>, <code>contact</code>, <code>privacy-policy</code>, <code>terms</code>
-              </p>
+              {isSystem ? (
+                <p className="admin-dash__hint">
+                  Built-in page — layout is managed by the existing frontend design. You can update the title, nav visibility, status, and SEO here.
+                </p>
+              ) : (
+                <>
+                  <p className="admin-dash__hint">
+                    Examples: <code>about</code>, <code>contact</code>, <code>craft-stories</code>, <code>shipping-info</code>
+                  </p>
+                  <p className="admin-dash__hint">
+                    Slugs reserved for built-in pages: Home, Shop, Categories, Gifts, and Eco.
+                  </p>
+                </>
+              )}
             </div>
           </div>
         )}
 
         {tab === "content" && (
-          <Field label="Content" htmlFor="content" full>
-            <textarea
-              className="admin-dash__textarea admin-dash__textarea--cms"
-              id="content"
-              name="content"
-              rows={16}
-              value={formFields.content}
-              onChange={changeInput}
-              placeholder="Write the page body content. HTML or plain text is supported."
-            />
-          </Field>
+          <>
+            <Field label="Content" htmlFor="content" full>
+              <textarea
+                className="admin-dash__textarea admin-dash__textarea--cms"
+                id="content"
+                name="content"
+                rows={variant === "modal" ? 12 : 16}
+                value={formFields.content}
+                onChange={changeInput}
+                placeholder="Write the page body content. HTML or plain text is supported."
+              />
+            </Field>
+            {!isEdit && !isSystem && (
+              <p className="admin-dash__hint admin-dash__hint--cms">{CMS_COMING_SOON_HINT}</p>
+            )}
+            {isSystem && (
+              <p className="admin-dash__hint admin-dash__hint--cms">
+                This summary describes the built-in page for admin reference. The live layout comes from the frontend page design.
+              </p>
+            )}
+          </>
         )}
 
         {tab === "images" && (
@@ -166,7 +235,7 @@ export default function CmsPageForm({
                 id="seo-metaTitle"
                 value={formFields.seo?.metaTitle}
                 onChange={(e) => changeNested("metaTitle", e.target.value)}
-                placeholder="About Us | CraftzLK"
+                placeholder="Craft Stories | CraftzLK"
               />
             </Field>
             <Field label="Meta description" htmlFor="seo-metaDescription" full>
@@ -191,11 +260,13 @@ export default function CmsPageForm({
           </div>
         )}
 
-        <div className="admin-dash__product-form-actions">
-          <button type="submit" className="admin-dash__btn" disabled={isLoading}>
-            {isLoading ? "Saving…" : submitLabel}
-          </button>
-        </div>
+        {variant !== "modal" && (
+          <div className="admin-dash__product-form-actions">
+            <button type="submit" className="admin-dash__btn" disabled={isLoading}>
+              {isLoading ? "Saving…" : submitLabel}
+            </button>
+          </div>
+        )}
       </section>
     </form>
   );

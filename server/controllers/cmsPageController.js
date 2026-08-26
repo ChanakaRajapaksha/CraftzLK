@@ -20,15 +20,42 @@ class CmsPageController {
     }
   }
 
-  async list(_req, res) {
+  async list(req, res) {
     try {
+      cmsPageService.assertAdmin(req.user);
       const pageList = await cmsPageService.list();
+      return res.status(200).json({
+        success: true,
+        pageList,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || 500).json(
+        error.payload || { success: false, message: "Failed to load CMS pages." }
+      );
+    }
+  }
+
+  async listPublic(_req, res) {
+    try {
+      const pageList = await cmsPageService.listPublic();
       return res.status(200).json({
         success: true,
         pageList,
       });
     } catch {
       return res.status(500).json({ success: false, message: "Failed to load CMS pages." });
+    }
+  }
+
+  async listPublicNav(_req, res) {
+    try {
+      const pageList = await cmsPageService.listPublicNav();
+      return res.status(200).json({
+        success: true,
+        pageList,
+      });
+    } catch {
+      return res.status(500).json({ success: false, message: "Failed to load navigation pages." });
     }
   }
 
@@ -45,6 +72,7 @@ class CmsPageController {
 
   async getById(req, res) {
     try {
+      cmsPageService.assertAdmin(req.user);
       const page = await cmsPageService.getById(req.params.id);
       return res.status(200).json(page);
     } catch (error) {
@@ -56,11 +84,11 @@ class CmsPageController {
 
   async create(req, res) {
     try {
-      const page = await cmsPageService.create(req.body);
+      const page = await cmsPageService.create(req.body, req.user);
       return res.status(201).json(page);
     } catch (error) {
-      if (error.statusCode === 400) {
-        return res.status(400).json(error.payload);
+      if (error.statusCode === 400 || error.statusCode === 403) {
+        return res.status(error.statusCode).json(error.payload);
       }
       return res.status(500).json({ success: false, message: "Failed to create page." });
     }
@@ -68,19 +96,30 @@ class CmsPageController {
 
   async update(req, res) {
     try {
-      const page = await cmsPageService.update(req.params.id, req.body);
+      const page = await cmsPageService.update(req.params.id, req.body, req.user);
       return res.status(200).json(page);
     } catch (error) {
-      if (error.statusCode === 400 || error.statusCode === 404) {
+      if (error.statusCode === 400 || error.statusCode === 403 || error.statusCode === 404) {
         return res.status(error.statusCode).json(error.payload);
       }
       return res.status(500).json({ success: false, message: "Failed to update page." });
     }
   }
 
+  async updateStatus(req, res) {
+    try {
+      const page = await cmsPageService.updateStatus(req.params.id, req.body.status, req.user);
+      return res.status(200).json(page);
+    } catch (error) {
+      return res.status(error.statusCode || 500).json(
+        error.payload || { success: false, message: "Failed to update page status." }
+      );
+    }
+  }
+
   async remove(req, res) {
     try {
-      const result = await cmsPageService.remove(req.params.id);
+      const result = await cmsPageService.remove(req.params.id, req.user);
       return res.status(200).json(result);
     } catch (error) {
       return res.status(error.statusCode || 500).json(

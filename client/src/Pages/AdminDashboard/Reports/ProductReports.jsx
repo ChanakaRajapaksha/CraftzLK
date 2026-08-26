@@ -3,6 +3,7 @@ import { MdInventory, MdShoppingBag, MdTrendingDown } from "react-icons/md";
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
+import ReportExportButtons from "./ReportExportButtons";
 import ReportFilters from "./ReportFilters";
 import { ProductRankChart, ProductRankTable, StockLevelChart } from "./ReportCharts";
 import useReportFilters from "./useReportFilters";
@@ -50,6 +51,19 @@ export default function ProductReports() {
         title="Product Reports"
         subtitle="Top sellers, slow movers, and inventory health."
         breadcrumbs={[{ label: "Reports" }, { label: "Product Reports" }]}
+        action={
+          <ReportExportButtons
+            reportType="products"
+            disabled={loading}
+            filters={{
+              preset: appliedDatePreset,
+              customStart,
+              customEnd,
+              categoryId,
+              productId,
+            }}
+          />
+        }
       />
 
       <div className="admin-dash__report-page">

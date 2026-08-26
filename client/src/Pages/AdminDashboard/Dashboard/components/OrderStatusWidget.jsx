@@ -16,8 +16,9 @@ const ALL_STATUSES = [
 ];
 
 export default function OrderStatusWidget({ orderSummary, chartData }) {
-  const { tooltipStyle, axisTick, axisTickSm } = useChartTooltipStyle();
-  const total = orderSummary.total;
+  const { tooltipStyle } = useChartTooltipStyle();
+  const total = Number(orderSummary?.total || 0);
+  const hasData = total > 0 && chartData?.length > 0;
 
   return (
     <section className="admin-dash__widget admin-dash__widget--order-status">
@@ -25,48 +26,53 @@ export default function OrderStatusWidget({ orderSummary, chartData }) {
         <h2 className="admin-dash__widget-title">Order Status</h2>
       </div>
 
-      <div className="admin-dash__order-status-total">
-        <span className="admin-dash__order-status-total-label">Total Orders</span>
-        <span className="admin-dash__order-status-total-value">{total}</span>
-      </div>
-
-      <div className="admin-dash__order-status-body">
-        {chartData?.length ? (
-          <div className="admin-dash__order-status-chart">
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie
-                  data={chartData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={52}
-                  outerRadius={78}
-                  paddingAngle={3}
-                >
-                  {chartData.map((entry) => (
-                    <Cell key={entry.name} fill={entry.fill} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={tooltipStyle} />
-              </PieChart>
-            </ResponsiveContainer>
+      {!hasData ? (
+        <p className="admin-dash__widget-empty">No order details for this period</p>
+      ) : (
+        <>
+          <div className="admin-dash__order-status-total">
+            <span className="admin-dash__order-status-total-label">Total Orders</span>
+            <span className="admin-dash__order-status-total-value">{total}</span>
           </div>
-        ) : (
-          <div className="admin-dash__chart-empty">No orders in this period</div>
-        )}
 
-        <ul className="admin-dash__order-status-list">
-          {ALL_STATUSES.map((status) => (
-            <li key={status.key} className={`admin-dash__order-status-item admin-dash__order-status-item--${status.key}`}>
-              <span className="admin-dash__legend-dot" style={{ background: status.fill }} />
-              <span>{status.label}</span>
-              <strong>{orderSummary[status.key] ?? 0}</strong>
-            </li>
-          ))}
-        </ul>
-      </div>
+          <div className="admin-dash__order-status-body">
+            <div className="admin-dash__order-status-chart">
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie
+                    data={chartData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={52}
+                    outerRadius={78}
+                    paddingAngle={3}
+                  >
+                    {chartData.map((entry) => (
+                      <Cell key={entry.name} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={tooltipStyle} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            <ul className="admin-dash__order-status-list">
+              {ALL_STATUSES.map((status) => (
+                <li
+                  key={status.key}
+                  className={`admin-dash__order-status-item admin-dash__order-status-item--${status.key}`}
+                >
+                  <span className="admin-dash__legend-dot" style={{ background: status.fill }} />
+                  <span>{status.label}</span>
+                  <strong>{orderSummary[status.key] ?? 0}</strong>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </>
+      )}
     </section>
   );
 }

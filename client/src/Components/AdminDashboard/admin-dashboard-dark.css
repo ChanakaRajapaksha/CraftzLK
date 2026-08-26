@@ -75,6 +75,27 @@ html.admin-dash-theme-dark {
   border-right-color: var(--adm-sidebar-border);
 }
 
+.admin-dash--dark .admin-dash__nav-backdrop {
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.admin-dash--dark .admin-dash__menu-toggle,
+.admin-dash--dark .admin-dash__sidebar-close {
+  background: rgba(28, 25, 22, 0.95);
+  border-color: rgba(201, 169, 97, 0.35);
+  color: rgba(255, 248, 235, 0.88);
+}
+
+.admin-dash--dark .admin-dash__menu-toggle:hover,
+.admin-dash--dark .admin-dash__menu-toggle:focus-visible,
+.admin-dash--dark .admin-dash__menu-toggle--open,
+.admin-dash--dark .admin-dash__sidebar-close:hover,
+.admin-dash--dark .admin-dash__sidebar-close:focus-visible {
+  border-color: rgba(201, 169, 97, 0.65);
+  background: rgba(201, 169, 97, 0.16);
+  color: #fff8eb;
+}
+
 .admin-dash--dark .admin-dash__brand-name,
 .admin-dash--dark .admin-dash__title,
 .admin-dash--dark .admin-dash__panel-title,
@@ -111,6 +132,10 @@ html.admin-dash-theme-dark {
 .admin-dash--dark .admin-dash__widget-empty,
 .admin-dash--dark .admin-dash__chart-legend-item {
   color: var(--adm-text-secondary) !important;
+}
+
+.admin-dash--dark .admin-dash__report-export-error {
+  color: #f97066;
 }
 
 .admin-dash--dark .admin-dash__breadcrumbs,
@@ -207,6 +232,51 @@ html.admin-dash-theme-dark {
   box-shadow: 0 10px 28px var(--adm-shadow);
 }
 
+.admin-dash--dark .admin-dash__cms-frontend-card {
+  background: var(--adm-surface-alt);
+  border-color: var(--adm-border);
+  color: var(--adm-text-secondary);
+}
+
+.admin-dash--dark .admin-dash__cms-frontend-card strong {
+  color: var(--adm-text) !important;
+}
+
+.admin-dash--dark .admin-dash__cms-frontend-path {
+  color: var(--adm-text-muted) !important;
+}
+
+.admin-dash--dark .admin-dash__cms-frontend-live {
+  color: #8fbf96 !important;
+}
+
+.admin-dash--dark .admin-dash__cms-frontend-hidden {
+  color: var(--adm-text-muted) !important;
+}
+
+.admin-dash--dark .admin-dash__cms-frontend-soon {
+  color: var(--adm-accent) !important;
+}
+
+.admin-dash--dark .admin-dash__cms-frontend-link {
+  color: var(--adm-accent) !important;
+}
+
+.admin-dash--dark .admin-dash__cms-frontend-link:hover {
+  color: var(--adm-accent-strong) !important;
+}
+
+.admin-dash--dark .admin-dash__cms-type-badge--system,
+.admin-dash--dark .admin-dash__cms-frontend-tag {
+  background: rgba(232, 200, 120, 0.16);
+  color: var(--adm-accent) !important;
+}
+
+.admin-dash--dark .admin-dash__cms-type-badge--custom {
+  background: rgba(143, 191, 150, 0.16);
+  color: #8fbf96 !important;
+}
+
 .admin-dash--dark .admin-dash__kpi-card {
   border-left-width: 4px;
   border-left-style: solid;
@@ -250,69 +320,244 @@ html.admin-dash-theme-dark {
 
 .admin-dash--dark .admin-dash__select,
 .admin-dash--dark .admin-dash__input,
-.admin-dash--dark .admin-dash__textarea {
-  background: var(--adm-surface-alt);
-  border-color: var(--adm-border);
-  color: var(--adm-input-text);
+.admin-dash--dark .admin-dash__textarea,
+.admin-dash--dark select.admin-dash__select,
+.admin-dash--dark select.form-control,
+.admin-dash--dark input.admin-dash__input,
+.admin-dash--dark textarea.admin-dash__textarea {
+  background: #241f1a !important;
+  border: 1px solid rgba(201, 169, 97, 0.4) !important;
+  color: #f5efe6 !important;
 }
 
 .admin-dash--dark .admin-dash__select:focus,
 .admin-dash--dark .admin-dash__input:focus,
 .admin-dash--dark .admin-dash__textarea:focus {
-  border-color: #c9a961;
-  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.18);
+  border-color: #c9a961 !important;
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.22) !important;
+}
+
+.admin-dash--dark .admin-dash__select option {
+  background: #1c1814;
+  color: #f5efe6;
 }
 
 .admin-dash--dark input::placeholder,
 .admin-dash--dark textarea::placeholder,
 .admin-dash--dark input::-webkit-input-placeholder,
-.admin-dash--dark textarea::-webkit-input-placeholder {
-  color: #7a6f62 !important;
+.admin-dash--dark textarea::-webkit-input-placeholder,
+.admin-dash--dark .admin-dash__input::placeholder,
+.admin-dash--dark .admin-dash__textarea::placeholder,
+.admin-dash--dark .admin-dash input::placeholder,
+.admin-dash--dark .admin-dash textarea::placeholder {
+  color: #c4b4a0 !important;
+  opacity: 1;
 }
 
 .admin-dash--dark .admin-dash__btn--ghost {
-  background: var(--adm-surface-alt);
-  color: var(--adm-text-secondary);
-  border-color: var(--adm-border);
+  background: #2a241e !important;
+  color: #f0e4d0 !important;
+  border: 1px solid rgba(201, 169, 97, 0.45) !important;
 }
 
 .admin-dash--dark .admin-dash__btn--ghost:hover,
 .admin-dash--dark .admin-dash__btn--ghost:focus-visible {
-  background: rgba(201, 169, 97, 0.14);
-  color: var(--adm-text) !important;
-  border-color: rgba(201, 169, 97, 0.45);
-}
-.admin-dash--dark .admin-dash__table th,
-.admin-dash--dark .admin-dash__table--modern thead th {
-  background: rgba(201, 169, 97, 0.08) !important;
-  color: var(--adm-text-secondary) !important;
-  border-color: var(--adm-border-soft);
+  background: rgba(201, 169, 97, 0.22) !important;
+  color: #fff8ec !important;
+  border-color: rgba(201, 169, 97, 0.65) !important;
 }
 
-.admin-dash--dark .admin-dash__table td,
-.admin-dash--dark .admin-dash__table--modern tbody td {
-  color: var(--adm-text) !important;
-  border-color: var(--adm-border-soft);
+.admin-dash--dark .admin-dash__btn--danger {
+  background: linear-gradient(135deg, #dc3545, #b02a37) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+  opacity: 1;
 }
 
-.admin-dash--dark .admin-dash__table tr:hover td,
-.admin-dash--dark .admin-dash__table--modern tbody tr:hover td {
-  background: rgba(201, 169, 97, 0.06);
+.admin-dash--dark .admin-dash__btn--danger:hover {
+  opacity: 0.92;
+  color: #fff !important;
 }
-
-.admin-dash--dark .admin-dash__table--modern tbody tr:nth-child(even) td {
-  background: rgba(255, 255, 255, 0.02);
+/* ——— Tables: high-contrast dark surfaces (override light-mode + theme.css table rules) ——— */
+.admin-dash--dark .admin-dash__data-table {
+  background: var(--adm-surface-alt) !important;
+  border-color: var(--adm-border-soft) !important;
 }
 
 .admin-dash--dark .admin-dash__table-wrap--modern,
 .admin-dash--dark .admin-dash__data-table .admin-dash__table-wrap--modern {
-  background: var(--adm-surface-alt);
-  border-color: var(--adm-border-soft);
+  background: var(--adm-surface-alt) !important;
+  border-color: var(--adm-border-soft) !important;
+}
+
+.admin-dash--dark table th,
+.admin-dash--dark .table th,
+.admin-dash--dark .admin-dash__table th,
+.admin-dash--dark .admin-dash__table--modern thead th {
+  background: #161310 !important;
+  color: #f0e4d0 !important;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.35) !important;
+  border-color: rgba(201, 169, 97, 0.35) !important;
+}
+
+.admin-dash--dark table td,
+.admin-dash--dark .table td,
+.admin-dash--dark .admin-dash__table td,
+.admin-dash--dark .admin-dash__table--modern tbody td {
+  background: #1c1814 !important;
+  color: #f5efe6 !important;
+  border-bottom-color: rgba(201, 169, 97, 0.14) !important;
+  border-color: rgba(201, 169, 97, 0.14) !important;
+}
+
+.admin-dash--dark table tbody tr:nth-child(even) td,
+.admin-dash--dark .admin-dash__table tbody tr:nth-child(even) td,
+.admin-dash--dark .admin-dash__table--modern tbody tr:nth-child(even) td {
+  background: #241f1a !important;
+}
+
+.admin-dash--dark table tr:hover td,
+.admin-dash--dark .table tr:hover td,
+.admin-dash--dark .admin-dash__table tr:hover td,
+.admin-dash--dark .admin-dash__table--modern tbody tr:hover td {
+  background: #2e2820 !important;
+}
+
+.admin-dash--dark .admin-dash__table td strong,
+.admin-dash--dark .admin-dash__table--modern tbody td strong,
+.admin-dash--dark .admin-dash__table a,
+.admin-dash--dark .admin-dash__table--modern a {
+  color: #fff8ec !important;
 }
 
 .admin-dash--dark .admin-dash__table-footer {
-  background: var(--adm-surface-alt);
-  border-color: var(--adm-border-soft);
+  background: #1a1612 !important;
+  border-color: var(--adm-border-soft) !important;
+  color: var(--adm-text-secondary) !important;
+}
+
+.admin-dash--dark .admin-dash__table-footer-info,
+.admin-dash--dark .admin-dash__table-empty {
+  color: var(--adm-text-muted) !important;
+}
+
+.admin-dash--dark .admin-dash__table-footer-info strong {
+  color: var(--adm-text) !important;
+}
+
+/* Count / meta badges inside tables */
+.admin-dash--dark .admin-dash__badge {
+  background: rgba(201, 169, 97, 0.28) !important;
+  color: #f5e6c8 !important;
+  border: 1px solid rgba(201, 169, 97, 0.35);
+}
+
+.admin-dash--dark .admin-dash__badge--success {
+  background: rgba(107, 143, 113, 0.32) !important;
+  color: #d4edd8 !important;
+}
+
+.admin-dash--dark .admin-dash__badge--warning {
+  background: rgba(184, 134, 11, 0.32) !important;
+  color: #f5e0a8 !important;
+}
+
+.admin-dash--dark .admin-dash__badge--muted {
+  background: rgba(154, 139, 120, 0.28) !important;
+  color: #e0d4c4 !important;
+}
+
+.admin-dash--dark .admin-dash__badge--info {
+  background: rgba(107, 143, 184, 0.32) !important;
+  color: #d0e4f5 !important;
+}
+
+.admin-dash--dark .admin-dash__category-sub-pill,
+.admin-dash--dark .admin-dash__promo-type-pill {
+  background: rgba(201, 169, 97, 0.28) !important;
+  color: #f5e0a8 !important;
+  border: 1px solid rgba(201, 169, 97, 0.35);
+}
+
+.admin-dash--dark .admin-dash__stock-pill {
+  background: rgba(107, 143, 113, 0.32) !important;
+  color: #d4edd8 !important;
+}
+
+.admin-dash--dark .admin-dash__stock-pill--low {
+  background: rgba(212, 165, 116, 0.32) !important;
+  color: #f5e0a8 !important;
+}
+
+.admin-dash--dark .admin-dash__stock-pill--out {
+  background: rgba(196, 92, 92, 0.32) !important;
+  color: #f5c0c4 !important;
+}
+
+.admin-dash--dark .admin-dash__status-badge {
+  border: 1px solid transparent;
+}
+
+.admin-dash--dark .admin-dash__status-badge--completed {
+  background: rgba(72, 130, 90, 0.42) !important;
+  color: #e8f5ea !important;
+  border-color: rgba(140, 200, 150, 0.45);
+}
+
+.admin-dash--dark .admin-dash__status-badge--processing {
+  background: rgba(184, 134, 11, 0.38) !important;
+  color: #fff4d6 !important;
+  border-color: rgba(232, 200, 120, 0.45);
+}
+
+.admin-dash--dark .admin-dash__status-badge--pending {
+  background: rgba(180, 120, 50, 0.38) !important;
+  color: #ffe8c0 !important;
+  border-color: rgba(240, 190, 120, 0.4);
+}
+
+.admin-dash--dark .admin-dash__status-badge--cancelled {
+  background: rgba(170, 60, 70, 0.4) !important;
+  color: #ffd0d4 !important;
+  border-color: rgba(240, 140, 150, 0.4);
+}
+
+.admin-dash--dark .admin-dash__status-badge--returned {
+  background: rgba(120, 110, 95, 0.4) !important;
+  color: #ebe2d6 !important;
+  border-color: rgba(180, 168, 150, 0.4);
+}
+
+.admin-dash--dark .admin-dash__product-placeholder,
+.admin-dash--dark .admin-dash__table-thumb--empty {
+  background: rgba(201, 169, 97, 0.18) !important;
+  color: #d4c4b0 !important;
+  border: 1px solid rgba(201, 169, 97, 0.22);
+}
+
+.admin-dash--dark .admin-dash__table-sub,
+.admin-dash--dark .admin-dash__artisan-list-bio,
+.admin-dash--dark .admin-dash__promo-banner-desc,
+.admin-dash--dark .admin-dash__discount-product-variant-line {
+  color: #c4b4a0 !important;
+}
+
+.admin-dash--dark .admin-dash__promo-banner-cta,
+.admin-dash--dark .admin-dash__promo-code {
+  color: #e8c878 !important;
+}
+
+.admin-dash--dark .admin-dash__table .admin-dash__btn--ghost,
+.admin-dash--dark .admin-dash__actions .admin-dash__btn--ghost {
+  background: rgba(34, 29, 24, 0.95) !important;
+  border-color: rgba(201, 169, 97, 0.4) !important;
+  color: #e8c878 !important;
+}
+
+.admin-dash--dark .admin-dash__table .admin-dash__btn--ghost:hover,
+.admin-dash--dark .admin-dash__actions .admin-dash__btn--ghost:hover {
+  background: rgba(201, 169, 97, 0.2) !important;
+  color: #fff8ec !important;
 }
 
 .admin-dash--dark .admin-dash__sample-banner,
@@ -322,19 +567,96 @@ html.admin-dash-theme-dark {
 }
 
 .admin-dash--dark .admin-dash__product-tab {
-  color: var(--adm-text-muted);
-  border-color: transparent;
+  background: #2a241e !important;
+  border: 1px solid rgba(201, 169, 97, 0.4) !important;
+  color: #e8dcc8 !important;
 }
 
 .admin-dash--dark .admin-dash__product-tab:hover {
-  color: var(--adm-text);
-  background: rgba(201, 169, 97, 0.08);
+  color: #fff8ec !important;
+  background: rgba(201, 169, 97, 0.18) !important;
+  border-color: rgba(201, 169, 97, 0.55) !important;
 }
 
 .admin-dash--dark .admin-dash__product-tab--active {
-  color: var(--adm-text);
-  background: rgba(201, 169, 97, 0.14);
-  border-color: rgba(201, 169, 97, 0.35);
+  background: linear-gradient(135deg, #c9a961, #b8860b) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+
+.admin-dash--dark .admin-dash__product-tab--error {
+  border-color: rgba(220, 53, 69, 0.55) !important;
+  color: #f5c0c4 !important;
+}
+
+/* Product add/edit form nested cards & list rows */
+.admin-dash--dark .admin-dash__full-desc-point,
+.admin-dash--dark .admin-dash__custom-option,
+.admin-dash--dark .admin-dash__variant-group,
+.admin-dash--dark .admin-dash__discount-variant-group,
+.admin-dash--dark .admin-dash__short-desc-point {
+  background: #241f1a !important;
+  border-color: rgba(201, 169, 97, 0.28) !important;
+}
+
+.admin-dash--dark .admin-dash__full-desc-point {
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(201, 169, 97, 0.28);
+  border-radius: 12px;
+}
+
+.admin-dash--dark .admin-dash__short-desc-point {
+  padding: 0.45rem 0.55rem;
+  border: 1px solid rgba(201, 169, 97, 0.22);
+  border-radius: 10px;
+}
+
+.admin-dash--dark .admin-dash__short-desc-points .admin-dash__panel-desc,
+.admin-dash--dark .admin-dash__full-desc-points .admin-dash__panel-desc {
+  color: #c4b4a0 !important;
+}
+
+.admin-dash--dark .admin-dash__product-images-dropzone,
+.admin-dash--dark .admin-dash__product-images-section,
+.admin-dash--dark .admin-dash__product-images-gallery-thumb,
+.admin-dash--dark .admin-dash__upload-add {
+  background: #241f1a !important;
+  border-color: rgba(201, 169, 97, 0.35) !important;
+  color: #e8dcc8 !important;
+}
+
+.admin-dash--dark .admin-dash__product-images-dropzone-content p,
+.admin-dash--dark .admin-dash__product-images-dropzone-content span,
+.admin-dash--dark .admin-dash__product-images-empty,
+.admin-dash--dark .admin-dash__product-images-title,
+.admin-dash--dark .admin-dash__product-images-gallery-meta {
+  color: #d4c4b0 !important;
+}
+
+.admin-dash--dark .admin-dash__product-images-dropzone--active {
+  background: rgba(201, 169, 97, 0.14) !important;
+  border-color: #c9a961 !important;
+}
+
+.admin-dash--dark .admin-dash__settings-modal-body .admin-dash__panel,
+.admin-dash--dark .admin-dash__settings-modal-body .admin-dash__product-panel {
+  background: #1c1814 !important;
+  border-color: rgba(201, 169, 97, 0.28) !important;
+}
+
+.admin-dash--dark .admin-dash__settings-modal-body .admin-dash__btn--ghost {
+  background: #2a241e !important;
+  color: #f0e4d0 !important;
+  border-color: rgba(201, 169, 97, 0.5) !important;
+}
+
+.admin-dash--dark .admin-dash__short-desc-point-delete,
+.admin-dash--dark .admin-dash__full-desc-point-delete,
+.admin-dash--dark .admin-dash__variant-group-delete,
+.admin-dash--dark .admin-dash__custom-option-delete,
+.admin-dash--dark .admin-dash__product-images-remove {
+  opacity: 1 !important;
+  filter: none !important;
 }
 
 .admin-dash--dark .admin-dash__pill {
@@ -401,10 +723,12 @@ html.admin-dash-theme-dark {
 
 .admin-dash--dark .admin-dash__shipping-zones,
 .admin-dash--dark .admin-dash__variant-group,
+.admin-dash--dark .admin-dash__custom-option,
+.admin-dash--dark .admin-dash__full-desc-point,
 .admin-dash--dark .admin-dash__checkbox-item,
 .admin-dash--dark .admin-dash__banner-upload-wrap {
-  background: var(--adm-surface-alt);
-  border-color: var(--adm-border-soft);
+  background: #241f1a !important;
+  border-color: rgba(201, 169, 97, 0.28) !important;
 }
 
 .admin-dash--dark .admin-dash__confirm-overlay {
@@ -534,36 +858,6 @@ html.admin-dash-theme-dark {
 .admin-dash--dark .admin-dash__theme-toggle--compact {
   margin: 0;
   max-width: 22rem;
-}
-
-.admin-dash--dark .admin-dash__status-badge--completed {
-  background: rgba(107, 143, 113, 0.28);
-  color: #b8d4bb;
-}
-
-.admin-dash--dark .admin-dash__status-badge--processing {
-  background: rgba(201, 169, 97, 0.28);
-  color: #e8dcc8;
-}
-
-.admin-dash--dark .admin-dash__status-badge--pending {
-  background: rgba(212, 165, 116, 0.28);
-  color: #f0d4a8;
-}
-
-.admin-dash--dark .admin-dash__status-badge--cancelled {
-  background: rgba(196, 92, 92, 0.28);
-  color: #f5a5ad;
-}
-
-.admin-dash--dark .admin-dash__status-badge--returned {
-  background: rgba(154, 139, 120, 0.28);
-  color: #c4b8a8;
-}
-
-.admin-dash--dark .admin-dash__badge--muted {
-  background: rgba(154, 139, 120, 0.22);
-  color: #c4b8a8;
 }
 
 /* Section nav, tabs, and dashboard controls */
@@ -871,13 +1165,18 @@ html.admin-dash-theme-dark {
 }
 
 .admin-dash--dark .admin-dash__channel-badge--email {
-  background: rgba(201, 169, 97, 0.2);
-  color: #e8dcc8 !important;
+  background: rgba(184, 134, 11, 0.32) !important;
+  color: #f5e0a8 !important;
 }
 
 .admin-dash--dark .admin-dash__channel-badge--sms {
-  background: rgba(107, 143, 113, 0.22);
-  color: #b8d4bb !important;
+  background: rgba(107, 143, 113, 0.32) !important;
+  color: #d4edd8 !important;
+}
+
+.admin-dash--dark .admin-dash__channel-badge--off {
+  background: rgba(154, 139, 120, 0.28) !important;
+  color: #e0d4c4 !important;
 }
 
 .admin-dash--dark .admin-dash__product-view-discount {
@@ -1007,6 +1306,17 @@ html.admin-dash-theme-dark {
   background: var(--adm-surface-alt) !important;
   border-color: var(--adm-border) !important;
   color: var(--adm-text-secondary) !important;
+}
+
+.admin-dash--dark .admin-dash__settings-modal-body {
+  background: #161310 !important;
+  color: var(--adm-text-secondary) !important;
+}
+
+.admin-dash--dark .admin-dash__settings-modal-foot .admin-dash__btn--ghost {
+  background: #2a241e !important;
+  color: #f0e4d0 !important;
+  border-color: rgba(201, 169, 97, 0.5) !important;
 }
 
 .admin-dash--dark .admin-dash__readonly-value {

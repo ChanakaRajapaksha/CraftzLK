@@ -5,7 +5,7 @@ export default function TopSellingProductsWidget({ products }) {
     return (
       <section className="admin-dash__widget">
         <h2 className="admin-dash__widget-title">Top Selling Products</h2>
-        <p className="admin-dash__widget-empty">No sales data in this period</p>
+        <p className="admin-dash__widget-empty">No product sales details for this period</p>
       </section>
     );
   }

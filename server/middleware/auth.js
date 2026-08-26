@@ -61,7 +61,7 @@ function isStorefrontBrowseRoute(req) {
     return true;
   }
 
-  if (path.startsWith('/api/cms-pages')) {
+  if (path.startsWith('/api/cms-pages/public')) {
     return true;
   }
 

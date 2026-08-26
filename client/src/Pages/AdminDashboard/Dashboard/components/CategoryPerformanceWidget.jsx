@@ -15,7 +15,7 @@ export default function CategoryPerformanceWidget({ categories }) {
     return (
       <section className="admin-dash__widget">
         <h2 className="admin-dash__widget-title">Top Categories</h2>
-        <p className="admin-dash__widget-empty">No category data available</p>
+        <p className="admin-dash__widget-empty">No category details available</p>
       </section>
     );
   }

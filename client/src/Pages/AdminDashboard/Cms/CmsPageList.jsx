@@ -1,56 +1,101 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useOutletContext } from "react-router-dom";
-import { FaPencilAlt, FaPlus } from "react-icons/fa";
-import { MdArticle, MdDelete, MdImage } from "react-icons/md";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useOutletContext, useSearchParams } from "react-router-dom";
+import { FaPencilAlt, FaPlus, FaExternalLinkAlt } from "react-icons/fa";
+import { MdArticle, MdDelete, MdImage, MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import AdminPagination from "../../../Components/AdminDashboard/AdminPagination";
 import AdminConfirmDialog from "../../../Components/AdminDashboard/AdminConfirmDialog";
+import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
-import { deleteData, fetchDataFromApi } from "../../../utils/api";
-import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
+import { MyContext } from "../../../App";
+import { deleteData, fetchDataFromApi, patchData } from "../../../utils/api";
 import { getPromoStatusBadge, formatListDate } from "../Promotions/promoListHelpers";
-import { getPagePath } from "./cmsFormDefaults";
-import { getCmsPageSampleData, isSampleCmsPageId } from "./cmsListUtils";
+import { getPagePath, isSystemCmsPage } from "./cmsFormDefaults";
+import CmsPageFormModal from "./CmsPageFormModal";
 
 export default function CmsPageList() {
   const { setAlertBox } = useOutletContext();
+  const appContext = useContext(MyContext);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [pages, setPages] = useState([]);
-  const [usingSampleData, setUsingSampleData] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingPageId, setEditingPageId] = useState(null);
+  const [statusUpdatingId, setStatusUpdatingId] = useState(null);
 
-  const applySample = () => {
-    setPages(getCmsPageSampleData());
-    setUsingSampleData(true);
-  };
+  const loadPages = useCallback(() => {
+    setLoading(true);
+    setLoadError(false);
 
-  const loadPages = () => {
     fetchDataFromApi("/api/cms-pages")
       .then((res) => {
-        const list = res?.pageList || [];
-        if (list.length) {
-          setPages(list);
-          setUsingSampleData(false);
-        } else {
-          applySample();
+        if (res?.success === false) {
+          throw new Error(res?.message || "Failed to load pages.");
         }
+        setPages(Array.isArray(res?.pageList) ? res.pageList : []);
       })
-      .catch(() => applySample());
-  };
+      .catch(() => {
+        setPages([]);
+        setLoadError(true);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     loadPages();
-  }, []);
+  }, [loadPages]);
+
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    const action = searchParams.get("action");
+
+    if (editId) {
+      setEditingPageId(editId);
+      setModalOpen(true);
+    } else if (action === "add") {
+      setEditingPageId(null);
+      setModalOpen(true);
+    }
+  }, [searchParams]);
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setEditingPageId(null);
+    if (searchParams.get("edit") || searchParams.get("action")) {
+      setSearchParams({}, { replace: true });
+    }
+  };
+
+  const openCreateModal = () => {
+    setEditingPageId(null);
+    setModalOpen(true);
+    setSearchParams({ action: "add" }, { replace: true });
+  };
+
+  const openEditModal = (id) => {
+    setEditingPageId(id);
+    setModalOpen(true);
+    setSearchParams({ edit: id }, { replace: true });
+  };
+
+  const frontendVisiblePages = useMemo(
+    () => pages.filter((item) => item.status === "active"),
+    [pages]
+  );
 
   const stats = useMemo(() => {
     const activeCount = pages.filter((item) => item.status === "active").length;
     const withImages = pages.filter((item) => (item.images || []).length > 0).length;
-    return { total: pages.length, activeCount, withImages };
+    const navCount = pages.filter((item) => item.status === "active" && item.showInNav !== false).length;
+    return { total: pages.length, activeCount, withImages, navCount };
   }, [pages]);
 
   const filtered = useMemo(() => {
@@ -58,7 +103,7 @@ export default function CmsPageList() {
     if (searchKeyword.trim()) {
       const q = searchKeyword.toLowerCase();
       list = list.filter((item) =>
-        [item.title, item.slug, item.seo?.metaTitle].some((v) =>
+        [item.title, item.slug, item.seo?.metaTitle, getPagePath(item.slug)].some((v) =>
           String(v || "").toLowerCase().includes(q)
         )
       );
@@ -78,29 +123,70 @@ export default function CmsPageList() {
     }
   }, [page, totalPages]);
 
+  const toggleStatus = (item) => {
+    const id = item._id || item.id;
+    const nextStatus = item.status === "active" ? "inactive" : "active";
+    setStatusUpdatingId(id);
+
+    patchData(`/api/cms-pages/${id}/status`, { status: nextStatus })
+      .then((res) => {
+        if (res?.success === false) {
+          setAlertBox?.({
+            open: true,
+            error: true,
+            msg: res?.message || "Failed to update page status.",
+          });
+          return;
+        }
+        setAlertBox?.({
+          open: true,
+          error: false,
+          msg: nextStatus === "active" ? "Page is now visible on the storefront." : "Page hidden from storefront.",
+        });
+        loadPages();
+        appContext?.refreshCmsNavPages?.();
+      })
+      .catch((error) => {
+        setAlertBox?.({
+          open: true,
+          error: true,
+          msg: error?.response?.data?.message || "Failed to update page status.",
+        });
+      })
+      .finally(() => setStatusUpdatingId(null));
+  };
+
   const deletePage = (id) => {
-    if (usingSampleData || isSampleCmsPageId(id)) {
-      setPages((prev) => prev.filter((item) => (item._id || item.id) !== id));
-      setAlertBox?.({ open: true, error: false, msg: "Page removed from sample list." });
-      return;
-    }
-    deleteData(`/api/cms-pages/${id}`).then(() => {
-      setAlertBox?.({ open: true, error: false, msg: "Page deleted." });
-      loadPages();
-    });
+    deleteData(`/api/cms-pages/${id}`)
+      .then((res) => {
+        if (res?.success === false) {
+          setAlertBox?.({ open: true, error: true, msg: res?.message || "Failed to delete page." });
+          return;
+        }
+        setAlertBox?.({ open: true, error: false, msg: "Page removed from storefront." });
+        loadPages();
+        appContext?.refreshCmsNavPages?.();
+      })
+      .catch((error) => {
+        setAlertBox?.({
+          open: true,
+          error: true,
+          msg: error?.response?.data?.message || "Failed to delete page.",
+        });
+      });
   };
 
   return (
     <>
       <AdminPageHeader
         title="CMS Pages"
-        subtitle="Manage static pages such as About, Contact, Privacy, and Terms."
+        subtitle="Built-in storefront pages (Home, Shop, Categories, Gifts, Eco) plus any custom pages you add."
         breadcrumbs={[{ label: "CMS Pages" }]}
         action={
-          <Link to={`${ADMIN_BASE}/cms/pages/add`} className="admin-dash__btn">
+          <button type="button" className="admin-dash__btn" onClick={openCreateModal}>
             <FaPlus />
             Add Page
-          </Link>
+          </button>
         }
       />
 
@@ -108,9 +194,15 @@ export default function CmsPageList() {
         <StatCard icon={<MdArticle />} label="Total pages" value={stats.total} />
         <StatCard
           icon={<IoShieldCheckmarkSharp />}
-          label="Active"
+          label="Live on storefront"
           value={stats.activeCount}
           gradient={["#5a7a5e", "#7a9a7e"]}
+        />
+        <StatCard
+          icon={<MdVisibility />}
+          label="In header nav"
+          value={stats.navCount}
+          gradient={["#8b6f47", "#b8860b"]}
         />
         <StatCard
           icon={<MdImage />}
@@ -120,10 +212,62 @@ export default function CmsPageList() {
         />
       </div>
 
+      <section className="admin-dash__panel admin-dash__cms-frontend-panel">
+        <div className="admin-dash__panel-head">
+          <div>
+            <h2 className="admin-dash__panel-title">Visible on frontend</h2>
+            <p className="admin-dash__panel-desc">
+              Active pages currently published on the storefront and available in navigation.
+            </p>
+          </div>
+        </div>
+
+        {loading ? (
+          <AdminLoadingState message="Loading storefront pages…" compact />
+        ) : frontendVisiblePages.length === 0 ? (
+          <p className="admin-dash__table-empty">No active pages on the storefront yet.</p>
+        ) : (
+          <div className="admin-dash__cms-frontend-grid">
+            {frontendVisiblePages.map((item) => {
+              const id = item._id || item.id;
+              const pagePath = getPagePath(item);
+              const viewHref = item.routePath || item.path;
+              return (
+                <article key={id} className="admin-dash__cms-frontend-card">
+                  <div className="admin-dash__cms-frontend-card-head">
+                    <strong>{item.title}</strong>
+                    <span className="admin-dash__cms-type-badge admin-dash__cms-type-badge--system">
+                      {isSystemCmsPage(item) ? "Built-in" : "Custom"}
+                    </span>
+                  </div>
+                  <p className="admin-dash__cms-frontend-path">{pagePath}</p>
+                  {item.isComingSoon ? (
+                    <span className="admin-dash__cms-frontend-soon">Coming soon content</span>
+                  ) : (
+                    <span className="admin-dash__cms-frontend-live">Published content</span>
+                  )}
+                  {viewHref ? (
+                    <a
+                      href={viewHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="admin-dash__cms-frontend-link"
+                    >
+                      View page
+                      <FaExternalLinkAlt aria-hidden />
+                    </a>
+                  ) : null}
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
       <section className="admin-dash__panel">
-        {usingSampleData && (
-          <p className="admin-dash__sample-banner">
-            Showing sample CMS pages — add or edit live pages via Add Page.
+        {loadError && (
+          <p className="admin-dash__sample-banner admin-dash__sample-banner--report">
+            Could not load CMS pages. Check your connection and try again.
           </p>
         )}
 
@@ -161,18 +305,25 @@ export default function CmsPageList() {
               <thead>
                 <tr>
                   <th>Title</th>
+                  <th>Type</th>
                   <th>Slug</th>
                   <th>Path</th>
-                  <th>Images</th>
+                  <th>Frontend</th>
                   <th>Status</th>
                   <th>Updated</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {slice.length === 0 ? (
+                {loading ? (
                   <tr>
-                    <td colSpan={7} className="admin-dash__table-empty">
+                    <td colSpan={8} className="admin-dash__table-empty">
+                      Loading pages…
+                    </td>
+                  </tr>
+                ) : slice.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="admin-dash__table-empty">
                       No pages match your filters.
                     </td>
                   </tr>
@@ -180,30 +331,56 @@ export default function CmsPageList() {
                   slice.map((item) => {
                     const id = item._id || item.id;
                     const statusBadge = getPromoStatusBadge(item.status === "active" ? "active" : "inactive");
+                    const pagePath = getPagePath(item);
+                    const isSystem = isSystemCmsPage(item);
+                    const isUpdating = statusUpdatingId === id;
+
                     return (
                       <tr key={id}>
                         <td><strong>{item.title}</strong></td>
+                        <td>
+                          <span className={`admin-dash__cms-type-badge${isSystem ? " admin-dash__cms-type-badge--system" : " admin-dash__cms-type-badge--custom"}`}>
+                            {isSystem ? "Built-in" : "Custom"}
+                          </span>
+                        </td>
                         <td><code className="admin-dash__slug-code">{item.slug}</code></td>
-                        <td className="admin-dash__cms-path-cell">{getPagePath(item.slug)}</td>
-                        <td>{(item.images || []).length}</td>
+                        <td className="admin-dash__cms-path-cell">{pagePath}</td>
+                        <td>
+                          {item.status === "active" ? (
+                            <span className="admin-dash__cms-frontend-live">Visible</span>
+                          ) : (
+                            <span className="admin-dash__cms-frontend-hidden">Hidden</span>
+                          )}
+                        </td>
                         <td>
                           <span className={statusBadge.className}>{statusBadge.label}</span>
                         </td>
                         <td>{formatListDate(item.dateUpdated || item.updatedAt)}</td>
                         <td>
                           <div className="admin-dash__actions">
-                            <Link
-                              to={`${ADMIN_BASE}/cms/pages/edit/${id}`}
+                            <button
+                              type="button"
+                              className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
+                              title={item.status === "active" ? "Hide from storefront" : "Show on storefront"}
+                              disabled={isUpdating}
+                              onClick={() => toggleStatus(item)}
+                            >
+                              {item.status === "active" ? <MdVisibilityOff /> : <MdVisibility />}
+                            </button>
+                            <button
+                              type="button"
                               className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm"
                               title="Edit"
+                              onClick={() => openEditModal(id)}
                             >
                               <FaPencilAlt />
-                            </Link>
+                            </button>
                             <button
                               type="button"
                               className="admin-dash__btn admin-dash__btn--danger admin-dash__btn--sm admin-dash__btn--icon"
-                              title="Delete"
-                              onClick={() => setDeleteTarget({ id, title: item.title })}
+                              title={isSystem ? "Built-in pages cannot be deleted" : "Delete"}
+                              disabled={isSystem}
+                              onClick={() => !isSystem && setDeleteTarget({ id, title: item.title })}
                             >
                               <MdDelete />
                             </button>
@@ -233,12 +410,23 @@ export default function CmsPageList() {
         </div>
       </section>
 
+      <CmsPageFormModal
+        open={modalOpen}
+        pageId={editingPageId}
+        onClose={closeModal}
+        onSaved={() => {
+          loadPages();
+          appContext?.refreshCmsNavPages?.();
+        }}
+        setAlertBox={setAlertBox}
+      />
+
       <AdminConfirmDialog
         open={Boolean(deleteTarget)}
         title="Delete page?"
         message={
           deleteTarget
-            ? `Are you sure you want to delete "${deleteTarget.title}"? This action cannot be undone.`
+            ? `Remove "${deleteTarget.title}" from the storefront? This cannot be undone.`
             : ""
         }
         confirmLabel="Delete"

@@ -21,7 +21,7 @@ import ThankYou from "./Pages/ThankYou/index.jsx";
 import Orders from "./Pages/Orders/index.jsx";
 import Gifts from "./Pages/Gifts/index.jsx";
 import Eco from "./Pages/Eco/index.jsx";
-import About from "./Pages/About/index.jsx";
+import CmsDynamicPageRoute from "./Pages/Cms/CmsDynamicPageRoute.jsx";
 import MyAccount from "./Pages/MyAccount/index.jsx";
 import SearchPage from "./Pages/Search/index.jsx";
 import VerifyOTP from "./Pages/VerifyOTP/index.jsx";
@@ -108,6 +108,10 @@ import TransactionList from "./Pages/AdminDashboard/Payments/TransactionList";
 import SalesReports from "./Pages/AdminDashboard/Reports/SalesReports";
 import ProductReports from "./Pages/AdminDashboard/Reports/ProductReports";
 import CustomerReports from "./Pages/AdminDashboard/Reports/CustomerReports";
+import PaymentReports from "./Pages/AdminDashboard/Reports/PaymentReports";
+import InventoryReports from "./Pages/AdminDashboard/Reports/InventoryReports";
+import CouponReports from "./Pages/AdminDashboard/Reports/CouponReports";
+import OrderReports from "./Pages/AdminDashboard/Reports/OrderReports";
 import CmsPageList from "./Pages/AdminDashboard/Cms/CmsPageList";
 import AddCmsPage from "./Pages/AdminDashboard/Cms/AddCmsPage";
 import EditCmsPage from "./Pages/AdminDashboard/Cms/EditCmsPage";
@@ -179,6 +183,21 @@ function AppContent() {
       .catch(() => {
         setCategoryData([]);
         setsubCategoryData([]);
+        return [];
+      });
+  }, []);
+
+  const [cmsNavPages, setCmsNavPages] = useState([]);
+
+  const refreshCmsNavPages = useCallback(() => {
+    return fetchDataFromApi("/api/cms-pages/public/nav")
+      .then((res) => {
+        const list = Array.isArray(res?.pageList) ? res.pageList : [];
+        setCmsNavPages(list);
+        return list;
+      })
+      .catch(() => {
+        setCmsNavPages([]);
         return [];
       });
   }, []);
@@ -258,7 +277,8 @@ function AppContent() {
     if (!isAuthInitialized) return;
 
     refreshCategoryData();
-  }, [isAuthInitialized, refreshCategoryData]);
+    refreshCmsNavPages();
+  }, [isAuthInitialized, refreshCategoryData, refreshCmsNavPages]);
 
   useEffect(() => {
     if (!isAuthInitialized) return;
@@ -490,6 +510,8 @@ function AppContent() {
     subCategoryData,
     setsubCategoryData,
     refreshCategoryData,
+    cmsNavPages,
+    refreshCmsNavPages,
     openProductDetailsModal,
     alertBox,
     setAlertBox,
@@ -583,7 +605,6 @@ function AppContent() {
         />
         <Route exact={true} path="/gifts" element={<Gifts />} />
         <Route exact={true} path="/eco" element={<Eco />} />
-        <Route exact={true} path="/about" element={<About />} />
         <Route
           exact={true}
           path="/my-account"
@@ -596,6 +617,7 @@ function AppContent() {
         <Route exact={true} path="/search" element={<SearchPage />} />
         <Route exact={true} path="/verifyOTP" element={<VerifyOTP />} />
         <Route exact={true} path="/changePassword" element={<AuthGuard><ChangePassword /></AuthGuard>} />
+        <Route path="/:slug" element={<CmsDynamicPageRoute />} />
 
         {/* Admin dashboard (admin role only) */}
         <Route path="/dashboard" element={<AdminGuard><AdminLayout /></AdminGuard>}>
@@ -638,6 +660,10 @@ function AppContent() {
           <Route path="reports/sales" element={<SalesReports />} />
           <Route path="reports/products" element={<ProductReports />} />
           <Route path="reports/customers" element={<CustomerReports />} />
+          <Route path="reports/payments" element={<PaymentReports />} />
+          <Route path="reports/inventory" element={<InventoryReports />} />
+          <Route path="reports/coupons" element={<CouponReports />} />
+          <Route path="reports/orders" element={<OrderReports />} />
           <Route path="cms/pages" element={<CmsPageList />} />
           <Route path="cms/pages/add" element={<AddCmsPage />} />
           <Route path="cms/pages/edit/:id" element={<EditCmsPage />} />

@@ -117,7 +117,7 @@ function isGuestBrowsableEndpoint(url = '') {
   if (isGuestBrowsableProductQuestions(url)) return true;
   if (isGuestBrowsableShippingMethods(url)) return true;
   if (path.startsWith('/api/artisans')) return true;
-  if (path.startsWith('/api/cms-pages')) return true;
+  if (path.startsWith('/api/cms-pages/public')) return true;
 
   if (path.startsWith('/api/category/')) {
     if (
@@ -306,6 +306,57 @@ export const fetchDataFromApi = async (url) => {
         return error;
     }
 }
+
+function parseFilenameFromDisposition(disposition, fallbackFilename) {
+  if (!disposition) return fallbackFilename;
+  const utfMatch = /filename\*=UTF-8''([^;]+)/i.exec(disposition);
+  if (utfMatch?.[1]) {
+    try {
+      return decodeURIComponent(utfMatch[1].trim());
+    } catch {
+      return utfMatch[1].trim();
+    }
+  }
+  const plainMatch = /filename="?([^";]+)"?/i.exec(disposition);
+  return plainMatch?.[1]?.trim() || fallbackFilename;
+}
+
+/** Download a binary file (PDF/Excel) from an authenticated API endpoint. */
+export const downloadFileFromApi = async (url, fallbackFilename = "download") => {
+  try {
+    const response = await apiClient.get(url, { responseType: "blob" });
+    const contentType = response.headers["content-type"] || "application/octet-stream";
+    const filename = parseFilenameFromDisposition(
+      response.headers["content-disposition"],
+      fallbackFilename
+    );
+    const blob = new Blob([response.data], { type: contentType });
+    const objectUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = objectUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(objectUrl);
+    return { success: true, filename };
+  } catch (error) {
+    let message = error.message || "Failed to download file.";
+    const data = error.response?.data;
+    if (data instanceof Blob) {
+      try {
+        const text = await data.text();
+        const parsed = JSON.parse(text);
+        if (parsed?.message) message = parsed.message;
+      } catch {
+        /* keep default message */
+      }
+    } else if (data?.message) {
+      message = data.message;
+    }
+    return { success: false, message };
+  }
+};
 
 export function isApiSuccessResponse(res) {
     if (!res || typeof res !== "object") return false;

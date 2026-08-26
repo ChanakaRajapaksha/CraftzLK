@@ -1,8 +1,12 @@
+import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useContext } from "react";
 import { MyContext } from "../../App";
 import { useAppSelector } from "../../store/hooks";
 import { selectIsLoggedIn } from "../../store/slices/authSlice";
+import AdminBootLoader from "./AdminBootLoader";
+
+const BOOT_MIN_MS = 520;
 
 function getStoredUser() {
   try {
@@ -13,6 +17,11 @@ function getStoredUser() {
   }
 }
 
+function prefersReducedMotion() {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
 export default function AdminGuard({ children }) {
   const location = useLocation();
   const context = useContext(MyContext);
@@ -20,9 +29,16 @@ export default function AdminGuard({ children }) {
   const isLogin = useAppSelector(selectIsLoggedIn);
   const user = context?.user?.role ? context.user : getStoredUser();
   const role = user?.role;
+  const [minHoldDone, setMinHoldDone] = useState(false);
 
-  if (!isAuthInitialized) {
-    return null;
+  useEffect(() => {
+    const delay = prefersReducedMotion() ? 80 : BOOT_MIN_MS;
+    const timer = window.setTimeout(() => setMinHoldDone(true), delay);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  if (!isAuthInitialized || !minHoldDone) {
+    return <AdminBootLoader />;
   }
 
   if (!isLogin) {

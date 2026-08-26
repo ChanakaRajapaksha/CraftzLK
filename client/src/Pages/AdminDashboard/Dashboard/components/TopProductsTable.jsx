@@ -9,7 +9,7 @@ export default function TopProductsTable({ products }) {
     return (
       <section className="admin-dash__panel">
         <h2 className="admin-dash__panel-title">Product Performance</h2>
-        <p className="admin-dash__panel-desc">No products to display</p>
+        <p className="admin-dash__widget-empty">No product details available</p>
       </section>
     );
   }

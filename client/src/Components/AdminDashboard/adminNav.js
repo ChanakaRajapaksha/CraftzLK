@@ -111,15 +111,16 @@ export const adminNavItems = [
       { label: "Sales Reports", path: `${ADMIN_BASE}/reports/sales` },
       { label: "Product Reports", path: `${ADMIN_BASE}/reports/products` },
       { label: "Customer Reports", path: `${ADMIN_BASE}/reports/customers` },
+      { label: "Payment Report", path: `${ADMIN_BASE}/reports/payments` },
+      { label: "Inventory Report", path: `${ADMIN_BASE}/reports/inventory` },
+      { label: "Coupon Report", path: `${ADMIN_BASE}/reports/coupons` },
+      { label: "Order Report", path: `${ADMIN_BASE}/reports/orders` },
     ],
   },
   {
     key: "cms",
     label: "CMS Pages",
-    children: [
-      { label: "Pages", path: `${ADMIN_BASE}/cms/pages` },
-      { label: "Add Page", path: `${ADMIN_BASE}/cms/pages/add` },
-    ],
+    children: [{ label: "Pages", path: `${ADMIN_BASE}/cms/pages` }],
   },
   {
     key: "notifications",

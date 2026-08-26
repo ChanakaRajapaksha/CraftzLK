@@ -17,13 +17,21 @@ import {
 } from "recharts";
 import { useChartTooltipStyle } from "../../../../Components/AdminDashboard/useChartTooltipStyle";
 
+function hasChartSeriesData(data) {
+  if (!Array.isArray(data) || data.length === 0) return false;
+  return data.some(
+    (point) => Number(point?.current || 0) !== 0 || Number(point?.previous || 0) !== 0
+  );
+}
+
 export function SalesTrendChart({ data, metric, onMetricChange, profitMetricLabel = "Profit" }) {
-  const { tooltipStyle, axisTick, axisTickSm } = useChartTooltipStyle();
+  const { tooltipStyle, axisTick } = useChartTooltipStyle();
   const metrics = [
     { id: "revenue", label: "Revenue" },
     { id: "orders", label: "Paid orders" },
     { id: "profit", label: profitMetricLabel },
   ];
+  const hasData = hasChartSeriesData(data);
 
   const chartTitle =
     metric === "profit" ? profitMetricLabel : metric === "orders" ? "Paid Orders" : "Sales Revenue";
@@ -36,21 +44,30 @@ export function SalesTrendChart({ data, metric, onMetricChange, profitMetricLabe
   const metricLabel =
     metric === "profit" ? profitMetricLabel : metric === "orders" ? "Paid orders" : "Revenue";
 
+  const emptyLabel =
+    metric === "profit"
+      ? "No profit details available"
+      : metric === "orders"
+        ? "No paid order details for this period"
+        : "No sales details for this period";
+
   return (
     <section className="admin-dash__widget admin-dash__widget--chart">
       <div className="admin-dash__widget-head">
         <div>
           <h2 className="admin-dash__widget-title">{chartTitle}</h2>
-          <div className="admin-dash__chart-legend-inline">
-            <span className="admin-dash__chart-legend-item">
-              <span className="admin-dash__chart-legend-line admin-dash__chart-legend-line--current" />
-              This Year
-            </span>
-            <span className="admin-dash__chart-legend-item">
-              <span className="admin-dash__chart-legend-line admin-dash__chart-legend-line--previous" />
-              Last Year
-            </span>
-          </div>
+          {hasData && (
+            <div className="admin-dash__chart-legend-inline">
+              <span className="admin-dash__chart-legend-item">
+                <span className="admin-dash__chart-legend-line admin-dash__chart-legend-line--current" />
+                This Year
+              </span>
+              <span className="admin-dash__chart-legend-item">
+                <span className="admin-dash__chart-legend-line admin-dash__chart-legend-line--previous" />
+                Last Year
+              </span>
+            </div>
+          )}
         </div>
         <div className="admin-dash__pill-group">
           {metrics.map((m) => (
@@ -66,7 +83,7 @@ export function SalesTrendChart({ data, metric, onMetricChange, profitMetricLabe
         </div>
       </div>
       <div className="admin-dash__chart">
-        {data?.length ? (
+        {hasData ? (
           <ResponsiveContainer width="100%" height={320}>
             <LineChart data={data} margin={{ top: 12, right: 16, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="4 4" stroke="rgba(201,169,97,0.2)" vertical={false} />
@@ -102,7 +119,7 @@ export function SalesTrendChart({ data, metric, onMetricChange, profitMetricLabe
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <div className="admin-dash__chart-empty">No sales data for this period</div>
+          <div className="admin-dash__chart-empty">{emptyLabel}</div>
         )}
       </div>
     </section>
@@ -159,7 +176,7 @@ export function RevenueChartPanel({ data, period, onPeriodChange }) {
             </AreaChart>
           </ResponsiveContainer>
         ) : (
-          <div className="admin-dash__chart-empty">No revenue data for this period</div>
+          <div className="admin-dash__chart-empty">No revenue details for this period</div>
         )}
       </div>
     </section>
@@ -211,7 +228,7 @@ export function OrderStatusChart({ data }) {
             </ul>
           </>
         ) : (
-          <div className="admin-dash__chart-empty">No orders yet</div>
+          <div className="admin-dash__chart-empty">No order details available</div>
         )}
       </div>
     </section>
@@ -240,7 +257,7 @@ export function TopProductsChart({ data }) {
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <div className="admin-dash__chart-empty">No product sales data</div>
+          <div className="admin-dash__chart-empty">No product sales details</div>
         )}
       </div>
     </section>
@@ -269,7 +286,7 @@ export function TopCategoriesChart({ data }) {
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <div className="admin-dash__chart-empty">No category data</div>
+          <div className="admin-dash__chart-empty">No category details available</div>
         )}
       </div>
     </section>
@@ -307,7 +324,7 @@ export function CustomerGrowthChart({ data }) {
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <div className="admin-dash__chart-empty">No customer data</div>
+          <div className="admin-dash__chart-empty">No customer details available</div>
         )}
       </div>
     </section>

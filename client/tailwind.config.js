@@ -1,8 +1,5 @@
-import { createRequire } from 'module';
-
-const require = createRequire(import.meta.url);
-
 /** @type {import('tailwindcss').Config} */
+// eslint-disable-next-line import/no-anonymous-default-export
 export default {
   content: [
     './index.html',
