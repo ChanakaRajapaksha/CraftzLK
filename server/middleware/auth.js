@@ -37,6 +37,8 @@ function isStorefrontBrowseRoute(req) {
 
   if (exactPaths.has(path)) return true;
 
+  if (path.startsWith('/api/search')) return true;
+
   if (path.startsWith('/api/products') && !path.startsWith('/api/products/admin')) {
     return true;
   }

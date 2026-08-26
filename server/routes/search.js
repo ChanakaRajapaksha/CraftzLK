@@ -3,6 +3,7 @@ const router = express.Router();
 const searchController = require('../controllers/searchController');
 const asyncHandler = require('../middleware/asyncHandler');
 
+router.get('/popular', asyncHandler(searchController.popular.bind(searchController)));
 router.get('/', asyncHandler(searchController.search.bind(searchController)));
 
 module.exports = router;

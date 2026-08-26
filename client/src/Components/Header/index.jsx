@@ -171,12 +171,42 @@ const Header = () => {
   }, [isOpenNav, context.windowWidth]);
 
   const openSearch = () => {
-    setIsOpenSearch(!isOpenSearch);
+    setIsOpenSearch(true);
   };
 
   const closeSearch = () => {
     setIsOpenSearch(false);
   };
+
+  useEffect(() => {
+    if (!isOpenSearch) {
+      return undefined;
+    }
+
+    const scrollY = window.scrollY;
+    const prevBodyOverflow = document.body.style.overflow;
+    const prevBodyPosition = document.body.style.position;
+    const prevBodyTop = document.body.style.top;
+    const prevBodyWidth = document.body.style.width;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+    document.documentElement.style.overflow = "hidden";
+    document.body.classList.add("search-panel-open");
+
+    return () => {
+      document.body.style.overflow = prevBodyOverflow;
+      document.body.style.position = prevBodyPosition;
+      document.body.style.top = prevBodyTop;
+      document.body.style.width = prevBodyWidth;
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      document.body.classList.remove("search-panel-open");
+      window.scrollTo(0, scrollY);
+    };
+  }, [isOpenSearch]);
 
   const closeTopStrip = () => {
     setIsTopStripVisible(false);
@@ -205,26 +235,17 @@ const Header = () => {
               transition={{ duration: 0.25 }}
               onClick={closeSearch}
             />
-            <motion.div
-              className="global-search-center"
-              initial={{ opacity: 0, scale: 0.92 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.92 }}
-              transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+            <motion.aside
+              className="global-search-panel"
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ duration: 0.32, ease: [0.25, 0.46, 0.45, 0.94] }}
               onClick={(e) => e.stopPropagation()}
+              aria-label="Search panel"
             >
-              <div className="global-search-box">
-                <SearchBox closeSearch={closeSearch} />
-              </div>
-              <button
-                type="button"
-                className="global-search-close"
-                onClick={closeSearch}
-                aria-label="Close search"
-              >
-                <IoMdClose aria-hidden="true" />
-              </button>
-            </motion.div>
+              <SearchBox closeSearch={closeSearch} />
+            </motion.aside>
           </>
         )}
       </AnimatePresence>

@@ -1527,6 +1527,12 @@ textarea::placeholder {
   color: rgba(255, 255, 255, 0.4) !important;
 }
 
+.global-search-panel input::placeholder,
+.search-panel__input::placeholder {
+  color: rgba(61, 40, 23, 0.5) !important;
+  opacity: 1 !important;
+}
+
 /* Select Dropdowns */
 .MuiSelect-select,
 select.form-control {
