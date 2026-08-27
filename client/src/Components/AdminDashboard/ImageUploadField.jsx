@@ -2,11 +2,10 @@ import { useEffect, useState } from "react";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import { IoCloseSharp } from "react-icons/io5";
 import {
-  deleteData,
   deleteImages,
-  fetchDataFromApi,
   uploadImage,
 } from "../../utils/api";
+import ImageUploadController from "../../controllers/imageUpload.controller.js";
 
 const ACCEPTED = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
@@ -25,13 +24,13 @@ export default function ImageUploadField({
 
   useEffect(() => {
     if (!clearStagingOnMount) return;
-    fetchDataFromApi("/api/imageUpload").then((res) => {
+    ImageUploadController.getStagingImages().then((res) => {
       if (res?.length) {
         res.forEach((item) => {
           item?.images?.forEach((img) => {
             if (deleteImageEndpoint) {
               deleteImages(`${deleteImageEndpoint}?img=${encodeURIComponent(img)}`).then(() => {
-                deleteData("/api/imageUpload/deleteAllImages");
+                ImageUploadController.clearStagingImages();
               });
             }
           });
@@ -41,7 +40,7 @@ export default function ImageUploadField({
   }, [clearStagingOnMount, deleteImageEndpoint]);
 
   const refreshPreviews = () => {
-    fetchDataFromApi("/api/imageUpload").then((response) => {
+    ImageUploadController.getStagingImages().then((response) => {
       if (response?.length) {
         const imgArr = [];
         response.forEach((item) => {

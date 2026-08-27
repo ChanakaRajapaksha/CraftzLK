@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { fetchDataFromApi } from "../../../utils/api";
+import ReportController from "../../../controllers/report.controller.js";
 import { buildReportQueryParams } from "./useReportFilters";
 
 export default function useReportData(endpoint, {
@@ -28,7 +28,7 @@ export default function useReportData(endpoint, {
       productId,
     });
 
-    return fetchDataFromApi(`/api/reports/${endpoint}?${params.toString()}`)
+    return ReportController.getByType(endpoint, params.toString())
       .then((res) => {
         if (!res || res.success === false) {
           throw new Error(res?.message || "Failed to load report.");

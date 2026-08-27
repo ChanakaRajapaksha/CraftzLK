@@ -11,6 +11,15 @@ import Header from "./Components/Header/index.jsx";
 import HomePageFooter from "./Components/HomePageFooter";
 import { createContext, useCallback, useEffect, useState } from "react";
 import axios from "axios";
+import {
+  CartController,
+  CategoryController,
+  CmsController,
+  ProductController,
+  SettingsController,
+} from "./controllers/index.js";
+import { useAppDispatch, useAppSelector } from "./store/hooks";
+import { clearAuth, initializeAuth, revalidateAuth, selectIsLoggedIn, setAuthUser } from "./store/slices/authSlice";
 import ProductModal from "./Components/ProductModal/index.jsx";
 import Cart from "./Pages/Cart/index.jsx";
 import SignIn from "./Pages/SignIn/index.jsx";
@@ -28,9 +37,6 @@ import VerifyOTP from "./Pages/VerifyOTP/index.jsx";
 import ChangePassword from "./Pages/ChangePassword/index.jsx";
 import ForgotPassword from "./Pages/ForgotPassword/index.jsx";
 import ResetPassword from "./Pages/ResetPassword/index.jsx";
-import { deleteData, editData, fetchDataFromApi, postData } from "./utils/api";
-import { useAppDispatch, useAppSelector } from "./store/hooks";
-import { clearAuth, initializeAuth, revalidateAuth, selectIsLoggedIn, setAuthUser } from "./store/slices/authSlice";
 import { setSessionExpiredHandler } from "./utils/sessionEvents";
 import HandcraftAlert from "./Components/HandcraftAlert";
 import CartDrawer from "./Components/CartDrawer";
@@ -166,7 +172,7 @@ function AppContent() {
   const [subCategoryData, setsubCategoryData] = useState([]);
 
   const refreshCategoryData = useCallback(() => {
-    return fetchDataFromApi("/api/category/active")
+    return CategoryController.getActive()
       .then((res) => {
         const list = res?.categoryList || [];
         setCategoryData(list);
@@ -190,7 +196,7 @@ function AppContent() {
   const [cmsNavPages, setCmsNavPages] = useState([]);
 
   const refreshCmsNavPages = useCallback(() => {
-    return fetchDataFromApi("/api/cms-pages/public/nav")
+    return CmsController.getPublicNav()
       .then((res) => {
         const list = Array.isArray(res?.pageList) ? res.pageList : [];
         setCmsNavPages(list);
@@ -228,7 +234,7 @@ function AppContent() {
   useEffect(() => {
     if (!isAuthInitialized) return;
 
-    fetchDataFromApi("/api/settings")
+    SettingsController.getSettings()
       .then((res) => {
         const brand = applyStoreBrandFromSettings(res?.settings);
         setStoreLogo(brand.storeLogo);
@@ -318,7 +324,7 @@ function AppContent() {
   const getCartData = () => {
     if (!isLogin) return;
 
-    fetchDataFromApi("/api/cart")
+    CartController.getCart()
       .then((res) => {
         const apiItems = Array.isArray(res) ? res : [];
         setCartData((prev) => {
@@ -373,7 +379,7 @@ function AppContent() {
 
     if (isLogin) {
       const qty = Math.max(1, quantity);
-      editData(`/api/cart/${item._id || item.id}`, {
+      CartController.updateItem(item._id || item.id, {
         productTitle: item.productTitle,
         image: item.image,
         rating: item.rating,
@@ -401,12 +407,12 @@ function AppContent() {
     }
 
     if (isLogin) {
-      deleteData(`/api/cart/${item._id || item.id}`).then(() => getCartData());
+      CartController.removeItem(item._id || item.id).then(() => getCartData());
     }
   };
 
   const openProductDetailsModal = (id, status) => {
-    fetchDataFromApi(`/api/products/${id}`).then((res) => {
+    ProductController.getById(id).then((res) => {
       setProductData(res);
       setisOpenProductModal(status);
     });
@@ -463,7 +469,7 @@ function AppContent() {
       userId: user?.userId || data.userId,
     };
 
-    postData("/api/cart/add", payload)
+    CartController.addItem(payload)
       .then((res) => {
         if (res?.success === false || res?.status === false) {
           setAlertBox({

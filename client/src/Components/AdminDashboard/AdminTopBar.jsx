@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { IoMdClose, IoMdMenu } from "react-icons/io";
 import { MdDarkMode, MdLightMode, MdNotificationsNone, MdStorefront } from "react-icons/md";
-import { fetchDataFromApi } from "../../utils/api";
+import AdminNotificationController from "../../controllers/adminNotification.controller.js";
 import { STOREFRONT_HOME_PATH } from "./adminNav";
 import AdminNotificationsPanel from "./AdminNotificationsPanel";
 import { useAdminTheme } from "./AdminThemeContext";
@@ -19,7 +19,7 @@ export default function AdminTopBar({ mobileNavOpen = false, onToggleMobileNav }
 
   const loadUnreadCount = useCallback(async () => {
     try {
-      const res = await fetchDataFromApi("/api/admin-notifications");
+      const res = await AdminNotificationController.getList();
       if (typeof res?.unreadCount === "number") {
         setUnreadCount(res.unreadCount);
       } else {

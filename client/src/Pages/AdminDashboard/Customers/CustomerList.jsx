@@ -7,7 +7,7 @@ import { MdShoppingBag, MdPayments } from "react-icons/md";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import AdminPagination from "../../../Components/AdminDashboard/AdminPagination";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
-import { fetchDataFromApi } from "../../../utils/api";
+import CustomerController from "../../../controllers/customer.controller.js";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import {
   formatCurrency,
@@ -24,7 +24,7 @@ export default function CustomerList() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const loadCustomers = () => {
-    fetchDataFromApi("/api/customers")
+    CustomerController.getList()
       .then((res) => {
         const list = res?.customerList || [];
         setCustomers(list.map(normalizeCustomer));

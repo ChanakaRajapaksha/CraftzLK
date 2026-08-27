@@ -6,7 +6,7 @@ import { IoShieldCheckmarkSharp } from "react-icons/io5";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import AdminPagination from "../../../Components/AdminDashboard/AdminPagination";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
-import { fetchDataFromApi } from "../../../utils/api";
+import PaymentController from "../../../controllers/payment.controller.js";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import { getMethodCodeLabel } from "./paymentFormDefaults";
 import { getPaymentMethodSampleData } from "./paymentListUtils";
@@ -26,7 +26,7 @@ export default function PaymentMethodList() {
   };
 
   const loadMethods = () => {
-    fetchDataFromApi("/api/payments/methods")
+    PaymentController.getMethods()
       .then((res) => {
         const list = res?.methodList || [];
         if (list.length) {

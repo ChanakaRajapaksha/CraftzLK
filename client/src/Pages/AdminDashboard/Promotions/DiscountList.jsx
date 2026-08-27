@@ -9,7 +9,7 @@ import AdminPagination from "../../../Components/AdminDashboard/AdminPagination"
 import AdminConfirmDialog from "../../../Components/AdminDashboard/AdminConfirmDialog";
 import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
-import { deleteData, fetchDataFromApi } from "../../../utils/api";
+import PromoDiscountController from "../../../controllers/promoDiscount.controller.js";
 import {
   formatDiscountTarget,
   formatDiscountType,
@@ -39,7 +39,7 @@ export default function DiscountList() {
     setLoading(true);
     setLoadError(false);
 
-    fetchDataFromApi("/api/promo-discounts")
+    PromoDiscountController.getList()
       .then((res) => {
         if (res?.success === false) {
           throw new Error(res?.message || "Failed to load discounts.");
@@ -137,7 +137,7 @@ export default function DiscountList() {
   }, [page, totalPages]);
 
   const deleteDiscount = (id) => {
-    deleteData(`/api/promo-discounts/${id}`)
+    PromoDiscountController.remove(id)
       .then((res) => {
         if (res?.success === false) {
           setAlertBox?.({

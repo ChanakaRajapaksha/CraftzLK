@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
-import { fetchDataFromApi, postData } from "../../../utils/api";
+import InventoryController from "../../../controllers/inventory.controller.js";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import {
   defaultStockAdjustmentFields,
@@ -34,13 +34,13 @@ export default function StockAdjustment() {
       setFormFields((prev) => ({ ...prev, productId }));
     }
 
-    fetchDataFromApi("/api/inventory/stock")
+    InventoryController.getStock()
       .then((res) => {
         setProducts(res?.stockList || []);
       })
       .catch(() => setProducts([]));
 
-    fetchDataFromApi("/api/inventory/adjustments")
+    InventoryController.getAdjustments()
       .then((res) => setRecentAdjustments(res?.adjustmentList || []))
       .catch(() => setRecentAdjustments([]));
   }, [searchParams]);
@@ -72,7 +72,7 @@ export default function StockAdjustment() {
     }
 
     setIsLoading(true);
-    postData("/api/inventory/adjust", {
+    InventoryController.adjust( {
       productId: formFields.productId,
       action: formFields.action,
       quantity: Number(formFields.quantity),

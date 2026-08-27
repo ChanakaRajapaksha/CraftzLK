@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { IoClose } from "react-icons/io5";
-import { deleteData, editData, fetchDataFromApi, postData } from "../../../utils/api";
+import ArtisanController from "../../../controllers/artisan.controller.js";
+import ImageUploadController from "../../../controllers/imageUpload.controller.js";
 import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import ArtisanForm from "./ArtisanForm";
 import { artisanToForm, defaultArtisanFields, formToPayload } from "./artisanFormDefaults";
@@ -32,7 +33,7 @@ export default function ArtisanFormModal({
     }
 
     setLoading(true);
-    fetchDataFromApi(`/api/artisans/${artisanId}`)
+    ArtisanController.getById(artisanId)
       .then((res) => {
         const artisan = res?.artisan || res?.artisanData?.[0];
         if (artisan) {
@@ -55,8 +56,8 @@ export default function ArtisanFormModal({
 
     const payload = formToPayload(formFields, previews);
     const request = isEdit
-      ? editData(`/api/artisans/${artisanId}`, payload)
-      : postData("/api/artisans/create", payload);
+      ? ArtisanController.update(artisanId, payload)
+      : ArtisanController.create( payload);
 
     request
       .then((res) => {
@@ -71,7 +72,7 @@ export default function ArtisanFormModal({
           return;
         }
 
-        deleteData("/api/imageUpload/deleteAllImages").catch(() => {});
+        ImageUploadController.clearStagingImages().catch(() => {});
         setAlertBox?.({
           open: true,
           error: false,

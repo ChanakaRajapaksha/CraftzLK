@@ -9,7 +9,7 @@ footer.home-page-footer {
   max-height: none;
   margin: 0;
   padding: 0;
-  overflow: visible;
+  overflow: hidden;
   flex: 0 0 auto;
   flex-grow: 0;
   align-self: stretch;
@@ -24,11 +24,50 @@ footer.home-page-footer {
   color: #faf8f3;
 }
 
+/* Full-width brand watermark — sits behind footer content at the bottom */
+.home-page-footer__brand-watermark {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  padding: 0 clamp(0.75rem, 3vw, 2rem);
+  pointer-events: none;
+  user-select: none;
+}
+
+.home-page-footer__brand-watermark-text {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  font-family: var(--font-heading, "Playfair Display", serif);
+  font-size: clamp(3.75rem, calc(100vw / 7.15), 13rem);
+  font-weight: 700;
+  line-height: 0.82;
+  letter-spacing: clamp(0.03em, 0.65vw, 0.12em);
+  text-align: center;
+  white-space: nowrap;
+  color: transparent;
+  background: linear-gradient(
+    180deg,
+    rgba(250, 248, 243, 0.1) 0%,
+    rgba(201, 169, 97, 0.045) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  transform: translateY(24%);
+}
+
 /* —— Footer chrome —— */
 .home-page-footer__chrome {
+  position: relative;
+  z-index: 1;
   border-top: 1px solid rgba(201, 169, 97, 0.18);
   padding: clamp(2rem, 4vw, 2.75rem) clamp(1rem, 4vw, 2rem)
-    clamp(1.5rem, 3vw, 2rem);
+    clamp(2.25rem, 4.5vw, 3rem);
 }
 
 .home-page-footer__chrome-inner {

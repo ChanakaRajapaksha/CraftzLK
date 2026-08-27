@@ -9,7 +9,7 @@ import AdminConfirmDialog from "../../../Components/AdminDashboard/AdminConfirmD
 import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
 import { MyContext } from "../../../App";
-import { deleteData, fetchDataFromApi, patchData } from "../../../utils/api";
+import CmsController from "../../../controllers/cms.controller.js";
 import { getPromoStatusBadge, formatListDate } from "../Promotions/promoListHelpers";
 import { getPagePath, isSystemCmsPage } from "./cmsFormDefaults";
 import CmsPageFormModal from "./CmsPageFormModal";
@@ -34,7 +34,7 @@ export default function CmsPageList() {
     setLoading(true);
     setLoadError(false);
 
-    fetchDataFromApi("/api/cms-pages")
+    CmsController.getList()
       .then((res) => {
         if (res?.success === false) {
           throw new Error(res?.message || "Failed to load pages.");
@@ -128,7 +128,7 @@ export default function CmsPageList() {
     const nextStatus = item.status === "active" ? "inactive" : "active";
     setStatusUpdatingId(id);
 
-    patchData(`/api/cms-pages/${id}/status`, { status: nextStatus })
+    CmsController.updateStatus(id, nextStatus)
       .then((res) => {
         if (res?.success === false) {
           setAlertBox?.({
@@ -157,7 +157,7 @@ export default function CmsPageList() {
   };
 
   const deletePage = (id) => {
-    deleteData(`/api/cms-pages/${id}`)
+    CmsController.remove(id)
       .then((res) => {
         if (res?.success === false) {
           setAlertBox?.({ open: true, error: true, msg: res?.message || "Failed to delete page." });

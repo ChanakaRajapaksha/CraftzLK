@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { IoClose } from "react-icons/io5";
-import { editData, fetchDataFromApi, postData } from "../../../utils/api";
+import PromoDiscountController from "../../../controllers/promoDiscount.controller.js";
 import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import DiscountForm from "./DiscountForm";
 import {
@@ -43,7 +43,7 @@ export default function DiscountFormModal({
     }
 
     setLoading(true);
-    fetchDataFromApi(`/api/promo-discounts/${discountId}`)
+    PromoDiscountController.getById(discountId)
       .then((res) => {
         if (res?.success === false) {
           setAlertBox?.({ open: true, error: true, msg: res?.message || "Discount not found." });
@@ -69,8 +69,8 @@ export default function DiscountFormModal({
 
     const payload = payloadFromForm || formToPayload(formFields);
     const request = isEdit
-      ? editData(`/api/promo-discounts/${discountId}`, payload)
-      : postData("/api/promo-discounts/create", payload);
+      ? PromoDiscountController.update(discountId, payload)
+      : PromoDiscountController.create( payload);
 
     request
       .then((res) => {

@@ -8,7 +8,7 @@ import AdminPagination from "../../../Components/AdminDashboard/AdminPagination"
 import AdminConfirmDialog from "../../../Components/AdminDashboard/AdminConfirmDialog";
 import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
-import { deleteData, fetchDataFromApi } from "../../../utils/api";
+import CouponController from "../../../controllers/coupon.controller.js";
 import { formatCouponDiscount, formatUsage } from "./couponFormDefaults";
 import { formatListDate, getPromoStatusBadge } from "./promoListHelpers";
 import CouponFormModal from "./CouponFormModal";
@@ -32,7 +32,7 @@ export default function CouponList() {
     setLoading(true);
     setLoadError(false);
 
-    fetchDataFromApi("/api/coupons")
+    CouponController.getList()
       .then((res) => {
         if (res?.success === false) {
           throw new Error(res?.message || "Failed to load coupons.");
@@ -121,7 +121,7 @@ export default function CouponList() {
   }, [page, totalPages]);
 
   const deleteCoupon = (id) => {
-    deleteData(`/api/coupons/${id}`)
+    CouponController.remove(id)
       .then((res) => {
         if (res?.success === false) {
           setAlertBox?.({

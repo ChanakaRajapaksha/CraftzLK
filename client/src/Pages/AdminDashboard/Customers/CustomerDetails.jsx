@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Rating from "@mui/material/Rating";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
-import { fetchDataFromApi } from "../../../utils/api";
+import CustomerController from "../../../controllers/customer.controller.js";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import {
   formatAddress,
@@ -43,7 +43,7 @@ export default function CustomerDetails() {
     const load = async () => {
       setLoading(true);
 
-      const res = await fetchDataFromApi(`/api/customers/${id}`);
+      const res = await CustomerController.getById(id);
       if (cancelled) return;
 
       if (res?.customerData) {

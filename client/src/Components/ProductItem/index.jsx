@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 import Slider from "react-slick";
 import Skeleton from "@mui/material/Skeleton";
 import { IoIosImages } from "react-icons/io";
-import { fetchDataFromApi, postData } from "../../utils/api";
+import { MyListController } from "../../controllers/index.js";
 import { FaHeart } from "react-icons/fa";
 
 const ProductItem = (props) => {
@@ -47,9 +47,7 @@ const ProductItem = (props) => {
 
     const user = JSON.parse(localStorage.getItem("user"));
 
-    fetchDataFromApi(
-      `/api/my-list?productId=${id}&userId=${user?.userId}`
-    ).then((res) => {
+    MyListController.check(id, user?.userId).then((res) => {
       if (res.length !== 0) {
         setSsAddedToMyList(true);
       }
@@ -84,7 +82,7 @@ const ProductItem = (props) => {
         productId: id,
         userId: user?.userId,
       };
-      postData(`/api/my-list/add/`, data).then((res) => {
+      MyListController.addItem(data).then((res) => {
         if (res.status !== false) {
           context.setAlertBox({
             open: true,
@@ -92,9 +90,7 @@ const ProductItem = (props) => {
             msg: "the product added in my list",
           });
 
-          fetchDataFromApi(
-            `/api/my-list?productId=${id}&userId=${user?.userId}`
-          ).then((res) => {
+          MyListController.check(id, user?.userId).then((res) => {
             if (res.length !== 0) {
               setSsAddedToMyList(true);
             }

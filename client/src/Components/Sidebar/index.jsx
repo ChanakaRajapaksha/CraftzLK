@@ -15,7 +15,7 @@ import Rating from "@mui/material/Rating";
 import { MyContext } from "../../App";
 import { IoMdCloseCircle } from "react-icons/io";
 
-import { fetchDataFromApi } from "../../utils/api";
+import { BannerController, ProductController } from "../../controllers/index.js";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
@@ -39,14 +39,14 @@ const Sidebar = (props) => {
 
   useEffect(() => {
     setSubCatId(id);
-    fetchDataFromApi("/api/homeSideBanners").then((res) => {
+    BannerController.getSideBanners().then((res) => {
       setHomeSideBanners(res);
     });
 
     const location = localStorage.getItem("location");
 
     if (location !== null && location !== "" && location !== undefined) {
-      fetchDataFromApi(`/api/products/featured?location=${location}`).then(
+      ProductController.getFeatured(location).then(
         (res) => {
           setFeaturedProducts(res);
         }

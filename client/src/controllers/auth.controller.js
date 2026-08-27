@@ -4,16 +4,14 @@
  * Following MVC Architecture Pattern
  */
 
-import { postData, setAccessToken, clearAccessToken, getAccessToken } from "../utils/api";
+import { authEndpoints } from "../api/endpoint.js";
+import { fetchDataFromApi, postData, setAccessToken, clearAccessToken, getAccessToken } from "../utils/api";
 
 /**
  * Auth Controller Class
  * Centralizes authentication API endpoints and business logic
  */
 class AuthController {
-  // API Base Path
-  static BASE_PATH = "/api/auth";
-
   /**
    * Register a new user
    * @param {Object} userData - User registration data
@@ -32,7 +30,7 @@ class AuthController {
         phone: userData.phone.trim(),
       };
 
-      const response = await postData(`${this.BASE_PATH}/register`, payload);
+      const response = await postData(authEndpoints.register, payload);
 
       return {
         success: response.success || false,
@@ -63,7 +61,7 @@ class AuthController {
         password: credentials.password,
       };
 
-      const response = await postData(`${this.BASE_PATH}/login`, payload);
+      const response = await postData(authEndpoints.login, payload);
 
       // Store tokens if login successful
       if (response.success && response.data) {
@@ -99,7 +97,7 @@ class AuthController {
         userInfo: userInfo,
       };
 
-      const response = await postData(`${this.BASE_PATH}/google`, payload);
+      const response = await postData(authEndpoints.google, payload);
 
       // Store tokens if authentication successful
       if (response.success && response.data) {
@@ -133,7 +131,7 @@ class AuthController {
    */
   static async logout() {
     try {
-      await postData(`${this.BASE_PATH}/logout`, {});
+      await postData(authEndpoints.logout, {});
     } catch (_) {
       // Proceed to clear local state even if API fails (e.g. already expired)
     }
@@ -177,6 +175,10 @@ class AuthController {
     return getAccessToken();
   }
 
+  static getProfile() {
+    return fetchDataFromApi(authEndpoints.profile);
+  }
+
   /**
    * Request password reset - sends reset link to email
    * @param {string} email - User's email address
@@ -188,7 +190,7 @@ class AuthController {
         email: email.trim(),
       };
 
-      const response = await postData(`${this.BASE_PATH}/request-password-reset`, payload);
+      const response = await postData(authEndpoints.requestPasswordReset, payload);
 
       return {
         success: response.success || false,
@@ -238,7 +240,7 @@ class AuthController {
         password: resetData.password,
       };
 
-      const response = await postData(`${this.BASE_PATH}/reset-password`, payload);
+      const response = await postData(authEndpoints.resetPassword, payload);
 
       return {
         success: response.success || false,

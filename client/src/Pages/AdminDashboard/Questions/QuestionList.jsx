@@ -8,7 +8,8 @@ import AdminPagination from "../../../Components/AdminDashboard/AdminPagination"
 import AdminConfirmDialog from "../../../Components/AdminDashboard/AdminConfirmDialog";
 import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
-import { deleteData, fetchDataFromApi, patchData, restoreSession } from "../../../utils/api";
+import { restoreSession } from "../../../utils/api";
+import ProductQuestionController from "../../../controllers/productQuestion.controller.js";
 import { useAppSelector } from "../../../store/hooks";
 import {
   formatQuestionDate,
@@ -54,7 +55,7 @@ export default function QuestionList() {
         throw new Error("Login is required to load questions.");
       }
 
-      const res = await fetchDataFromApi("/api/productQuestions/admin/list");
+      const res = await ProductQuestionController.getAdminList();
       if (
         !res ||
         res instanceof Error ||
@@ -134,7 +135,7 @@ export default function QuestionList() {
   }, [page, totalPages]);
 
   const deleteQuestion = (id) => {
-    deleteData(`/api/productQuestions/${id}`)
+    ProductQuestionController.remove(id)
       .then((res) => {
         if (res?.success === false) {
           showAlert(true, res?.message || "Failed to delete question.");
@@ -175,7 +176,7 @@ export default function QuestionList() {
     const id = item._id || item.id;
     setSavingAnswer(true);
 
-    patchData(`/api/productQuestions/${id}/answer`, { answer })
+    ProductQuestionController.answer(id, { answer })
       .then((res) => {
         if (!res || res.success === false) {
           showAlert(true, res?.message || "Failed to save answer.");
@@ -192,7 +193,7 @@ export default function QuestionList() {
     const id = item._id || item.id;
     setApprovingAnswer(true);
 
-    patchData(`/api/productQuestions/${id}/approve`, { answer })
+    ProductQuestionController.approve(id, { answer })
       .then((res) => {
         if (!res || res.success === false) {
           showAlert(true, res?.message || "Failed to approve answer.");
@@ -216,7 +217,7 @@ export default function QuestionList() {
     }
 
     setApprovingAnswer(true);
-    patchData(`/api/productQuestions/${id}/approve`, { answer })
+    ProductQuestionController.approve(id, { answer })
       .then((res) => {
         if (!res || res.success === false) {
           showAlert(true, res?.message || "Failed to approve answer.");

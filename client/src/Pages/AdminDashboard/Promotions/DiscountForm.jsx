@@ -6,7 +6,7 @@ import {
   formToPayload,
   productHasSelectableVariants,
 } from "./discountFormDefaults";
-import { fetchDataFromApi } from "../../../utils/api";
+import ProductController from "../../../controllers/product.controller.js";
 
 function Field({ label, htmlFor, children, full = false }) {
   return (
@@ -34,7 +34,7 @@ export default function DiscountForm({
 
   useEffect(() => {
     setProductsLoading(true);
-    fetchDataFromApi("/api/products/active")
+    ProductController.getActive()
       .then((res) => {
         if (res?.success === false) {
           setProducts([]);

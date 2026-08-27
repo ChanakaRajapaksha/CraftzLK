@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { FaPlus, FaTrash } from "react-icons/fa";
 import ProductImageUploadField from "../../../Components/AdminDashboard/ProductImageUploadField";
 import VariantImageUploadField from "../../../Components/AdminDashboard/VariantImageUploadField";
-import { deleteData, deleteImages, fetchDataFromApi } from "../../../utils/api";
+import { productEndpoints } from "../../../api/endpoint.js";
+import ImageUploadController from "../../../controllers/imageUpload.controller.js";
+import ProductController from "../../../controllers/product.controller.js";
 import { defaultProductFields, PRODUCT_FORM_TABS, slugify, validateProductForm } from "./productFormDefaults";
 
 function Field({ label, htmlFor, children, full = false, size = "default", required = false, error = "" }) {
@@ -67,12 +69,12 @@ export default function ProductForm({
   // when the Images tab remounts.
   useEffect(() => {
     if (isEdit) return;
-    fetchDataFromApi("/api/imageUpload").then((res) => {
+    ImageUploadController.getStagingImages().then((res) => {
       if (res?.length) {
         res.forEach((item) => {
           item?.images?.forEach((img) => {
-            deleteImages(`/api/products/deleteImage?img=${encodeURIComponent(img)}`).then(() => {
-              deleteData("/api/imageUpload/deleteAllImages");
+            ProductController.deleteImage(img).then(() => {
+              ImageUploadController.clearStagingImages();
             });
           });
         });
@@ -481,8 +483,8 @@ export default function ProductForm({
           <div className="admin-dash__product-images-tab">
             <Field label="Product Images" full required error={fieldErrors.images}>
               <ProductImageUploadField
-                uploadEndpoint="/api/products/upload"
-                deleteImageEndpoint="/api/products/deleteImage"
+                uploadEndpoint={productEndpoints.upload}
+                deleteImageEndpoint={productEndpoints.deleteImage}
                 previews={previews}
                 setPreviews={setPreviews}
                 setAlertBox={setAlertBox}

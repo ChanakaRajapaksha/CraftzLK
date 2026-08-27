@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
-import { editData, fetchDataFromApi } from "../../../utils/api";
+import PaymentController from "../../../controllers/payment.controller.js";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import PaymentMethodForm from "./PaymentMethodForm";
 import { defaultPaymentMethodFields, getMethodCodeLabel, methodFromRecord } from "./paymentFormDefaults";
@@ -25,7 +25,7 @@ export default function EditPaymentMethod() {
       return;
     }
 
-    fetchDataFromApi(`/api/payments/methods/${id}`)
+    PaymentController.getMethodById(id)
       .then((res) => {
         if (res) {
           setMethodCode(res.code || "");
@@ -45,7 +45,7 @@ export default function EditPaymentMethod() {
     }
 
     setIsLoading(true);
-    editData(`/api/payments/methods/${id}`, payload)
+    PaymentController.updateMethod(id, payload)
       .then(() => {
         setAlertBox?.({ open: true, error: false, msg: "Payment method updated." });
         navigate(`${ADMIN_BASE}/payments/methods`);

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { MdEmail, MdSms } from "react-icons/md";
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
-import { editData, fetchDataFromApi } from "../../../utils/api";
+import NotificationController from "../../../controllers/notification.controller.js";
 import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import NotificationSettingsForm from "./NotificationSettingsForm";
 import {
@@ -26,7 +26,7 @@ export default function NotificationSettingsModal({
 
   useModalFormInit(open, "notification-settings", () => {
     setLoading(true);
-    fetchDataFromApi("/api/notifications/settings")
+    NotificationController.getSettings()
       .then((res) => {
         if (res?.settings) {
           setFormFields(settingsFromRecord(res.settings));
@@ -48,7 +48,7 @@ export default function NotificationSettingsModal({
     e.preventDefault();
     setSaving(true);
 
-    editData("/api/notifications/settings", settingsToPayload(formFields))
+    NotificationController.updateSettings( settingsToPayload(formFields))
       .then((res) => {
         const saved = res?.settings ? settingsFromRecord(res.settings) : formFields;
         setFormFields(saved);

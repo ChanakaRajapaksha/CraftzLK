@@ -1,6 +1,20 @@
 import axios from "axios";
 import { clearPersistedAuthUser } from "../store/authUser";
 import { notifySessionExpired } from "./sessionEvents";
+import {
+  authEndpoints,
+  bannerEndpoints,
+  categoryEndpoints,
+  cmsPageEndpoints,
+  couponEndpoints,
+  homepageEndpoints,
+  paymentEndpoints,
+  productQuestionEndpoints,
+  productReviewEndpoints,
+  searchEndpoints,
+  settingsEndpoints,
+  shippingEndpoints,
+} from "../api/endpoint.js";
 
 const apiBaseUrl = import.meta.env.VITE_API_URL || "";
 
@@ -27,13 +41,13 @@ export function clearAccessToken() {
 
 // Public endpoints that don't need token refresh
 const publicEndpoints = [
-    '/api/auth/login',
-    '/api/auth/register',
-    '/api/auth/request-password-reset',
-    '/api/auth/reset-password',
-    '/api/auth/google',
-    '/api/auth/refresh-token',
-    '/api/coupons/validate',
+    authEndpoints.login,
+    authEndpoints.register,
+    authEndpoints.requestPasswordReset,
+    authEndpoints.resetPassword,
+    authEndpoints.google,
+    authEndpoints.refreshToken,
+    couponEndpoints.validate,
 ];
 
 const AUTH_PAGES = ['/signIn', '/signUp', '/forgot-password', '/reset-password', '/verifyOTP'];
@@ -64,9 +78,9 @@ function isPublicEndpoint(url = '') {
 
 function isGuestBrowsableProductReviews(url = '') {
   const path = normalizeRequestPath(url);
-  if (path === '/api/productReviews/stats') return true;
-  if (path === '/api/productReviews/getall') return true;
-  if (path !== '/api/productReviews') return false;
+  if (path === productReviewEndpoints.stats) return true;
+  if (path === productReviewEndpoints.getAll) return true;
+  if (path !== productReviewEndpoints.base) return false;
 
   const query = url.includes('?') ? url.split('?')[1] : '';
   if (!query) return false;
@@ -80,7 +94,7 @@ function isGuestBrowsableProductReviews(url = '') {
 
 function isGuestBrowsableProductQuestions(url = '') {
   const path = normalizeRequestPath(url);
-  if (path !== '/api/productQuestions') return false;
+  if (path !== productQuestionEndpoints.base) return false;
 
   const query = url.includes('?') ? url.split('?')[1] : '';
   if (!query) return false;
@@ -93,11 +107,11 @@ function isGuestBrowsableProductQuestions(url = '') {
 }
 
 function isGuestBrowsableShippingMethods(url = '') {
-  return normalizeRequestPath(url) === '/api/shipping-methods/active';
+  return normalizeRequestPath(url) === shippingEndpoints.active;
 }
 
 function isGuestBrowsableBankTransfer(url = '') {
-  return normalizeRequestPath(url) === '/api/payments/methods/public/bank-transfer';
+  return normalizeRequestPath(url) === paymentEndpoints.publicBankTransfer;
 }
 
 function isGuestBrowsableEndpoint(url = '') {
@@ -105,35 +119,35 @@ function isGuestBrowsableEndpoint(url = '') {
   if (reqMethodIsGet(path, url) === false) return false;
 
   const exactPaths = new Set([
-    '/api/banners',
-    '/api/homeSideBanners',
-    '/api/homeBottomBanners',
-    '/api/homeBanner',
-    '/api/homepage-content',
-    '/api/search',
-    '/api/category/active',
-    '/api/settings',
+    bannerEndpoints.banners,
+    bannerEndpoints.side,
+    bannerEndpoints.bottom,
+    bannerEndpoints.homeBanner,
+    homepageEndpoints.base,
+    searchEndpoints.base,
+    categoryEndpoints.active,
+    settingsEndpoints.base,
   ]);
 
   if (exactPaths.has(path)) return true;
-  if (path.startsWith('/api/search')) return true;
+  if (path.startsWith(searchEndpoints.base)) return true;
   if (path.startsWith('/api/products') && !path.startsWith('/api/products/admin')) return true;
   if (isGuestBrowsableProductReviews(url)) return true;
   if (isGuestBrowsableProductQuestions(url)) return true;
   if (isGuestBrowsableShippingMethods(url)) return true;
   if (isGuestBrowsableBankTransfer(url)) return true;
   if (path.startsWith('/api/artisans')) return true;
-  if (path.startsWith('/api/cms-pages/public')) return true;
+  if (path.startsWith(cmsPageEndpoints.public)) return true;
 
-  if (path.startsWith('/api/category/')) {
+  if (path.startsWith(`${categoryEndpoints.base}/`)) {
     if (
-      path.startsWith('/api/category/admin') ||
+      path.startsWith(`${categoryEndpoints.base}/admin`) ||
       path.includes('/get/count') ||
       path.includes('/subCat/get/count')
     ) {
       return false;
     }
-    return path !== '/api/category';
+    return path !== categoryEndpoints.base;
   }
 
   return false;
@@ -162,7 +176,7 @@ let refreshTokenPromise = null;
 
 async function refreshAccessToken() {
     if (!refreshTokenPromise) {
-        refreshTokenPromise = apiClient.post("/api/auth/refresh-token")
+        refreshTokenPromise = apiClient.post(authEndpoints.refreshToken)
             .then((response) => {
                 if (response.data?.success && response.data?.data?.accessToken) {
                     setAccessToken(response.data.data.accessToken);
@@ -267,7 +281,7 @@ export const restoreSession = async ({ bypassCache = false } = {}) => {
 
   restoreSessionInFlight = (async () => {
     try {
-      const response = await apiClient.post("/api/auth/refresh-token");
+      const response = await apiClient.post(authEndpoints.refreshToken);
       if (response.data?.success && response.data?.data?.accessToken) {
         setAccessToken(response.data.data.accessToken);
         restoreSessionCache = true;

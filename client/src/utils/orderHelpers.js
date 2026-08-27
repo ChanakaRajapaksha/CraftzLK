@@ -1,4 +1,4 @@
-import { fetchDataFromApi } from "./api";
+import OrderController from "../controllers/order.controller.js";
 
 export function getOrderItemCount(order) {
   const items = Array.isArray(order?.items) ? order.items : [];
@@ -91,7 +91,7 @@ export function getOrderBadgeClass(status) {
 }
 
 export async function fetchUserOrders() {
-  const res = await fetchDataFromApi("/api/orders");
+  const res = await OrderController.getOrders();
   const list = Array.isArray(res) ? res : [];
 
   return list

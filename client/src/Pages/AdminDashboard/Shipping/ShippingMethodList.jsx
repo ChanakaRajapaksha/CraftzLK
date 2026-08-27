@@ -8,7 +8,7 @@ import AdminPagination from "../../../Components/AdminDashboard/AdminPagination"
 import AdminConfirmDialog from "../../../Components/AdminDashboard/AdminConfirmDialog";
 import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
-import { deleteData, fetchDataFromApi } from "../../../utils/api";
+import ShippingController from "../../../controllers/shipping.controller.js";
 import { formatCost, formatZones } from "./shippingFormDefaults";
 import { getPromoStatusBadge } from "../Promotions/promoListHelpers";
 import ShippingMethodFormModal from "./ShippingMethodFormModal";
@@ -31,7 +31,7 @@ export default function ShippingMethodList() {
     setLoading(true);
     setLoadError(false);
 
-    fetchDataFromApi("/api/shipping-methods")
+    ShippingController.getList()
       .then((res) => {
         if (res?.success === false) {
           throw new Error(res?.message || "Failed to load shipping methods.");
@@ -116,7 +116,7 @@ export default function ShippingMethodList() {
   }, [page, totalPages]);
 
   const deleteMethod = (id) => {
-    deleteData(`/api/shipping-methods/${id}`)
+    ShippingController.remove(id)
       .then((res) => {
         if (res?.success === false) {
           setAlertBox?.({ open: true, error: true, msg: res?.message || "Failed to delete shipping method." });

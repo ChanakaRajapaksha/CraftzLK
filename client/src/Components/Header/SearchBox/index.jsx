@@ -2,7 +2,7 @@ import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
 import { IoMdClose } from "react-icons/io";
-import { fetchDataFromApi } from "../../../utils/api";
+import { SearchController } from "../../../controllers/index.js";
 import { MyContext } from "../../../App";
 import { formatRsLabel } from "../../../Pages/Collections/collectionsUtils";
 
@@ -33,7 +33,7 @@ const SearchBox = ({ closeSearch }) => {
 
   useEffect(() => {
     setPopularLoading(true);
-    fetchDataFromApi("/api/search/popular?limit=8")
+    SearchController.getPopular(8)
       .then((res) => {
         setPopularSearches(Array.isArray(res?.items) ? res.items : []);
       })
@@ -54,9 +54,7 @@ const SearchBox = ({ closeSearch }) => {
     }
 
     setIsLoading(true);
-    fetchDataFromApi(
-      `/api/search?q=${encodeURIComponent(value.trim())}&limit=${PREVIEW_LIMIT}`
-    )
+    SearchController.search(value.trim(), PREVIEW_LIMIT)
       .then((res) => {
         setResults({
           products: res?.products || [],
@@ -113,7 +111,7 @@ const SearchBox = ({ closeSearch }) => {
     const trimmed = query.trim();
     if (!trimmed) return;
 
-    fetchDataFromApi(`/api/search?q=${encodeURIComponent(trimmed)}`).then((res) => {
+    SearchController.search(trimmed).then((res) => {
       context.setSearchData(Array.isArray(res) ? res : res?.products || []);
       closeSearch();
       navigate(`/search?q=${encodeURIComponent(trimmed)}`);

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ProductImageUploadField from "../../../Components/AdminDashboard/ProductImageUploadField";
+import { artisanEndpoints } from "../../../api/endpoint.js";
 import { ARTISAN_FORM_TABS, slugify } from "./artisanFormDefaults";
 
 function Field({ label, htmlFor, children, full = false, size = "default", required = false }) {
@@ -136,8 +137,8 @@ export default function ArtisanForm({
           <div className="admin-dash__product-images-tab">
             <Field label="Profile Image" full>
               <ProductImageUploadField
-                uploadEndpoint="/api/artisans/upload"
-                deleteImageEndpoint="/api/artisans/deleteImage"
+                uploadEndpoint={artisanEndpoints.upload}
+                deleteImageEndpoint={artisanEndpoints.deleteImage}
                 previews={previews}
                 setPreviews={setPreviews}
                 setAlertBox={setAlertBox}

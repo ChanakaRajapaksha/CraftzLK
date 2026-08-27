@@ -5,7 +5,7 @@ import AdminTopBar from "./AdminTopBar";
 import AdminRealtimeAlerts from "./AdminRealtimeAlerts";
 import AdminThemeContext from "./AdminThemeContext";
 import { MyContext } from "../../App";
-import { fetchDataFromApi } from "../../utils/api";
+import CategoryController from "../../controllers/category.controller.js";
 import {
   ADMIN_THEMES,
   getStoredAdminTheme,
@@ -70,7 +70,7 @@ export default function AdminLayout() {
   }, []);
 
   const fetchCategory = useCallback(() => {
-    const adminFetch = fetchDataFromApi("/api/category").then((res) => {
+    const adminFetch = CategoryController.getList().then((res) => {
       if (res?.categoryList) setCatData(res);
       return res;
     });

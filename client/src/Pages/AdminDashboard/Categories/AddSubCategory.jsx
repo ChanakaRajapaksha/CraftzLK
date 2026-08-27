@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
-import { deleteData, postData } from "../../../utils/api";
+import CategoryController from "../../../controllers/category.controller.js";
+import ImageUploadController from "../../../controllers/imageUpload.controller.js";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import CategoryForm from "./CategoryForm";
 import { defaultCategoryFields, formToPayload } from "./categoryFormDefaults";
@@ -20,10 +21,10 @@ export default function AddSubCategory() {
       return;
     }
     setIsLoading(true);
-    postData("/api/category/create", formToPayload(formFields, previews)).then(() => {
+    CategoryController.create( formToPayload(formFields, previews)).then(() => {
       setIsLoading(false);
       fetchCategory?.();
-      deleteData("/api/imageUpload/deleteAllImages");
+      ImageUploadController.clearStagingImages();
       setAlertBox?.({ open: true, error: false, msg: "Subcategory published." });
       navigate(`${ADMIN_BASE}/category`);
     }).catch(() => {

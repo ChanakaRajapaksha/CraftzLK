@@ -8,7 +8,7 @@ import { MdOutlineCompareArrows } from "react-icons/md";
 import { MyContext } from '../../App';
 import ProductZoom from '../ProductZoom';
 import { IoCartSharp } from "react-icons/io5";
-import { editData, fetchDataFromApi, postData } from '../../utils/api';
+import { CompareListController, MyListController } from '../../controllers/index.js';
 import { FaHeart } from "react-icons/fa";
 
 
@@ -32,13 +32,13 @@ const ProductModal = (props) => {
 
         const user = JSON.parse(localStorage.getItem("user"));
 
-        fetchDataFromApi(`/api/my-list?productId=${props?.data?.id}&userId=${user?.userId}`).then((res) => {
+        MyListController.check(props?.data?.id, user?.userId).then((res) => {
             if (res.length !== 0) {
                 setSsAddedToMyList(true);
             }
         })
 
-        fetchDataFromApi(`/api/compare-list?productId=${props?.data?.id}&userId=${user?.userId}`).then((res) => {
+        CompareListController.check(props?.data?.id, user?.userId).then((res) => {
             if (res.length !== 0) {
                 setAddToMyCompareList(true);
             }
@@ -121,7 +121,7 @@ const ProductModal = (props) => {
                 productId: id,
                 userId: user?.userId
             }
-            postData(`/api/my-list/add/`, data).then((res) => {
+            MyListController.addItem(data).then((res) => {
                 if (res.status !== false) {
                     context.setAlertBox({
                         open: true,
@@ -158,7 +158,7 @@ const ProductModal = (props) => {
                 productId: id,
                 userId: user?.userId,
           };
-          postData(`/api/compare-list/add/`, data).then((res) => {
+          CompareListController.addItem(data).then((res) => {
             if (res.status !== false) {
               context.setAlertBox({
                 open: true,
@@ -166,9 +166,7 @@ const ProductModal = (props) => {
                 msg: "the product added in Compare list",
               });
     
-              fetchDataFromApi(
-                `/api/compare-list?productId=${id}&userId=${user?.userId}`
-              ).then((res) => {
+              CompareListController.check(id, user?.userId).then((res) => {
                 if (res.length !== 0) {
                   setSsAddedToMyList(true);
                 }

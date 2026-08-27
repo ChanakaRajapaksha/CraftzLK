@@ -9,7 +9,7 @@ import {
   MdShoppingCart,
   MdSettings,
 } from "react-icons/md";
-import { deleteData, editData, fetchDataFromApi } from "../../utils/api";
+import AdminNotificationController from "../../controllers/adminNotification.controller.js";
 import {
   connectAdminNotificationSocket,
   subscribeAdminNotifications,
@@ -41,7 +41,7 @@ export default function AdminNotificationsPanel({ open, onClose, onUnreadChange 
   const loadNotifications = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetchDataFromApi("/api/admin-notifications");
+      const res = await AdminNotificationController.getList();
       if (res?.notificationList) {
         const list = res.notificationList
           .map(normalizeAdminNotification)
@@ -127,7 +127,7 @@ export default function AdminNotificationsPanel({ open, onClose, onUnreadChange 
     onUnreadChange?.(0);
 
     try {
-      const res = await editData("/api/admin-notifications/read-all", {});
+      const res = await AdminNotificationController.markAllRead();
       if (typeof res?.unreadCount === "number") onUnreadChange?.(res.unreadCount);
     } catch {
       /* keep optimistic UI */
@@ -154,7 +154,7 @@ export default function AdminNotificationsPanel({ open, onClose, onUnreadChange 
     navigate(targetLink);
 
     try {
-      const res = await deleteData(`/api/admin-notifications/${item.id}`);
+      const res = await AdminNotificationController.remove(item.id);
       if (typeof res?.unreadCount === "number") {
         onUnreadChange?.(res.unreadCount);
       }

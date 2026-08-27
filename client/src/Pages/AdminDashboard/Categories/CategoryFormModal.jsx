@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { IoClose } from "react-icons/io5";
-import { deleteData, editData, fetchDataFromApi, postData } from "../../../utils/api";
+import CategoryController from "../../../controllers/category.controller.js";
+import ImageUploadController from "../../../controllers/imageUpload.controller.js";
 import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import CategoryForm from "./CategoryForm";
 import { categoryToForm, defaultCategoryFields, formToPayload } from "./categoryFormDefaults";
@@ -38,7 +39,7 @@ export default function CategoryFormModal({
     }
 
     setLoading(true);
-    fetchDataFromApi(`/api/category/${categoryId}`)
+    CategoryController.getById(categoryId)
       .then((res) => {
         const cat = res?.category || res?.categoryData?.[0];
         if (cat) {
@@ -61,8 +62,8 @@ export default function CategoryFormModal({
 
     const payload = formToPayload(formFields, previews);
     const request = isEdit
-      ? editData(`/api/category/${categoryId}`, payload)
-      : postData("/api/category/create", payload);
+      ? CategoryController.update(categoryId, payload)
+      : CategoryController.create( payload);
 
     request
       .then((res) => {
@@ -78,7 +79,7 @@ export default function CategoryFormModal({
         }
 
         fetchCategory?.();
-        deleteData("/api/imageUpload/deleteAllImages").catch(() => {});
+        ImageUploadController.clearStagingImages().catch(() => {});
         setAlertBox?.({
           open: true,
           error: false,

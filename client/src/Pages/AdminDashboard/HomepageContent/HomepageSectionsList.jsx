@@ -5,7 +5,7 @@ import { MdHome, MdCategory, MdShoppingBag } from "react-icons/md";
 import { IoTrendingUp } from "react-icons/io5";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
-import { fetchDataFromApi } from "../../../utils/api";
+import HomepageController from "../../../controllers/homepage.controller.js";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import {
   HOMEPAGE_SECTIONS,
@@ -30,7 +30,7 @@ export default function HomepageSectionsList() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    fetchDataFromApi("/api/homepage-content")
+    HomepageController.getContent()
       .then((res) => {
         if (res?.content) {
           setContent(res.content);

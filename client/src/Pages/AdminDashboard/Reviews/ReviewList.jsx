@@ -9,7 +9,8 @@ import AdminPagination from "../../../Components/AdminDashboard/AdminPagination"
 import AdminConfirmDialog from "../../../Components/AdminDashboard/AdminConfirmDialog";
 import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
-import { deleteData, fetchDataFromApi, patchData, restoreSession } from "../../../utils/api";
+import { restoreSession } from "../../../utils/api";
+import ProductReviewController from "../../../controllers/productReview.controller.js";
 import { useAppSelector } from "../../../store/hooks";
 import {
   formatReviewDate,
@@ -53,7 +54,7 @@ export default function ReviewList() {
         throw new Error("Login is required to load reviews.");
       }
 
-      const res = await fetchDataFromApi("/api/productReviews/admin/list");
+      const res = await ProductReviewController.getAdminList();
       if (
         !res ||
         res instanceof Error ||
@@ -144,12 +145,12 @@ export default function ReviewList() {
   }, [page, totalPages]);
 
   const updateReviewStatus = (id, status) => {
-    const endpoint =
+    const request =
       status === "approved"
-        ? `/api/productReviews/${id}/approve`
-        : `/api/productReviews/${id}/reject`;
+        ? ProductReviewController.approve(id)
+        : ProductReviewController.reject(id);
 
-    patchData(endpoint)
+    request
       .then((res) => {
         if (!res || res.success === false) {
           showAlert(true, res?.message || "Failed to update review status.");
@@ -168,7 +169,7 @@ export default function ReviewList() {
   };
 
   const deleteReview = (id) => {
-    deleteData(`/api/productReviews/${id}`)
+    ProductReviewController.remove(id)
       .then((res) => {
         if (res?.success === false) {
           showAlert(true, res?.message || "Failed to delete review.");

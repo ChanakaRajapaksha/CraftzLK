@@ -7,7 +7,7 @@ import Button from '@mui/material/Button';
 import emprtCart from '../../assets/images/myList.png';
 import { MyContext } from "../../App";
 import { useContext, useEffect, useState } from "react";
-import { deleteData, editData, fetchDataFromApi } from "../../utils/api";
+import { MyListController } from "../../controllers/index.js";
 import { IoBagCheckOutline } from "react-icons/io5";
 import { FaHome } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
@@ -34,7 +34,7 @@ const MyList = () => {
 
         
         const user = JSON.parse(localStorage.getItem("user"));
-        fetchDataFromApi(`/api/my-list?userId=${user?.userId}`).then((res) => {
+        MyListController.getList({ userId: user?.userId }).then((res) => {
             setmyListData(res);
         })
 
@@ -45,7 +45,7 @@ const MyList = () => {
 
     const removeItem = (id) => {
         setIsLoading(true);
-        deleteData(`/api/my-list/${id}`).then((res) => {
+        MyListController.remove(id).then((res) => {
             context.setAlertBox({
                 open: true,
                 error: false,
@@ -53,7 +53,7 @@ const MyList = () => {
             })
 
             const user = JSON.parse(localStorage.getItem("user"));
-            fetchDataFromApi(`/api/my-list?userId=${user?.userId}`).then((res) => {
+            MyListController.getList({ userId: user?.userId }).then((res) => {
                 setmyListData(res);
                 setIsLoading(false);
             })

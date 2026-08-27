@@ -10,7 +10,7 @@ import AdminPagination from "../../../Components/AdminDashboard/AdminPagination"
 import AdminConfirmDialog from "../../../Components/AdminDashboard/AdminConfirmDialog";
 import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
-import { deleteData, fetchDataFromApi } from "../../../utils/api";
+import ArtisanController from "../../../controllers/artisan.controller.js";
 import ArtisanFormModal from "./ArtisanFormModal";
 
 const DEFAULT_STATS = {
@@ -54,7 +54,7 @@ export default function ArtisanList() {
     if (searchKeyword.trim()) params.set("search", searchKeyword.trim());
     if (statusFilter !== "all") params.set("status", statusFilter);
 
-    fetchDataFromApi(`/api/artisans/admin/list?${params.toString()}`)
+    ArtisanController.getAdminList(params.toString())
       .then((res) => {
         if (res?.success === false) {
           throw new Error(res?.message || "Failed to load artisans.");
@@ -121,7 +121,7 @@ export default function ArtisanList() {
   };
 
   const deleteArtisan = (id) => {
-    deleteData(`/api/artisans/${id}`)
+    ArtisanController.remove(id)
       .then((res) => {
         if (res?.success === false) {
           setAlertBox?.({

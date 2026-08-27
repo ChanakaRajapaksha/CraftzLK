@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import ImageUploadField from "../../../Components/AdminDashboard/ImageUploadField";
-import { deleteData, editData, fetchDataFromApi, postData } from "../../../utils/api";
+import { editData, fetchDataFromApi, postData } from "../../../utils/api";
+import ImageUploadController from "../../../controllers/imageUpload.controller.js";
 import { BANNER_MODULES } from "../adminModules";
 
 export default function BannerFormPage({ moduleKey }) {
@@ -82,7 +83,7 @@ export default function BannerFormPage({ moduleKey }) {
         await postData(`${config.apiBase}/create`, formFields);
         setAlertBox?.({ open: true, error: false, msg: "Banner published." });
       }
-      deleteData("/api/imageUpload/deleteAllImages");
+      ImageUploadController.clearStagingImages();
       navigate(config.listPath);
     } catch {
       setAlertBox?.({ open: true, error: true, msg: "Save failed. Upload images first, then publish." });

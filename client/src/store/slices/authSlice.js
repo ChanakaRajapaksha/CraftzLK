@@ -4,8 +4,6 @@ import AuthController from "../../controllers/auth.controller";
 
 import {
 
-  fetchDataFromApi,
-
   invalidateRestoreSessionCache,
 
   restoreSession,
@@ -36,7 +34,7 @@ async function resolveAuthUser(cachedUser) {
 
   if (!user) {
 
-    const profile = await fetchDataFromApi("/api/auth/profile");
+    const profile = await AuthController.getProfile();
 
     const profileUser = profile?.data?.user || profile?.user;
 

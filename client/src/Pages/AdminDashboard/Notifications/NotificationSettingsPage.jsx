@@ -4,7 +4,7 @@ import { MdEmail, MdSettings, MdSms } from "react-icons/md";
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
-import { fetchDataFromApi } from "../../../utils/api";
+import NotificationController from "../../../controllers/notification.controller.js";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import NotificationSettingsModal from "./NotificationSettingsModal";
 import NotificationSettingsSummary from "./NotificationSettingsSummary";
@@ -22,7 +22,7 @@ export default function NotificationSettingsPage() {
 
   const loadSettings = () => {
     setLoading(true);
-    fetchDataFromApi("/api/notifications/settings")
+    NotificationController.getSettings()
       .then((res) => {
         if (res?.settings) {
           setFormFields(settingsFromRecord(res.settings));

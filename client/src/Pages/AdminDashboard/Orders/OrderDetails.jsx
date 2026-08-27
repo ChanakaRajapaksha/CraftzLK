@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { FaPrint, FaFileDownload } from "react-icons/fa";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
-import { editData, fetchDataFromApi } from "../../../utils/api";
+import OrderController from "../../../controllers/order.controller.js";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import OrderStatusDialog from "./OrderStatusDialog";
 import { downloadOrderPdf, printOrderInvoice } from "./orderInvoice";
@@ -52,7 +52,7 @@ export default function OrderDetails() {
     const load = async () => {
       setLoading(true);
 
-      const res = await fetchDataFromApi(`/api/orders/${id}`);
+      const res = await OrderController.getById(id);
       if (cancelled) return;
 
       if (res && (res._id || res.id)) {
@@ -92,7 +92,7 @@ export default function OrderDetails() {
     };
 
     setSavingStatus(true);
-    editData(`/api/orders/${id}`, payload)
+    OrderController.update(id, payload)
       .then((res) => {
         setOrder(normalizeOrder(res?.order || { ...order, ...payload }));
         setStatusDialogOpen(false);

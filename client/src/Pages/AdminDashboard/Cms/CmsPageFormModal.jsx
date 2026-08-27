@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { IoClose } from "react-icons/io5";
-import { deleteData, editData, fetchDataFromApi, postData } from "../../../utils/api";
+import CmsController from "../../../controllers/cms.controller.js";
+import ImageUploadController from "../../../controllers/imageUpload.controller.js";
 import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import CmsPageForm from "./CmsPageForm";
 import { defaultCmsPageFields, formToPayload, pageToForm } from "./cmsFormDefaults";
@@ -32,7 +33,7 @@ export default function CmsPageFormModal({
     }
 
     setLoading(true);
-    fetchDataFromApi(`/api/cms-pages/${pageId}`)
+    CmsController.getById(pageId)
       .then((res) => {
         if (res?.success === false || !res?.title) {
           setAlertBox?.({ open: true, error: true, msg: "Page not found." });
@@ -55,8 +56,8 @@ export default function CmsPageFormModal({
 
     const payload = formToPayload(formFields, previews);
     const request = isEdit
-      ? editData(`/api/cms-pages/${pageId}`, payload)
-      : postData("/api/cms-pages/create", payload);
+      ? CmsController.update(pageId, payload)
+      : CmsController.create(payload);
 
     request
       .then((res) => {
@@ -69,7 +70,7 @@ export default function CmsPageFormModal({
           return;
         }
 
-        deleteData("/api/imageUpload/deleteAllImages").catch(() => {});
+        ImageUploadController.clearStagingImages().catch(() => {});
         setAlertBox?.({
           open: true,
           error: false,

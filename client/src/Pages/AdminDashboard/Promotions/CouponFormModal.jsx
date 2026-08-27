@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { IoClose } from "react-icons/io5";
-import { editData, fetchDataFromApi, postData } from "../../../utils/api";
+import CouponController from "../../../controllers/coupon.controller.js";
 import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import CouponForm from "./CouponForm";
 import { couponFromRecord, defaultCouponFields, formToPayload } from "./couponFormDefaults";
@@ -30,7 +30,7 @@ export default function CouponFormModal({
     }
 
     setLoading(true);
-    fetchDataFromApi(`/api/coupons/${couponId}`)
+    CouponController.getById(couponId)
       .then((res) => {
         if (res?.success === false) {
           setAlertBox?.({ open: true, error: true, msg: res?.message || "Coupon not found." });
@@ -56,8 +56,8 @@ export default function CouponFormModal({
 
     const payload = payloadFromForm || formToPayload(formFields);
     const request = isEdit
-      ? editData(`/api/coupons/${couponId}`, payload)
-      : postData("/api/coupons/create", payload);
+      ? CouponController.update(couponId, payload)
+      : CouponController.create( payload);
 
     request
       .then((res) => {

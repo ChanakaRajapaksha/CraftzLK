@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import { IoCloseSharp } from "react-icons/io5";
 import { deleteImages, uploadImage } from "../../utils/api";
+import { productEndpoints } from "../../api/endpoint.js";
 
 const ACCEPTED = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
@@ -9,8 +10,8 @@ export default function VariantImageUploadField({
   value = "",
   onChange,
   setAlertBox,
-  uploadEndpoint = "/api/products/upload",
-  deleteImageEndpoint = "/api/products/deleteImage",
+  uploadEndpoint = productEndpoints.upload,
+  deleteImageEndpoint = productEndpoints.deleteImage,
   label = "variant image",
 }) {
   const [uploading, setUploading] = useState(false);

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
-import { deleteData, editData, fetchDataFromApi } from "../../../utils/api";
+import CategoryController from "../../../controllers/category.controller.js";
+import ImageUploadController from "../../../controllers/imageUpload.controller.js";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import CategoryForm from "./CategoryForm";
 import { categoryToForm, formToPayload } from "./categoryFormDefaults";
@@ -15,7 +16,7 @@ export default function EditSubCategory() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchDataFromApi(`/api/category/${id}`).then((res) => {
+    CategoryController.getById(id).then((res) => {
       const cat = res?.categoryData?.[0];
       if (cat) {
         setFormFields(categoryToForm(cat));
@@ -27,10 +28,10 @@ export default function EditSubCategory() {
   const save = (e) => {
     e.preventDefault();
     setIsLoading(true);
-    editData(`/api/category/${id}`, formToPayload(formFields, previews)).then(() => {
+    CategoryController.update(id, formToPayload(formFields, previews)).then(() => {
       setIsLoading(false);
       fetchCategory?.();
-      deleteData("/api/imageUpload/deleteAllImages");
+      ImageUploadController.clearStagingImages();
       setAlertBox?.({ open: true, error: false, msg: "Subcategory updated." });
       navigate(`${ADMIN_BASE}/category`);
     }).catch(() => {

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ProductImageUploadField from "../../../Components/AdminDashboard/ProductImageUploadField";
+import { cmsPageEndpoints } from "../../../api/endpoint.js";
 import { CMS_FORM_TABS, CMS_COMING_SOON_HINT, getPagePath, isReservedCmsSlug, slugify } from "./cmsFormDefaults";
 
 function Field({ label, htmlFor, children, full = false }) {
@@ -209,8 +210,8 @@ export default function CmsPageForm({
           <div className="admin-dash__product-images-tab">
             <Field label="Page images" full>
               <ProductImageUploadField
-                uploadEndpoint="/api/cms-pages/upload"
-                deleteImageEndpoint="/api/cms-pages/deleteImage"
+                uploadEndpoint={cmsPageEndpoints.upload}
+                deleteImageEndpoint={cmsPageEndpoints.deleteImage}
                 previews={previews}
                 setPreviews={setPreviews}
                 setAlertBox={setAlertBox}

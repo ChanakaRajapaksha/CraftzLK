@@ -8,7 +8,7 @@ import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader"
 import AdminPagination from "../../../Components/AdminDashboard/AdminPagination";
 import DateRangeFilter from "../../../Components/AdminDashboard/DateRangeFilter";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
-import { editData, fetchDataFromApi } from "../../../utils/api";
+import OrderController from "../../../controllers/order.controller.js";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import OrderStatusDialog from "./OrderStatusDialog";
 import { downloadOrderPdf, printOrderInvoice } from "./orderInvoice";
@@ -47,7 +47,7 @@ export default function OrderList() {
   const [savingStatus, setSavingStatus] = useState(false);
 
   const loadOrders = () => {
-    fetchDataFromApi("/api/orders/")
+    OrderController.getOrders()
       .then((res) => {
         const list = Array.isArray(res) ? res : res?.orderList || [];
         setOrders(list.map(normalizeOrder));
@@ -142,7 +142,7 @@ export default function OrderList() {
     };
 
     setSavingStatus(true);
-    editData(`/api/orders/${id}`, payload)
+    OrderController.update(id, payload)
       .then((res) => {
         const updated = normalizeOrder(res?.order || { ...statusTarget, ...payload });
         setOrders((prev) =>

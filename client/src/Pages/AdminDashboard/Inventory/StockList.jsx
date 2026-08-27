@@ -6,7 +6,7 @@ import { IoShieldCheckmarkSharp } from "react-icons/io5";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import AdminPagination from "../../../Components/AdminDashboard/AdminPagination";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
-import { fetchDataFromApi } from "../../../utils/api";
+import InventoryController from "../../../controllers/inventory.controller.js";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import {
   getStockLevelBadgeClass,
@@ -25,7 +25,7 @@ export default function StockList() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const loadStock = () => {
-    fetchDataFromApi("/api/inventory/stock")
+    InventoryController.getStock()
       .then((res) => {
         const list = res?.stockList || [];
         setStockList(list);

@@ -4,7 +4,7 @@ import { MdAttachMoney, MdStore } from "react-icons/md";
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
-import { editData, fetchDataFromApi } from "../../../utils/api";
+import SettingsController from "../../../controllers/settings.controller.js";
 import SettingsForm from "./SettingsForm";
 import {
   defaultSettingsFields,
@@ -22,7 +22,7 @@ export default function GeneralSettings() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    fetchDataFromApi("/api/settings")
+    SettingsController.getSettings()
       .then((res) => {
         if (res?.settings) {
           setFormFields(settingsFromRecord(res.settings));
@@ -46,7 +46,7 @@ export default function GeneralSettings() {
       return;
     }
     setIsLoading(true);
-    editData("/api/settings", settingsToPayload(formFields))
+    SettingsController.updateSettings( settingsToPayload(formFields))
       .then((res) => {
         if (res) setFormFields(settingsFromRecord(res));
         setAlertBox?.({ open: true, error: false, msg: "Settings saved." });

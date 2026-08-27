@@ -2,7 +2,7 @@ import { useRef, useState, useContext } from "react";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import AdminThemeToggle from "../../../Components/AdminDashboard/AdminThemeToggle";
 import { MyContext } from "../../../App";
-import { uploadImage, deleteData } from "../../../utils/api";
+import SettingsController from "../../../controllers/settings.controller.js";
 import { DEFAULT_STORE_LOGO, resolveStoreLogoUrl, resolveStoreFaviconUrl, withStoreAssetCacheBust } from "../../../utils/storeBrand";
 import {
   CURRENCY_OPTIONS,
@@ -62,7 +62,7 @@ function BrandAssetField({ label, asset, onChange, setAlertBox, accept = "image/
     formData.append("image", file);
     setIsUploading(true);
     try {
-      const res = await uploadImage(`/api/settings/upload/${variant}`, formData);
+      const res = await SettingsController.uploadAsset(variant, formData);
       const nextAsset = res?.asset || { url: res?.url || "", publicId: "" };
       if (nextAsset.url) {
         onChange(nextAsset);
@@ -83,7 +83,7 @@ function BrandAssetField({ label, asset, onChange, setAlertBox, accept = "image/
   const handleRemove = async () => {
     setIsRemoving(true);
     try {
-      const res = await deleteData(`/api/settings/assets/${variant}`);
+      const res = await SettingsController.deleteAsset(variant);
       const clearedAsset = res?.asset || { url: "", publicId: "" };
       onChange(clearedAsset);
       setPreviewKey(0);

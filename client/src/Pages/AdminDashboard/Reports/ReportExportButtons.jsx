@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { MdPictureAsPdf, MdTableView } from "react-icons/md";
-import { downloadFileFromApi } from "../../../utils/api";
+import ReportController from "../../../controllers/report.controller.js";
 import { buildReportQueryParams } from "./useReportFilters";
 
 export default function ReportExportButtons({
@@ -21,10 +21,7 @@ export default function ReportExportButtons({
     const extension = format === "xlsx" ? "xlsx" : "pdf";
     const fallbackFilename = `${reportType}-report.${extension}`;
 
-    const result = await downloadFileFromApi(
-      `/api/reports/${reportType}/export?${params.toString()}`,
-      fallbackFilename
-    );
+    const result = await ReportController.export(reportType, params, fallbackFilename);
 
     if (!result?.success) {
       setError(result?.message || "Export failed. Please try again.");

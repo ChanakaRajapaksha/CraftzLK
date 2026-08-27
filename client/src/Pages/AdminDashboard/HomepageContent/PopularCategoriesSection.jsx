@@ -3,6 +3,7 @@ import { useOutletContext } from "react-router-dom";
 import { FaArrowDown, FaArrowUp, FaPlus } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import ImageUploadField from "../../../Components/AdminDashboard/ImageUploadField";
+import { homepageEndpoints } from "../../../api/endpoint.js";
 import HomepageSectionShell, { Field } from "./HomepageSectionShell";
 import { useHomepageSection } from "./useHomepageSection";
 
@@ -188,8 +189,8 @@ export default function PopularCategoriesSection() {
                     <label className="admin-dash__label">Category image</label>
                     <div className="admin-dash__banner-upload-wrap">
                       <ImageUploadField
-                        uploadEndpoint="/api/homepage-content/upload"
-                        deleteImageEndpoint="/api/homepage-content/deleteImage"
+                        uploadEndpoint={homepageEndpoints.upload}
+                        deleteImageEndpoint={homepageEndpoints.deleteImage}
                         previews={previews}
                         setPreviews={(next) => {
                           setImagePreviews((prev) => ({ ...prev, [rowKey]: next }));

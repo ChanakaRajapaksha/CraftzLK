@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { IoClose } from "react-icons/io5";
-import { editData, fetchDataFromApi, postData } from "../../../utils/api";
+import ShippingController from "../../../controllers/shipping.controller.js";
 import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import ShippingMethodForm from "./ShippingMethodForm";
 import {
@@ -34,7 +34,7 @@ export default function ShippingMethodFormModal({
     }
 
     setLoading(true);
-    fetchDataFromApi(`/api/shipping-methods/${methodId}`)
+    ShippingController.getById(methodId)
       .then((res) => {
         if (!res || res.success === false) {
           setAlertBox?.({
@@ -60,8 +60,8 @@ export default function ShippingMethodFormModal({
 
     const payload = payloadFromForm || formToPayload(formFields);
     const request = isEdit
-      ? editData(`/api/shipping-methods/${methodId}`, payload)
-      : postData("/api/shipping-methods/create", payload);
+      ? ShippingController.update(methodId, payload)
+      : ShippingController.create( payload);
 
     request
       .then((res) => {

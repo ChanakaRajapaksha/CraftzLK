@@ -8,7 +8,7 @@ import AdminPagination from "../../../Components/AdminDashboard/AdminPagination"
 import AdminConfirmDialog from "../../../Components/AdminDashboard/AdminConfirmDialog";
 import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
-import { deleteData, fetchDataFromApi } from "../../../utils/api";
+import BannerController from "../../../controllers/banner.controller.js";
 import { getPromoStatusBadge } from "./promoListHelpers";
 import PromoBannerFormModal from "./PromoBannerFormModal";
 
@@ -30,7 +30,7 @@ export default function PromoBannerList() {
     setLoading(true);
     setLoadError(false);
 
-    fetchDataFromApi("/api/home-slider-banners")
+    BannerController.getHomeSliderBanners()
       .then((res) => {
         if (res?.success === false) {
           throw new Error(res?.message || "Failed to load banners.");
@@ -129,7 +129,7 @@ export default function PromoBannerList() {
     const id = deleteTarget.id;
     setDeleteTarget(null);
 
-    deleteData(`/api/home-slider-banners/${id}`)
+    BannerController.removeHomeSlider(id)
       .then((res) => {
         if (res?.success === false) {
           setAlertBox?.({

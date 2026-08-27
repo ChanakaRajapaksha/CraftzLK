@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import Rating from "@mui/material/Rating";
 import { FaPencilAlt } from "react-icons/fa";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
-import { fetchDataFromApi } from "../../../utils/api";
+import ProductController from "../../../controllers/product.controller.js";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import { parseShortDescriptionBullets, parseDescriptionPoints } from "./productFormDefaults";
 
@@ -98,7 +98,7 @@ export default function ProductDetails() {
       setProduct(null);
       setActiveImage(0);
 
-      const res = await fetchDataFromApi(`/api/products/${id}`);
+      const res = await ProductController.getById(id);
       if (cancelled) return;
 
       if (isValidProduct(res)) {

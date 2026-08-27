@@ -42,6 +42,10 @@ export default function HomePageFooter() {
 
   return (
     <footer className="home-page-footer" aria-label="Site footer">
+      <div className="home-page-footer__brand-watermark" aria-hidden="true">
+        <span className="home-page-footer__brand-watermark-text">CraftzLK</span>
+      </div>
+
       <div className="home-page-footer__chrome">
         <div className="home-page-footer__chrome-inner">
           <div className="home-page-footer__grid">

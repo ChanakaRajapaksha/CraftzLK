@@ -13,7 +13,11 @@ import HomeCustomerReviewSummary from "../../Components/HomeCustomerReviewSummar
 import WriteReviewModal from "../../Components/WriteReviewModal";
 import AskQuestionModal from "../../Components/AskQuestionModal";
 import YouMayAlsoLike from "../../Components/YouMayAlsoLike";
-import { fetchDataFromApi } from "../../utils/api";
+import {
+  ProductController,
+  ProductQuestionController,
+  ProductReviewController,
+} from "../../controllers/index.js";
 import { parseProductQuestionsResponse, parseProductReviewsResponse } from "../../utils/productReviewUtils";
 import { useAppSelector } from "../../store/hooks";
 import ProductReviewsFeed from "./ProductReviewsFeed";
@@ -142,7 +146,7 @@ export default function SampleProductDetails() {
       }
 
       try {
-        const res = await fetchDataFromApi(`/api/products/${id}`);
+        const res = await ProductController.getById(id);
         if (cancelled) return;
 
         if (isValidApiProduct(res)) {
@@ -173,9 +177,7 @@ export default function SampleProductDetails() {
 
     setReviewsLoading(true);
     try {
-      const res = await fetchDataFromApi(
-        `/api/productReviews?productId=${encodeURIComponent(productId)}`
-      );
+      const res = await ProductReviewController.getByProductId(productId);
       const { reviews, averageRating, reviewCount: totalReviews } =
         parseProductReviewsResponse(res);
 
@@ -196,9 +198,7 @@ export default function SampleProductDetails() {
 
     setQuestionsLoading(true);
     try {
-      const res = await fetchDataFromApi(
-        `/api/productQuestions?productId=${encodeURIComponent(productId)}`
-      );
+      const res = await ProductQuestionController.getByProductId(productId);
       const { questions } = parseProductQuestionsResponse(res);
       setProductQuestions(questions);
     } catch {

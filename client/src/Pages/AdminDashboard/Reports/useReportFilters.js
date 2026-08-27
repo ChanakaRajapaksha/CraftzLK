@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { fetchDataFromApi } from "../../../utils/api";
+import CategoryController from "../../../controllers/category.controller.js";
+import ProductController from "../../../controllers/product.controller.js";
 
 function mapMainCategories(list) {
   return (list || [])
@@ -50,8 +51,8 @@ export default function useReportFilters() {
     setLoadError(false);
 
     Promise.all([
-      fetchDataFromApi("/api/category/active"),
-      fetchDataFromApi("/api/products/admin/list?perPage=1000&page=1&status=active"),
+      CategoryController.getActive(),
+      ProductController.getAdminList("perPage=1000&page=1&status=active"),
     ])
       .then(([categoryRes, productRes]) => {
         if (categoryRes?.success === false || productRes?.success === false) {

@@ -10,7 +10,12 @@ import Tooltip from "@mui/material/Tooltip";
 import RelatedProducts from "./RelatedProducts/index.jsx";
 
 import { useParams } from "react-router-dom";
-import { fetchDataFromApi, postData } from "../../utils/api";
+import {
+  CompareListController,
+  MyListController,
+  ProductController,
+  ProductReviewController,
+} from "../../controllers/index.js";
 import CircularProgress from "@mui/material/CircularProgress";
 import { MyContext } from "../../App";
 import FixedSizeLoadingButton from "../../Components/FixedSizeLoadingButton";
@@ -44,7 +49,7 @@ const ProductDetails = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     setActiveSize(null);
-    fetchDataFromApi(`/api/products/${id}`).then((res) => {
+    ProductController.getById(id).then((res) => {
       setProductData(res);
 
       if (
@@ -55,25 +60,22 @@ const ProductDetails = () => {
         setActiveSize(1);
       }
 
-      fetchDataFromApi(
-        `/api/products/subCatId?subCatId=${
-          res?.subCatId
-        }&location=${localStorage.getItem("location")}`
-      ).then((res) => {
+      ProductController.getBySubCatId({
+        subCatId: res?.subCatId,
+        location: localStorage.getItem("location"),
+      }).then((res) => {
         const filteredData = res?.products?.filter((item) => item.id !== id);
         setRelatedProductData(filteredData);
       });
     });
 
-    fetchDataFromApi(`/api/productReviews?productId=${id}`).then((res) => {
+    ProductReviewController.getByProductId(id).then((res) => {
       setreviewsData(res);
     });
 
     const user = JSON.parse(localStorage.getItem("user"));
 
-    fetchDataFromApi(
-      `/api/my-list?productId=${id}&userId=${user?.userId}`
-    ).then((res) => {
+    MyListController.check(id, user?.userId).then((res) => {
       if (res.length !== 0) {
         setSsAddedToMyList(true);
       }
@@ -118,7 +120,7 @@ const ProductDetails = () => {
       
       setIsLoading(true);
 
-      postData("/api/productReviews/add", reviews).then((res) => {
+      ProductReviewController.add(reviews).then((res) => {
         setIsLoading(false);
 
         reviews.customerRating = 1;
@@ -128,7 +130,7 @@ const ProductDetails = () => {
           customerRating: 1,
         });
 
-        fetchDataFromApi(`/api/productReviews?productId=${id}`).then((res) => {
+        ProductReviewController.getByProductId(id).then((res) => {
           setreviewsData(res);
         });
       });
@@ -195,7 +197,7 @@ const ProductDetails = () => {
         productId: id,
         userId: user?.userId,
       };
-      postData(`/api/my-list/add/`, data).then((res) => {
+      MyListController.addItem(data).then((res) => {
         if (res.status !== false) {
           context.setAlertBox({
             open: true,
@@ -203,9 +205,7 @@ const ProductDetails = () => {
             msg: "the product added in my list",
           });
 
-          fetchDataFromApi(
-            `/api/my-list?productId=${id}&userId=${user?.userId}`
-          ).then((res) => {
+          MyListController.check(id, user?.userId).then((res) => {
             if (res.length !== 0) {
               setSsAddedToMyList(true);
             }
@@ -238,7 +238,7 @@ const ProductDetails = () => {
         productId: id,
         userId: user?.userId,
       };
-      postData(`/api/compare-list/add/`, data).then((res) => {
+      CompareListController.addItem(data).then((res) => {
         if (res.status !== false) {
           context.setAlertBox({
             open: true,
@@ -246,9 +246,7 @@ const ProductDetails = () => {
             msg: "the product added in Compare list",
           });
 
-          fetchDataFromApi(
-            `/api/compare-list?productId=${id}&userId=${user?.userId}`
-          ).then((res) => {
+          CompareListController.check(id, user?.userId).then((res) => {
             if (res.length !== 0) {
               setSsAddedToMyList(true);
             }

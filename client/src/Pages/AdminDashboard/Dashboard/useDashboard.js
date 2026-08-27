@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { fetchDataFromApi } from "../../../utils/api";
+import DashboardController from "../../../controllers/dashboard.controller.js";
 
 export default function useDashboard({ preset, customStart, customEnd, metric }) {
   const [data, setData] = useState(null);
@@ -20,7 +20,7 @@ export default function useDashboard({ preset, customStart, customEnd, metric })
       if (customEnd) params.set("customEnd", customEnd);
     }
 
-    return fetchDataFromApi(`/api/dashboard/overview?${params.toString()}`)
+    return DashboardController.getOverview(params.toString())
       .then((res) => {
         if (!res || res.success === false) {
           throw new Error(res?.message || "Failed to load dashboard.");

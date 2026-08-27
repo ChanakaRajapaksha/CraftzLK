@@ -9,7 +9,8 @@ import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingSt
 import StatCard from "../../../Components/AdminDashboard/StatCard";
 import { MdShoppingBag, MdCategory } from "react-icons/md";
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
-import { deleteData, fetchDataFromApi, postData } from "../../../utils/api";
+import CategoryController from "../../../controllers/category.controller.js";
+import ProductController from "../../../controllers/product.controller.js";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import PriceRangeFilter, { getProductPriceBounds } from "../../../Components/AdminDashboard/PriceRangeFilter";
 import ProductFormModal from "./ProductFormModal";
@@ -163,7 +164,7 @@ export default function ProductList() {
       statusFilter,
     });
 
-    fetchDataFromApi(`/api/products/admin/list?${params.toString()}`)
+    ProductController.getAdminList(params.toString())
       .then((res) => {
         if (res?.success === false) {
           throw new Error(res?.message || "Failed to load products.");
@@ -188,8 +189,8 @@ export default function ProductList() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    fetchDataFromApi("/api/category/get/count").then((res) => setTotalCategory(res?.categoryCount ?? 0));
-    fetchDataFromApi("/api/category/subCat/get/count").then((res) => setTotalSubCategory(res?.categoryCount ?? 0));
+    CategoryController.getCount().then((res) => setTotalCategory(res?.categoryCount ?? 0));
+    CategoryController.getSubCategoryCount().then((res) => setTotalSubCategory(res?.categoryCount ?? 0));
   }, []);
 
   useEffect(() => {
@@ -242,7 +243,7 @@ export default function ProductList() {
   };
 
   const deleteProduct = (id) => {
-    deleteData(`/api/products/${id}`)
+    ProductController.remove(id)
       .then((res) => {
         if (res?.success === false) {
           setAlertBox?.({
@@ -274,7 +275,7 @@ export default function ProductList() {
 
   const bulkDelete = () => {
     if (!selected.length) return;
-    postData("/api/products/bulk/delete", { ids: selected })
+    ProductController.bulkDelete(selected)
       .then((res) => {
         if (res?.success === false) {
           setAlertBox?.({
@@ -295,7 +296,7 @@ export default function ProductList() {
 
   const bulkStatus = (status) => {
     if (!selected.length) return;
-    postData("/api/products/bulk/status", { ids: selected, status })
+    ProductController.bulkUpdateStatus(selected, status)
       .then((res) => {
         if (res?.success === false) {
           setAlertBox?.({
@@ -333,7 +334,7 @@ export default function ProductList() {
       perPageOverride: Math.max(totalItems, 1),
     });
 
-    fetchDataFromApi(`/api/products/admin/list?${params.toString()}`)
+    ProductController.getAdminList(params.toString())
       .then((res) => {
         const list = Array.isArray(res?.products) ? res.products : [];
         if (!list.length) {

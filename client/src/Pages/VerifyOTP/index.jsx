@@ -5,7 +5,7 @@ import Button from "@mui/material/Button";
 import { Link, useNavigate } from "react-router-dom";
 
 import CircularProgress from "@mui/material/CircularProgress";
-import { postData } from "../../utils/api";
+import UserController from "../../controllers/user.controller.js";
 import OtpBox from "../../Components/OtpBox";
 
 const VerifyOTP = () => {
@@ -36,7 +36,7 @@ const VerifyOTP = () => {
     if (otp !== "") {
       const actionType = localStorage.getItem("actionType");
 
-      postData(`/api/user/verifyemail`, obj).then((res) => {
+      UserController.verifyOtp(obj).then((res) => {
         if (res?.success === true) {
           context.setAlertBox({
             open: true,

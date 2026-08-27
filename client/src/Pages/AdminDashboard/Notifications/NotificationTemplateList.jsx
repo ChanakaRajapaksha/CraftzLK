@@ -6,7 +6,7 @@ import { IoShieldCheckmarkSharp } from "react-icons/io5";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import AdminPagination from "../../../Components/AdminDashboard/AdminPagination";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
-import { fetchDataFromApi } from "../../../utils/api";
+import NotificationController from "../../../controllers/notification.controller.js";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import { getPromoStatusBadge, formatListDate } from "../Promotions/promoListHelpers";
 import {
@@ -31,7 +31,7 @@ export default function NotificationTemplateList() {
   };
 
   const loadTemplates = () => {
-    fetchDataFromApi("/api/notifications/templates")
+    NotificationController.getTemplates()
       .then((res) => {
         const list = res?.templateList || [];
         if (list.length) {

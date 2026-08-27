@@ -4,7 +4,7 @@ import Zoom from "@mui/material/Zoom";
 import { AnimatePresence, motion } from "framer-motion";
 import { IoArrowBack, IoCloudUploadOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
-import { postData, uploadImage } from "../../utils/api";
+import { ProductReviewController } from "../../controllers/index.js";
 import { useAppSelector } from "../../store/hooks";
 import "./WriteReviewModal.css";
 
@@ -205,7 +205,7 @@ export default function WriteReviewModal({ open, onClose, product, onSubmitted }
         if (form.photoFile && images.length === 0) {
           const formData = new FormData();
           formData.append("images", form.photoFile);
-          const uploaded = await uploadImage("/api/productReviews/upload", formData);
+          const uploaded = await ProductReviewController.upload(formData);
 
           if (!Array.isArray(uploaded) || uploaded.length === 0) {
             setErrors({
@@ -230,7 +230,7 @@ export default function WriteReviewModal({ open, onClose, product, onSubmitted }
           images,
         };
 
-        const res = await postData("/api/productReviews/add", payload);
+        const res = await ProductReviewController.add(payload);
         if (!res || res.success === false) {
           setErrors({
             submit: res?.message || "Failed to submit review. Please try again.",

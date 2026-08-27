@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { FaArrowDown, FaArrowUp } from "react-icons/fa";
-import { fetchDataFromApi } from "../../../utils/api";
+import ProductController from "../../../controllers/product.controller.js";
 
 export default function ProductSortPicker({
   productIds = [],
@@ -12,7 +12,7 @@ export default function ProductSortPicker({
   const [searchKeyword, setSearchKeyword] = useState("");
 
   useEffect(() => {
-    fetchDataFromApi("/api/products")
+    ProductController.list()
       .then((res) => {
         const list = res?.products || [];
         setProducts(Array.isArray(list) ? list : []);

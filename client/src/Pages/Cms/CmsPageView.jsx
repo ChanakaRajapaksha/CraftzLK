@@ -1,7 +1,7 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { MyContext } from "../../App";
-import { fetchDataFromApi } from "../../utils/api";
+import { CmsController } from "../../controllers/index.js";
 import { slugFromPathname } from "../AdminDashboard/Cms/cmsFormDefaults";
 import "./CmsPage.css";
 
@@ -63,7 +63,7 @@ export default function CmsPageView({ slug: forcedSlug }) {
     setLoading(true);
     setNotFound(false);
 
-    fetchDataFromApi(`/api/cms-pages/public/${slug}`)
+    CmsController.getPublicBySlug(slug)
       .then((res) => {
         if (!res || res.success === false || !res.title) {
           setPage(null);

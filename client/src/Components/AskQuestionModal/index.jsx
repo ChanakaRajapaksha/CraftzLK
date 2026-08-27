@@ -2,7 +2,8 @@ import { forwardRef, useCallback, useEffect, useState } from "react";
 import Dialog from "@mui/material/Dialog";
 import Zoom from "@mui/material/Zoom";
 import { useNavigate } from "react-router-dom";
-import { postData, isApiSuccessResponse } from "../../utils/api";
+import { isApiSuccessResponse } from "../../utils/api";
+import { ProductQuestionController } from "../../controllers/index.js";
 import { useAppSelector } from "../../store/hooks";
 import "./AskQuestionModal.css";
 
@@ -105,7 +106,7 @@ export default function AskQuestionModal({ open, onClose, product, onSubmitted }
       question: form.question.trim(),
     };
 
-    const res = await postData("/api/productQuestions/add", payload);
+    const res = await ProductQuestionController.add(payload);
 
     if (!isApiSuccessResponse(res)) {
       setErrors({

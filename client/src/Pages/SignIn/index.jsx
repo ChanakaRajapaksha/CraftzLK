@@ -11,8 +11,8 @@ import CircularProgress from "@mui/material/CircularProgress";
 import { toast } from "sonner";
 
 import GoogleImg from "../../assets/images/googleImg.png";
+import UserController from "../../controllers/user.controller.js";
 import AuthController from "../../controllers/auth.controller";
-import { editData } from "../../utils/api";
 import { useAppDispatch } from "../../store/hooks";
 import { setAuthUser } from "../../store/slices/authSlice";
 import "./signin.css";
@@ -61,7 +61,7 @@ const SignIn = () => {
       if (isOpenVerifyEmailBox) {
         // Verify email flow
         setIsLoading(true);
-        editData("/api/user/verify-email", {
+        UserController.verifyEmail({
           email: data.email,
         }).then((res) => {
           if (res.status === true) {

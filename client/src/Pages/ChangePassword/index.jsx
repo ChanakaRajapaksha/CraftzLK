@@ -6,7 +6,7 @@ import Button from "@mui/material/Button";
 import { Link, useNavigate } from "react-router-dom";
 
 import CircularProgress from "@mui/material/CircularProgress";
-import { editData, postData } from "../../utils/api";
+import UserController from "../../controllers/user.controller.js";
 
 
 const ChangePassword = () => {
@@ -66,7 +66,7 @@ const ChangePassword = () => {
     }
 
 
-    postData(`/api/user/forgotPassword/changePassword`, formfields).then((res) => {
+    UserController.changePassword(formfields).then((res) => {
         if(res.status==="SUCCESS"){
           context.setAlertBox({
             open: true,

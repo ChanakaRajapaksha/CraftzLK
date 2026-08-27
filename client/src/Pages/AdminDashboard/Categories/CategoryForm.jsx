@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ProductImageUploadField from "../../../Components/AdminDashboard/ProductImageUploadField";
+import { categoryEndpoints } from "../../../api/endpoint.js";
 import { CATEGORY_FORM_TABS, slugify } from "./categoryFormDefaults";
 
 function Field({ label, htmlFor, children, full = false, required = false }) {
@@ -138,8 +139,8 @@ export default function CategoryForm({
           <div className="admin-dash__product-images-tab">
             <Field label="Category Image" full>
               <ProductImageUploadField
-                uploadEndpoint="/api/category/upload"
-                deleteImageEndpoint="/api/category/deleteImage"
+                uploadEndpoint={categoryEndpoints.upload}
+                deleteImageEndpoint={categoryEndpoints.deleteImage}
                 previews={previews}
                 setPreviews={setPreviews}
                 setAlertBox={setAlertBox}

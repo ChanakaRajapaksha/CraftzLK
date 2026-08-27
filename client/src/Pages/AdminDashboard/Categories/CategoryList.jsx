@@ -8,7 +8,7 @@ import AdminPagination from "../../../Components/AdminDashboard/AdminPagination"
 import AdminConfirmDialog from "../../../Components/AdminDashboard/AdminConfirmDialog";
 import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
-import { deleteData, fetchDataFromApi } from "../../../utils/api";
+import CategoryController from "../../../controllers/category.controller.js";
 import CategoryFormModal from "./CategoryFormModal";
 
 const DEFAULT_STATS = {
@@ -57,7 +57,7 @@ export default function CategoryList() {
     if (statusFilter !== "all") params.set("status", statusFilter);
     if (parentFilter !== "all") params.set("parentType", parentFilter);
 
-    fetchDataFromApi(`/api/category/admin/list?${params.toString()}`)
+    CategoryController.getAdminList(params.toString())
       .then((res) => {
         if (res?.success === false) {
           throw new Error(res?.message || "Failed to load categories.");
@@ -124,7 +124,7 @@ export default function CategoryList() {
   };
 
   const deleteCategory = (id) => {
-    deleteData(`/api/category/${id}`)
+    CategoryController.remove(id)
       .then((res) => {
         if (res?.success === false) {
           setAlertBox?.({

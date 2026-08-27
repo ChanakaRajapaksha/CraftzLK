@@ -8,7 +8,7 @@ import {
   fetchUserOrders,
   getOrderItemCount,
 } from "../../utils/orderHelpers";
-import { fetchDataFromApi } from "../../utils/api";
+import UserController from "../../controllers/user.controller.js";
 import "./MyAccount.css";
 
 const PAYMENT_LABELS = {
@@ -59,7 +59,7 @@ const MyAccount = () => {
         .then(setOrders)
         .catch(() => setOrders([]));
 
-      fetchDataFromApi(`/api/user/${localUser.userId}`)
+      UserController.getById(localUser.userId)
         .then((res) => {
           if (res?.phone) setPhone(res.phone);
         })

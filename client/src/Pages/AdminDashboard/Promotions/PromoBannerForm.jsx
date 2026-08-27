@@ -1,4 +1,5 @@
 import ImageUploadField from "../../../Components/AdminDashboard/ImageUploadField";
+import { bannerEndpoints } from "../../../api/endpoint.js";
 import { formToPayload } from "./promoBannerFormDefaults";
 
 function Field({ label, htmlFor, children, full = false }) {
@@ -120,8 +121,8 @@ export default function PromoBannerForm({
           <Field label="Desktop Image">
             <div className="admin-dash__banner-upload-wrap">
               <ImageUploadField
-                uploadEndpoint="/api/home-slider-banners/upload"
-                deleteImageEndpoint="/api/home-slider-banners/deleteImage"
+                uploadEndpoint={bannerEndpoints.homeSliderUpload}
+                deleteImageEndpoint={bannerEndpoints.homeSliderDeleteImage}
                 previews={desktopPreviews}
                 setPreviews={setDesktopPreviews}
                 setAlertBox={setAlertBox}
@@ -134,8 +135,8 @@ export default function PromoBannerForm({
           <Field label="Mobile Image">
             <div className="admin-dash__banner-upload-wrap">
               <ImageUploadField
-                uploadEndpoint="/api/home-slider-banners/upload"
-                deleteImageEndpoint="/api/home-slider-banners/deleteImage"
+                uploadEndpoint={bannerEndpoints.homeSliderUpload}
+                deleteImageEndpoint={bannerEndpoints.homeSliderDeleteImage}
                 previews={mobilePreviews}
                 setPreviews={setMobilePreviews}
                 setAlertBox={setAlertBox}

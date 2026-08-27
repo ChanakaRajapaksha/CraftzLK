@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { fetchDataFromApi } from "../../../utils/api";
+import ReportController from "../../../controllers/report.controller.js";
 import { buildReportQueryParams } from "./useReportFilters";
 
 export default function useSalesReport({
@@ -30,7 +30,7 @@ export default function useSalesReport({
       metric,
     });
 
-    return fetchDataFromApi(`/api/reports/sales?${params.toString()}`)
+    return ReportController.getSales(params.toString())
       .then((res) => {
         if (!res || res.success === false) {
           throw new Error(res?.message || "Failed to load sales report.");

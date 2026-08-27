@@ -7,7 +7,7 @@ import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader"
 import AdminPagination from "../../../Components/AdminDashboard/AdminPagination";
 import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import StatCard from "../../../Components/AdminDashboard/StatCard";
-import { fetchDataFromApi } from "../../../utils/api";
+import PaymentController from "../../../controllers/payment.controller.js";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import {
   formatTransactionAmount,
@@ -30,7 +30,7 @@ export default function TransactionList() {
     setLoading(true);
     setLoadError(false);
 
-    fetchDataFromApi("/api/payments/transactions")
+    PaymentController.getTransactions()
       .then((res) => {
         if (res?.success === false) {
           throw new Error(res?.message || "Failed to load transactions.");

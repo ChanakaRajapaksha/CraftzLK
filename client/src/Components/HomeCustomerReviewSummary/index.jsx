@@ -8,7 +8,7 @@ import {
   HiSparkles,
 } from "react-icons/hi2";
 import CustomerReviewsModal from "../CustomerReviewsModal";
-import { fetchDataFromApi } from "../../utils/api";
+import { ProductReviewController } from "../../controllers/index.js";
 import "./HomeCustomerReviewSummary.css";
 
 const BRAND = "CraftzLK";
@@ -78,7 +78,7 @@ export default function HomeCustomerReviewSummary({ variant = "home" }) {
   useEffect(() => {
     let cancelled = false;
 
-    fetchDataFromApi("/api/productReviews/stats")
+    ProductReviewController.getStats()
       .then((res) => {
         if (cancelled || !res || res.success === false) return;
         setAverageRating(Number(res.averageRating) || 0);

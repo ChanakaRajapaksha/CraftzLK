@@ -10,7 +10,7 @@ import PopularCategoriesGrid from "../../Components/PopularCategoriesGrid";
 import React, { useContext, useEffect, useState } from "react";
 
 import { MyContext } from "../../App";
-import { fetchDataFromApi } from "../../utils/api";
+import { BannerController } from "../../controllers/index.js";
 
 import Banners from "../../Components/banners";
 import { Link } from "react-router-dom";
@@ -28,15 +28,15 @@ const Home = () => {
     window.scrollTo(0, 0);
     context?.setisHeaderFooterShow?.(true);
 
-    fetchDataFromApi("/api/banners").then((res) => {
+    BannerController.getSlideBanners().then((res) => {
       setBannerList(res);
     });
 
-    fetchDataFromApi("/api/homeSideBanners").then((res) => {
+    BannerController.getSideBanners().then((res) => {
       setHomeSideBanners(res);
     });
 
-    fetchDataFromApi("/api/homeBottomBanners").then((res) => {
+    BannerController.getBottomBanners().then((res) => {
       setHomeBottomBanners(res);
     });
 

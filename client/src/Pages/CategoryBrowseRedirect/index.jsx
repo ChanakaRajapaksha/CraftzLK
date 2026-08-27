@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
 import { MyContext } from "../../App";
-import { fetchDataFromApi } from "../../utils/api";
+import { CategoryController } from "../../controllers/index.js";
 import {
   COLLECTIONS_ALL_PATH,
   getCategoryCollectionsPath,
@@ -24,12 +24,12 @@ function findInTree(categoryList, id) {
 }
 
 async function resolveBrowsePath(id) {
-  const res = await fetchDataFromApi(`/api/category/${id}`);
+  const res = await CategoryController.getById(id);
   const record = res?.category || res?.categoryData?.[0];
   if (!record?.name) return null;
 
   if (record.parentId) {
-    const parentRes = await fetchDataFromApi(`/api/category/${record.parentId}`);
+    const parentRes = await CategoryController.getById(record.parentId);
     const parent = parentRes?.category || parentRes?.categoryData?.[0];
     if (parent?.name) {
       return getSubcategoryCollectionsPath(parent.name, record.name);

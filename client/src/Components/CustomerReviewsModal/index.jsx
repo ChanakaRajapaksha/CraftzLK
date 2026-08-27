@@ -7,7 +7,7 @@ import { HiSparkles } from "react-icons/hi2";
 import { IoIosSearch } from "react-icons/io";
 import { FaCheck, FaFilter } from "react-icons/fa";
 import { IoChevronDown } from "react-icons/io5";
-import { fetchDataFromApi } from "../../utils/api";
+import { ProductReviewController } from "../../controllers/index.js";
 import { formatReviewFeedDate } from "../../utils/productReviewUtils";
 import {
   FILTER_STAR_OPTIONS,
@@ -115,31 +115,32 @@ function mapModalReviewItem(review) {
   };
 }
 
-function buildGetAllUrl({
+function buildGetAllParams({
   page,
   search,
   starFilters,
   sortBy,
   productId,
 }) {
-  const params = new URLSearchParams();
-  params.set("page", String(page));
-  params.set("limit", String(REVIEWS_PER_PAGE));
-  params.set("sort", sortBy || "recent");
+  const params = {
+    page,
+    limit: REVIEWS_PER_PAGE,
+    sort: sortBy || "recent",
+  };
 
   if (search.trim()) {
-    params.set("search", search.trim());
+    params.search = search.trim();
   }
 
   if (starFilters.length > 0) {
-    params.set("stars", starFilters.join(","));
+    params.stars = starFilters.join(",");
   }
 
   if (productId) {
-    params.set("productId", String(productId));
+    params.productId = String(productId);
   }
 
-  return `/api/productReviews/getall?${params.toString()}`;
+  return params;
 }
 
 export default function CustomerReviewsModal({
@@ -232,7 +233,7 @@ export default function CustomerReviewsModal({
     let cancelled = false;
     setLoading(true);
 
-    const url = buildGetAllUrl({
+    const params = buildGetAllParams({
       page,
       search: debouncedSearch,
       starFilters,
@@ -240,7 +241,7 @@ export default function CustomerReviewsModal({
       productId,
     });
 
-    fetchDataFromApi(url)
+    ProductReviewController.getAll(params)
       .then((res) => {
         if (cancelled) return;
         if (!res || res.success === false) {

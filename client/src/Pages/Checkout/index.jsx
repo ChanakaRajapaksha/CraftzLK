@@ -6,7 +6,13 @@ import { toast } from "sonner";
 import { MyContext } from "../../App";
 import { COLLECTIONS_ALL_PATH } from "../Collections/collectionsConstants";
 import { getCartSubtotal, isSampleProductId, parsePriceValue } from "../../utils/cartHelpers";
-import { deleteData, fetchDataFromApi, postData } from "../../utils/api";
+import {
+  CartController,
+  CouponController,
+  OrderController,
+  PaymentController,
+  ShippingController,
+} from "../../controllers/index.js";
 import { useAppSelector } from "../../store/hooks";
 import CheckoutCouponSection from "./CheckoutCouponSection";
 import CheckoutBankTransferDetails from "./CheckoutBankTransferDetails";
@@ -126,7 +132,7 @@ const Checkout = () => {
     setCouponFeedback(null);
 
     try {
-      const res = await postData("/api/coupons/validate", { code, subtotal });
+      const res = await CouponController.validate({ code, subtotal });
       if (res?.success === false && res?.valid === undefined) {
         setCouponFeedback({
           type: "error",
@@ -191,7 +197,7 @@ const Checkout = () => {
 
     const revalidateAppliedCoupon = async () => {
       try {
-        const res = await postData("/api/coupons/validate", {
+        const res = await CouponController.validate({
           code: appliedCoupon.code,
           subtotal,
         });
@@ -253,7 +259,7 @@ const Checkout = () => {
 
     context.getCartData?.();
 
-    fetchDataFromApi("/api/shipping-methods/active")
+    ShippingController.getActive()
       .then((res) => {
         if (cancelled) return;
         const list =
@@ -270,7 +276,7 @@ const Checkout = () => {
         }
       });
 
-    fetchDataFromApi("/api/payments/methods/public/bank-transfer")
+    PaymentController.getPublicBankTransfer()
       .then((res) => {
         if (cancelled) return;
         if (res?.success !== false && res?.bankDetails) {
@@ -428,7 +434,7 @@ const Checkout = () => {
           );
         })
         .map((item) =>
-          deleteData(`/api/cart/${item._id || item.id}`).catch(() => undefined)
+          CartController.removeItem(item._id || item.id).catch(() => undefined)
         )
     );
   };
@@ -466,7 +472,7 @@ const Checkout = () => {
       : "";
 
     try {
-      const res = await postData("/api/orders/create", {
+      const res = await OrderController.create({
         name: fullName || "Customer",
         phoneNumber: formFields.phoneNumber.trim(),
         address,

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import { editData, fetchDataFromApi } from "../../../utils/api";
+import HomepageController from "../../../controllers/homepage.controller.js";
 import {
   defaultHomepageContent,
   getSampleHomepageContent,
@@ -16,7 +16,7 @@ export function useHomepageSection(sectionKey) {
   const [fullContent, setFullContent] = useState(null);
 
   const loadContent = useCallback(() => {
-    fetchDataFromApi("/api/homepage-content")
+    HomepageController.getContent()
       .then((res) => {
         const content = res?.content;
         if (content?.[sectionKey]) {
@@ -50,7 +50,7 @@ export function useHomepageSection(sectionKey) {
       [sectionKey]: sectionPayload,
     };
 
-    return editData("/api/homepage-content", payload)
+    return HomepageController.updateContent( payload)
       .then((res) => {
         const content = res?.content || payload;
         setFullContent(content);

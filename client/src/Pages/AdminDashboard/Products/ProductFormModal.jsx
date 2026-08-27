@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { IoClose } from "react-icons/io5";
-import { deleteData, editData, fetchDataFromApi, postData } from "../../../utils/api";
+import ProductController from "../../../controllers/product.controller.js";
+import ImageUploadController from "../../../controllers/imageUpload.controller.js";
 import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import ProductForm from "./ProductForm";
 import {
@@ -47,7 +48,7 @@ export default function ProductFormModal({
     }
 
     setLoading(true);
-    fetchDataFromApi(`/api/products/${productId}`)
+    ProductController.getById(productId)
       .then((res) => {
         if (isValidProduct(res)) {
           setFormFields(productToForm(res));
@@ -69,8 +70,8 @@ export default function ProductFormModal({
 
     const payload = formToPayload(formFields);
     const request = isEdit
-      ? editData(`/api/products/${productId}`, { ...payload, images: previews })
-      : postData("/api/products/create", payload);
+      ? ProductController.update(productId, { ...payload, images: previews })
+      : ProductController.create( payload);
 
     request
       .then((res) => {
@@ -92,7 +93,7 @@ export default function ProductFormModal({
           return;
         }
 
-        deleteData("/api/imageUpload/deleteAllImages").catch(() => {});
+        ImageUploadController.clearStagingImages().catch(() => {});
         setAlertBox?.({
           open: true,
           error: false,

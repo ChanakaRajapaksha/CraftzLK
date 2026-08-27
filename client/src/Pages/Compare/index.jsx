@@ -7,7 +7,7 @@ import Button from '@mui/material/Button';
 import compare from '../../assets/images/compare.png';
 import { MyContext } from "../../App";
 import { useContext, useEffect, useState } from "react";
-import { deleteData, fetchDataFromApi } from "../../utils/api";
+import { CompareListController } from "../../controllers/index.js";
 import { FaHome } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 import { FaCodeCompare } from "react-icons/fa6";
@@ -38,7 +38,7 @@ const Compare = () => {
     
             
             const user = JSON.parse(localStorage.getItem("user"));
-            fetchDataFromApi(`/api/compare-list?userId=${user?.userId}`).then((res) => {
+            CompareListController.getList({ userId: user?.userId }).then((res) => {
                 setmyCompareListData(res);
             })
     
@@ -59,7 +59,7 @@ const Compare = () => {
     
         const removeItem = (id) => {
             setIsLoading(true);
-            deleteData(`/api/compare-list/${id}`).then((res) => {
+            CompareListController.remove(id).then((res) => {
                 context.setAlertBox({
                     open: true,
                     error: false,
@@ -67,7 +67,7 @@ const Compare = () => {
                 })
     
                 const user = JSON.parse(localStorage.getItem("user"));
-                fetchDataFromApi(`/api/compare-list?userId=${user?.userId}`).then((res) => {
+                CompareListController.getList({ userId: user?.userId }).then((res) => {
                     setmyCompareListData(res);
                     setIsLoading(false);
                 })
@@ -87,13 +87,9 @@ const Compare = () => {
 
     setIsLoading(true);
     try {
-        const response = await fetch("/api/compare-products", {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                product1Id: selectedProducts[0]._id,
-                product2Id: selectedProducts[1]._id
-            })
+        const response = await CompareListController.compareProducts({
+            product1Id: selectedProducts[0]._id,
+            product2Id: selectedProducts[1]._id,
         });
 
         const text = await response.text();  // Log raw response

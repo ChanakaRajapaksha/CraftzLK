@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
-import { editData, fetchDataFromApi } from "../../../utils/api";
+import NotificationController from "../../../controllers/notification.controller.js";
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import { NotificationTemplateForm } from "./NotificationSettingsForm";
 import {
@@ -34,7 +34,7 @@ export default function EditNotificationTemplate() {
       return;
     }
 
-    fetchDataFromApi(`/api/notifications/templates/${id}`)
+    NotificationController.getTemplateById(id)
       .then((res) => {
         if (res) {
           setTemplateMeta(res);
@@ -56,7 +56,7 @@ export default function EditNotificationTemplate() {
     }
 
     setIsLoading(true);
-    editData(`/api/notifications/templates/${id}`, templateToPayload(formFields))
+    NotificationController.updateTemplate(id, templateToPayload(formFields))
       .then(() => {
         setAlertBox?.({ open: true, error: false, msg: "Template updated." });
         navigate(`${ADMIN_BASE}/notifications/templates`);

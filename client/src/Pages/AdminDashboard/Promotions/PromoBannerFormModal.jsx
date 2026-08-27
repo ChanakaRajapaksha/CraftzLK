@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { IoClose } from "react-icons/io5";
-import { deleteData, editData, fetchDataFromApi, postData } from "../../../utils/api";
+import BannerController from "../../../controllers/banner.controller.js";
+import ImageUploadController from "../../../controllers/imageUpload.controller.js";
 import AdminLoadingState from "../../../Components/AdminDashboard/AdminLoadingState";
 import PromoBannerForm from "./PromoBannerForm";
 import {
@@ -38,7 +39,7 @@ export default function PromoBannerFormModal({
     }
 
     setLoading(true);
-    fetchDataFromApi(`/api/home-slider-banners/${bannerId}`)
+    BannerController.getHomeSliderById(bannerId)
       .then((res) => {
         if (res?.success === false) {
           setAlertBox?.({
@@ -74,8 +75,8 @@ export default function PromoBannerFormModal({
       payloadFromForm || formToPayload(formFields, desktopImage, mobileImage);
 
     const request = isEdit
-      ? editData(`/api/home-slider-banners/${bannerId}`, payload)
-      : postData("/api/home-slider-banners/create", payload);
+      ? BannerController.updateHomeSlider(bannerId, payload)
+      : BannerController.createHomeSlider( payload);
 
     request
       .then((res) => {
@@ -90,7 +91,7 @@ export default function PromoBannerFormModal({
           return;
         }
 
-        deleteData("/api/imageUpload/deleteAllImages");
+        ImageUploadController.clearStagingImages();
         setAlertBox?.({
           open: true,
           error: false,

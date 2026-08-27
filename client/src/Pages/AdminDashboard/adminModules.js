@@ -1,3 +1,5 @@
+import { bannerEndpoints, productAttributeEndpoints } from "../../api/endpoint.js";
+
 export const BANNER_MODULES = {
   homeMain: {
     key: "homeMain",
@@ -5,7 +7,7 @@ export const BANNER_MODULES = {
     listPath: "/dashboard/homeBannerSlide/list",
     addPath: "/dashboard/homeBannerSlide/add",
     editPath: (id) => `/dashboard/homeBannerSlide/edit/${id}`,
-    apiBase: "/api/homeBanner",
+    apiBase: bannerEndpoints.homeMain,
     hasCategoryFields: false,
   },
   slide: {
@@ -14,7 +16,7 @@ export const BANNER_MODULES = {
     listPath: "/dashboard/banners",
     addPath: "/dashboard/banners/add",
     editPath: (id) => `/dashboard/banners/edit/${id}`,
-    apiBase: "/api/banners",
+    apiBase: bannerEndpoints.slide,
     hasCategoryFields: true,
   },
   side: {
@@ -23,7 +25,7 @@ export const BANNER_MODULES = {
     listPath: "/dashboard/homeSideBanners",
     addPath: "/dashboard/homeSideBanners/add",
     editPath: (id) => `/dashboard/homeSideBanners/edit/${id}`,
-    apiBase: "/api/homeSideBanners",
+    apiBase: bannerEndpoints.side,
     hasCategoryFields: false,
   },
   bottom: {
@@ -32,7 +34,7 @@ export const BANNER_MODULES = {
     listPath: "/dashboard/homeBottomBanners",
     addPath: "/dashboard/homeBottomBanners/add",
     editPath: (id) => `/dashboard/homeBottomBanners/edit/${id}`,
-    apiBase: "/api/homeBottomBanners",
+    apiBase: bannerEndpoints.bottom,
     hasCategoryFields: false,
   },
 };
@@ -40,21 +42,21 @@ export const BANNER_MODULES = {
 export const PRODUCT_ATTRIBUTE_MODULES = {
   rams: {
     title: "Product RAM",
-    apiBase: "/api/productRAMS",
+    apiBase: productAttributeEndpoints.rams,
     fieldName: "productRam",
     fieldLabel: "Product RAM",
     breadcrumb: "Product RAM",
   },
   weight: {
     title: "Product Weight",
-    apiBase: "/api/productWeight",
+    apiBase: productAttributeEndpoints.weight,
     fieldName: "productWeight",
     fieldLabel: "Product Weight",
     breadcrumb: "Product Weight",
   },
   size: {
     title: "Product Size",
-    apiBase: "/api/productSIZE",
+    apiBase: productAttributeEndpoints.size,
     fieldName: "size",
     fieldLabel: "Product Size",
     breadcrumb: "Product Size",
