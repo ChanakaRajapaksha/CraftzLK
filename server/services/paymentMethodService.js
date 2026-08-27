@@ -13,6 +13,7 @@ const DEFAULT_METHODS = [
     name: 'Bank Transfer',
     description: 'Transfer payment to our bank account and send the slip with your order number.',
     bankName: '',
+    branchName: '',
     accountName: '',
     accountNumber: '',
     status: 'active',
@@ -26,6 +27,7 @@ const mapMethod = (doc) => ({
   name: doc.name,
   description: doc.description || '',
   bankName: doc.bankName || '',
+  branchName: doc.branchName || '',
   accountName: doc.accountName || '',
   accountNumber: doc.accountNumber || '',
   status: doc.status || 'active',
@@ -89,6 +91,7 @@ class PaymentMethodService {
         name: body.name,
         description: body.description || '',
         bankName: body.bankName || '',
+        branchName: body.branchName || '',
         accountName: body.accountName || '',
         accountNumber: body.accountNumber || '',
         status: body.status || 'active',
@@ -104,6 +107,27 @@ class PaymentMethodService {
     }
 
     return mapMethod(updated);
+  }
+
+  async getPublicBankTransferDetails() {
+    await this.ensureDefaultMethods();
+    const item = await PaymentMethod.findOne({ code: 'bank_transfer', status: 'active' });
+
+    if (!item) {
+      return null;
+    }
+
+    return {
+      code: item.code,
+      name: item.name,
+      description: item.description || '',
+      bankDetails: {
+        bankName: item.bankName || '',
+        branchName: item.branchName || '',
+        accountNumber: item.accountNumber || '',
+        accountHolderName: item.accountName || '',
+      },
+    };
   }
 
   async getTransactions() {

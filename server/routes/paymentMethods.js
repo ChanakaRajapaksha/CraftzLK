@@ -3,6 +3,10 @@ const router = express.Router();
 const paymentMethodController = require('../controllers/paymentMethodController');
 const asyncHandler = require('../middleware/asyncHandler');
 
+router.get(
+  '/methods/public/bank-transfer',
+  asyncHandler(paymentMethodController.getPublicBankTransferDetails.bind(paymentMethodController))
+);
 router.get('/methods', asyncHandler(paymentMethodController.getMethods.bind(paymentMethodController)));
 router.get('/methods/:id', asyncHandler(paymentMethodController.getMethodById.bind(paymentMethodController)));
 router.put('/methods/:id', asyncHandler(paymentMethodController.updateMethod.bind(paymentMethodController)));

@@ -87,17 +87,27 @@ export default function PaymentMethodForm({
                   name="bankName"
                   value={formFields.bankName}
                   onChange={changeInput}
-                  placeholder="Commercial Bank"
+                  placeholder="Commercial Bank PLC"
                 />
               </Field>
-              <Field label="Account name" htmlFor="accountName">
+              <Field label="Branch name" htmlFor="branchName">
+                <input
+                  className="admin-dash__input"
+                  id="branchName"
+                  name="branchName"
+                  value={formFields.branchName}
+                  onChange={changeInput}
+                  placeholder="Malabe Branch"
+                />
+              </Field>
+              <Field label="Account holder name" htmlFor="accountName">
                 <input
                   className="admin-dash__input"
                   id="accountName"
                   name="accountName"
                   value={formFields.accountName}
                   onChange={changeInput}
-                  placeholder="CraftzLK Pvt Ltd"
+                  placeholder="CraftzLK (Pvt) Ltd"
                 />
               </Field>
               <Field label="Account number" htmlFor="accountNumber" full>

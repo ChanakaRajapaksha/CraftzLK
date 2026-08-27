@@ -96,6 +96,10 @@ function isGuestBrowsableShippingMethods(url = '') {
   return normalizeRequestPath(url) === '/api/shipping-methods/active';
 }
 
+function isGuestBrowsableBankTransfer(url = '') {
+  return normalizeRequestPath(url) === '/api/payments/methods/public/bank-transfer';
+}
+
 function isGuestBrowsableEndpoint(url = '') {
   const path = normalizeRequestPath(url);
   if (reqMethodIsGet(path, url) === false) return false;
@@ -117,6 +121,7 @@ function isGuestBrowsableEndpoint(url = '') {
   if (isGuestBrowsableProductReviews(url)) return true;
   if (isGuestBrowsableProductQuestions(url)) return true;
   if (isGuestBrowsableShippingMethods(url)) return true;
+  if (isGuestBrowsableBankTransfer(url)) return true;
   if (path.startsWith('/api/artisans')) return true;
   if (path.startsWith('/api/cms-pages/public')) return true;
 

@@ -11,6 +11,7 @@ const paymentMethodSchema = mongoose.Schema(
     name: { type: String, required: true },
     description: { type: String, default: "" },
     bankName: { type: String, default: "" },
+    branchName: { type: String, default: "" },
     accountName: { type: String, default: "" },
     accountNumber: { type: String, default: "" },
     status: { type: String, enum: ["active", "inactive"], default: "active" },

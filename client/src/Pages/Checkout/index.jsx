@@ -9,6 +9,7 @@ import { getCartSubtotal, isSampleProductId, parsePriceValue } from "../../utils
 import { deleteData, fetchDataFromApi, postData } from "../../utils/api";
 import { useAppSelector } from "../../store/hooks";
 import CheckoutCouponSection from "./CheckoutCouponSection";
+import CheckoutBankTransferDetails from "./CheckoutBankTransferDetails";
 import PlaceOrderButton from "./PlaceOrderButton";
 import "./Checkout.css";
 
@@ -49,6 +50,7 @@ const Checkout = () => {
   const [lastFailedCode, setLastFailedCode] = useState("");
   const [shippingMethods, setShippingMethods] = useState([]);
   const [selectedShippingMethodId, setSelectedShippingMethodId] = useState("");
+  const [bankTransferDetails, setBankTransferDetails] = useState(null);
   const cartRevalidateRef = useRef(false);
   const submitStartedAtRef = useRef(0);
 
@@ -266,6 +268,17 @@ const Checkout = () => {
           setShippingMethods([]);
           setSelectedShippingMethodId("");
         }
+      });
+
+    fetchDataFromApi("/api/payments/methods/public/bank-transfer")
+      .then((res) => {
+        if (cancelled) return;
+        if (res?.success !== false && res?.bankDetails) {
+          setBankTransferDetails(res);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setBankTransferDetails(null);
       });
 
     const timer = setTimeout(() => {
@@ -938,37 +951,10 @@ const Checkout = () => {
                   />
                   <span className="checkout-page__payment-label">Direct bank transfer</span>
                 </label>
-                <div
-                  className={`checkout-page__payment-detail${
-                    paymentMethod === "bank_transfer"
-                      ? " checkout-page__payment-detail--open"
-                      : ""
-                  }`}
-                  aria-hidden={paymentMethod !== "bank_transfer"}
-                >
-                  <div className="checkout-page__payment-detail-inner">
-                    <div className="checkout-page__payment-detail-box">
-                      <p>
-                        Make your payment directly into our bank account (via online or bank
-                        deposit). Please use your Order ID as the payment reference and send your
-                        slip to our WhatsApp number{" "}
-                        <a href="https://wa.me/94715264449" target="_blank" rel="noreferrer">
-                          0715264449
-                        </a>
-                        . Your order will not be shipped until the funds have cleared in our
-                        account.
-                      </p>
-                      <p className="checkout-page__payment-detail-si">
-                        ඔබගේ order එක සඳහා ගෙවිය යුතු මුළු මුදල Online Transfer එකකින් හෝ Bank
-                        Deposit එකකින් තැන්පත් කර, එයට අදාළ Payment Slip එක ඔබගේ order අංකයත්
-                        සමග අපට WhatsApp කරන්න:{" "}
-                        <a href="https://wa.me/94715264449" target="_blank" rel="noreferrer">
-                          0715264449
-                        </a>
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                <CheckoutBankTransferDetails
+                  bankTransfer={bankTransferDetails}
+                  isOpen={paymentMethod === "bank_transfer"}
+                />
               </div>
             </div>
 

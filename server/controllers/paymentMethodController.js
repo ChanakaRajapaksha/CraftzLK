@@ -1,6 +1,21 @@
 const paymentMethodService = require('../services/paymentMethodService');
 
 class PaymentMethodController {
+  async getPublicBankTransferDetails(req, res) {
+    try {
+      const details = await paymentMethodService.getPublicBankTransferDetails();
+      if (!details) {
+        return res.status(404).json({
+          success: false,
+          message: 'Bank transfer payment method is not available.',
+        });
+      }
+      return res.status(200).json({ success: true, ...details });
+    } catch {
+      return res.status(500).json({ success: false, message: 'Failed to load bank details.' });
+    }
+  }
+
   async getMethods(req, res) {
     try {
       const methodList = await paymentMethodService.getMethods();

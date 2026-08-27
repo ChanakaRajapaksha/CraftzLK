@@ -59,6 +59,10 @@ function isStorefrontBrowseRoute(req) {
     return true;
   }
 
+  if (path === '/api/payments/methods/public/bank-transfer') {
+    return true;
+  }
+
   if (path.startsWith('/api/artisans')) {
     return true;
   }
