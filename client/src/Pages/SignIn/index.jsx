@@ -164,13 +164,23 @@ const SignIn = () => {
 
   return (
     <div className="signin-page-container">
-      {/* Left Panel - Banner Image */}
-      <div className="signin-left-panel">
-        <img
-          className="signin-banner-image"
-          src={`${import.meta.env.BASE_URL}images/SignIn-banner.jpg`}
-          alt="Sign in banner"
-        />
+      {/* Left Panel - Banner Video (720×1280, 9:16) */}
+      <div className="signin-left-panel signin-left-panel--video">
+        <div className="signin-banner-video-wrap">
+          <video
+            className="signin-banner-video"
+            src={`${import.meta.env.BASE_URL}videos/sigin_in_video.mp4`}
+            autoPlay
+            loop
+            muted
+            playsInline
+            aria-label="Sign in banner"
+          />
+          <div className="signin-banner-video-vignette" aria-hidden="true" />
+          <div className="signin-banner-video-glow" aria-hidden="true" />
+          <div className="signin-banner-video-shimmer" aria-hidden="true" />
+          <p className="signin-banner-video-caption">CRAFTED WITH HEART</p>
+        </div>
       </div>
 
       {/* Right Panel - Sign-In Form */}

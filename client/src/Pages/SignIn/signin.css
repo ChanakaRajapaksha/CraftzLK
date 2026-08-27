@@ -7,10 +7,11 @@
   overflow: hidden;
 }
 
-/* Left Side - Banner with Warm Overlay */
+/* Left Side - Banner media */
 .signin-left-panel {
   flex: 0 0 50vw;
   width: 50vw;
+  height: 100vh;
   position: relative;
   overflow: hidden;
   display: flex;
@@ -26,15 +27,294 @@
   );
 }
 
-.signin-banner-image {
+/* Sign-in video panel — 50% of the page width */
+.signin-left-panel--video {
+  flex: 0 0 50%;
+  width: 50%;
+  max-width: 50vw;
+  animation: signinPanelReveal 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+  box-shadow:
+    12px 0 56px rgba(184, 134, 11, 0.22),
+    4px 0 24px rgba(218, 165, 32, 0.14);
+}
+
+.signin-banner-video-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.signin-banner-video-wrap::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 88%,
+    rgba(218, 165, 32, 0.28) 0%,
+    rgba(184, 134, 11, 0.12) 28%,
+    transparent 62%
+  );
+  animation: signinVideoGlowPulse 5s ease-in-out 1.8s infinite alternate;
+}
+
+.signin-banner-video-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      to top,
+      rgba(20, 12, 8, 0.88) 0%,
+      rgba(20, 12, 8, 0.45) 16%,
+      transparent 42%
+    ),
+    linear-gradient(
+      to right,
+      rgba(44, 24, 16, 0.35) 0%,
+      transparent 22%,
+      transparent 78%,
+      rgba(44, 24, 16, 0.2) 100%
+    );
+}
+
+.signin-banner-video-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  box-shadow:
+    inset 0 0 90px rgba(218, 165, 32, 0.18),
+    inset 0 0 160px rgba(184, 134, 11, 0.1),
+    inset 0 -8px 32px rgba(255, 223, 186, 0.08);
+  animation: signinVideoInnerGlow 6s ease-in-out 2s infinite alternate;
+}
+
+.signin-banner-video-shimmer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    108deg,
+    transparent 42%,
+    rgba(255, 236, 200, 0.07) 50%,
+    transparent 58%
+  );
+  transform: translateX(-120%) skewX(-8deg);
+  animation: signinVideoShimmer 9s ease-in-out 2.4s infinite;
+}
+
+.signin-banner-video-caption {
+  position: absolute;
+  bottom: clamp(1.75rem, 4vw, 3rem);
+  left: 0;
+  right: 0;
+  z-index: 4;
+  margin: 0;
+  padding: 0 clamp(1rem, 3vw, 2rem);
+  text-align: center;
+  font-family: var(--font-heading, "Playfair Display", serif);
+  font-size: clamp(0.72rem, 1.45vw, 0.92rem);
+  font-weight: 600;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: rgba(255, 247, 232, 0.94);
+  text-shadow:
+    0 0 18px rgba(218, 165, 32, 0.75),
+    0 0 36px rgba(184, 134, 11, 0.45),
+    0 2px 10px rgba(0, 0, 0, 0.55);
+  animation:
+    signinCaptionReveal 1.5s cubic-bezier(0.22, 1, 0.36, 1) 1s both,
+    signinCaptionGlow 3.5s ease-in-out 2.6s infinite alternate;
+}
+
+.signin-banner-video-caption::before,
+.signin-banner-video-caption::after {
+  content: "";
+  display: inline-block;
+  width: clamp(1.5rem, 4vw, 2.75rem);
+  height: 1px;
+  margin: 0 clamp(0.65rem, 1.5vw, 1rem);
+  vertical-align: middle;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(218, 165, 32, 0.85),
+    transparent
+  );
+  box-shadow: 0 0 12px rgba(218, 165, 32, 0.55);
+  animation: signinCaptionLineGlow 3.5s ease-in-out 2.6s infinite alternate;
+}
+
+.signin-banner-image,
+.signin-banner-video {
   object-fit: cover;
   display: block;
   width: 100%;
   height: 100%;
   min-width: 100%;
+  min-height: 100%;
+  max-width: 100%;
   max-height: 100%;
   opacity: 0.85;
   filter: sepia(0.2) contrast(1.05);
+  will-change: transform, opacity, filter;
+}
+
+.signin-banner-video {
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(1.08);
+  animation:
+    signinVideoFadeIn 1.35s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards,
+    signinVideoKenBurns 24s ease-in-out 1.6s infinite alternate;
+}
+
+@keyframes signinPanelReveal {
+  from {
+    opacity: 0;
+    transform: translateX(-2.5%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes signinVideoFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(1.08);
+    filter: sepia(0.35) contrast(1.05) blur(6px);
+  }
+  to {
+    opacity: 0.85;
+    transform: scale(1);
+    filter: sepia(0.2) contrast(1.05) blur(0);
+  }
+}
+
+@keyframes signinVideoKenBurns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.06);
+  }
+}
+
+@keyframes signinVideoGlowPulse {
+  from {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes signinVideoInnerGlow {
+  from {
+    box-shadow:
+      inset 0 0 70px rgba(218, 165, 32, 0.14),
+      inset 0 0 130px rgba(184, 134, 11, 0.08),
+      inset 0 -8px 24px rgba(255, 223, 186, 0.05);
+  }
+  to {
+    box-shadow:
+      inset 0 0 110px rgba(218, 165, 32, 0.26),
+      inset 0 0 190px rgba(184, 134, 11, 0.14),
+      inset 0 -12px 40px rgba(255, 223, 186, 0.12);
+  }
+}
+
+@keyframes signinVideoShimmer {
+  0%,
+  72% {
+    transform: translateX(-120%) skewX(-8deg);
+    opacity: 0;
+  }
+  78% {
+    opacity: 1;
+  }
+  92% {
+    transform: translateX(120%) skewX(-8deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(120%) skewX(-8deg);
+    opacity: 0;
+  }
+}
+
+@keyframes signinCaptionReveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+    letter-spacing: 0.55em;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    letter-spacing: 0.38em;
+  }
+}
+
+@keyframes signinCaptionGlow {
+  from {
+    text-shadow:
+      0 0 14px rgba(218, 165, 32, 0.55),
+      0 0 28px rgba(184, 134, 11, 0.3),
+      0 2px 10px rgba(0, 0, 0, 0.55);
+  }
+  to {
+    text-shadow:
+      0 0 24px rgba(218, 165, 32, 0.95),
+      0 0 48px rgba(184, 134, 11, 0.55),
+      0 2px 10px rgba(0, 0, 0, 0.55);
+  }
+}
+
+@keyframes signinCaptionLineGlow {
+  from {
+    opacity: 0.45;
+    box-shadow: 0 0 8px rgba(218, 165, 32, 0.35);
+  }
+  to {
+    opacity: 1;
+    box-shadow: 0 0 16px rgba(218, 165, 32, 0.75);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signin-left-panel--video,
+  .signin-banner-video,
+  .signin-banner-video-wrap::before,
+  .signin-banner-video-glow,
+  .signin-banner-video-shimmer,
+  .signin-banner-video-caption,
+  .signin-banner-video-caption::before,
+  .signin-banner-video-caption::after {
+    animation: none;
+  }
+
+  .signin-banner-video {
+    opacity: 0.85;
+    transform: none;
+    filter: sepia(0.2) contrast(1.05);
+  }
+
+  .signin-banner-video-caption {
+    opacity: 1;
+    transform: none;
+    letter-spacing: 0.38em;
+  }
 }
 
 @media (max-width: 1024px) {
@@ -45,8 +325,10 @@
 
 /* Right Side - Sign-In Form with Vintage Warm Background */
 .signin-right-panel {
-  flex: 0 0 50vw;
-  width: 50vw;
+  flex: 0 0 50%;
+  width: 50%;
+  max-width: 50vw;
+  min-width: 0;
   /* Warm gradient with a stronger top-right emphasis (≈180° flow, highlight extends ~75%) */
   background:
     radial-gradient(
