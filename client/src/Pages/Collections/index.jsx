@@ -96,6 +96,21 @@ const Collections = () => {
   }, [context]);
 
   useEffect(() => {
+    context?.refreshCategoryData?.();
+  }, [context?.refreshCategoryData]);
+
+  useEffect(() => {
+    const refreshOnVisible = () => {
+      if (document.visibilityState === "visible") {
+        context?.refreshCategoryData?.();
+      }
+    };
+
+    document.addEventListener("visibilitychange", refreshOnVisible);
+    return () => document.removeEventListener("visibilitychange", refreshOnVisible);
+  }, [context?.refreshCategoryData]);
+
+  useEffect(() => {
     if (!categorySlug) return;
     if (categorySlug !== COLLECTIONS_ALL_SLUG && !activeCategoryTitle) {
       navigate(COLLECTIONS_ALL_PATH, { replace: true });
@@ -221,6 +236,8 @@ const Collections = () => {
     setPriceRange([min, max]);
   };
 
+  const showEmptyCatalog = !loading && totalCount === 0;
+
   if (
     (categorySlug && categorySlug !== COLLECTIONS_ALL_SLUG && !activeCategoryTitle) ||
     (subcategorySlug && activeCategoryTitle && !activeSubcategoryTitle)
@@ -261,13 +278,14 @@ const Collections = () => {
           )}
         </h1>
 
+        {collectionsCategories.length > 0 && (
         <div className="collections-categories-wrap">
           <ul className="collections-grid" aria-label="Shop by category">
             {collectionsCategories.map((collection) => {
               const isActive =
                 categorySlug === collection.slug && !activeSubcategoryTitle;
               return (
-                <li key={collection.title}>
+                <li key={collection.id || collection.slug || collection.title}>
                   <Link
                     to={collection.path}
                     className={`collections-pill${isActive ? " collections-pill--active" : ""}`}
@@ -283,6 +301,7 @@ const Collections = () => {
             })}
           </ul>
         </div>
+        )}
 
         {isMobileCatalog && (
           <div className="collections-mobile-actions">
@@ -317,7 +336,10 @@ const Collections = () => {
 
         <div ref={catalogViewRef} className="collections-view-anchor" aria-hidden="true" />
 
-        <section className="collections-catalog" aria-label="Product catalog">
+        <section
+          className={`collections-catalog${showEmptyCatalog ? " collections-catalog--empty" : ""}`}
+          aria-label="Product catalog"
+        >
           {!isMobileCatalog && (
             <CollectionsFilters
               inStockOnly={inStockOnly}
@@ -346,30 +368,53 @@ const Collections = () => {
             )}
 
             <AnimatePresence mode="wait">
-              <motion.div
-                key={`${categorySlug || COLLECTIONS_ALL_SLUG}-${subcategorySlug || "all"}-${safePage}`}
-                className="collections-product-grid"
-                role="list"
-                aria-label={`Products page ${safePage}`}
-                variants={gridTransition}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-              >
-                {displayProducts.map((product, index) => (
-                  <CollectionsProductCard
-                    key={`${product.id || product._id}-${(safePage - 1) * COLLECTIONS_PER_PAGE + index}`}
-                    product={product}
-                  />
-                ))}
-              </motion.div>
+              {showEmptyCatalog ? (
+                <motion.div
+                  key="collections-empty"
+                  className="collections-empty"
+                  role="status"
+                  variants={gridTransition}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                >
+                  <div className="collections-empty__art-wrap">
+                    <img
+                      src="/images/not_found.svg"
+                      alt="No products found"
+                      className="collections-empty__art"
+                      decoding="async"
+                    />
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key={`${categorySlug || COLLECTIONS_ALL_SLUG}-${subcategorySlug || "all"}-${safePage}`}
+                  className="collections-product-grid"
+                  role="list"
+                  aria-label={`Products page ${safePage}`}
+                  variants={gridTransition}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                >
+                  {displayProducts.map((product, index) => (
+                    <CollectionsProductCard
+                      key={`${product.id || product._id}-${(safePage - 1) * COLLECTIONS_PER_PAGE + index}`}
+                      product={product}
+                    />
+                  ))}
+                </motion.div>
+              )}
             </AnimatePresence>
 
-            <CollectionsPagination
-              page={safePage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-            />
+            {!showEmptyCatalog && (
+              <CollectionsPagination
+                page={safePage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            )}
           </div>
         </section>
       </div>

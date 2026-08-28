@@ -700,6 +700,11 @@
 .admin-dash__data-table .admin-dash__table-wrap--modern {
   border: none;
   border-radius: 0;
+  width: 100%;
+}
+
+.admin-dash__data-table .admin-dash__table-wrap--modern .admin-dash__table {
+  width: 100%;
 }
 
 .admin-dash__table-footer {
@@ -2523,6 +2528,10 @@
   padding: 2rem 1rem !important;
 }
 
+.admin-dash__data-table .admin-dash__table--modern thead tr {
+  width: 100%;
+}
+
 .admin-dash__table-thumb {
   width: 2.75rem;
   height: 2.75rem;
@@ -2533,7 +2542,7 @@
 .admin-dash__table--products {
   font-size: 0.84rem;
   min-width: 78rem;
-  width: max-content;
+  width: 100%;
 }
 
 .admin-dash__table--products th,

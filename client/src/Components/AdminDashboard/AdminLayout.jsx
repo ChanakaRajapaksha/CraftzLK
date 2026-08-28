@@ -80,7 +80,7 @@ export default function AdminLayout() {
 
   useEffect(() => {
     fetchCategory();
-  }, []);
+  }, [fetchCategory]);
 
   const adminContextValue = {
     catData,

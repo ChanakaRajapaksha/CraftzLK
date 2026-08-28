@@ -29,14 +29,20 @@ const mapCategoryFields = (cat, children = []) => ({
   children,
 });
 
+const isRootCategory = (cat) => {
+  const parentId = cat?.parentId;
+  return parentId == null || parentId === '';
+};
+
 const createCategories = (categories, parentId = null) => {
   const categoryList = [];
   let category;
 
   if (parentId == null) {
-    category = categories.filter((cat) => cat.parentId == undefined);
+    category = categories.filter(isRootCategory);
   } else {
-    category = categories.filter((cat) => cat.parentId == parentId);
+    const parentKey = String(parentId);
+    category = categories.filter((cat) => cat.parentId != null && String(cat.parentId) === parentKey);
   }
 
   for (const cat of category) {

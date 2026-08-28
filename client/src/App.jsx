@@ -176,7 +176,11 @@ function AppContent() {
   const refreshCategoryData = useCallback(() => {
     return CategoryController.getActive()
       .then((res) => {
-        const list = res?.categoryList || [];
+        if (res?.success === false || !Array.isArray(res?.categoryList)) {
+          return [];
+        }
+
+        const list = res.categoryList;
         setCategoryData(list);
 
         const subCatArr = [];
@@ -282,11 +286,9 @@ function AppContent() {
   }, [location.pathname]);
 
   useEffect(() => {
-    if (!isAuthInitialized) return;
-
     refreshCategoryData();
     refreshCmsNavPages();
-  }, [isAuthInitialized, refreshCategoryData, refreshCmsNavPages]);
+  }, [refreshCategoryData, refreshCmsNavPages]);
 
   useEffect(() => {
     if (!isAuthInitialized) return;

@@ -155,6 +155,21 @@
   margin-top: 2rem;
 }
 
+.collections-catalog--empty {
+  justify-content: center;
+}
+
+.collections-catalog--empty .collections-filters,
+.collections-catalog--empty .collections-toolbar {
+  display: none;
+}
+
+.collections-catalog--empty .collections-catalog__main {
+  flex: 1 1 100%;
+  width: 100%;
+  max-width: 100%;
+}
+
 .collections-filters {
   flex: 0 0 17rem;
   width: 17rem;
@@ -639,6 +654,39 @@
   gap: 1.25rem;
 }
 
+.collections-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: clamp(24rem, 52vh, 40rem);
+  padding: 0.5rem 0 2rem;
+  background: transparent;
+}
+
+.collections-empty__art-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: min(100%, 52rem);
+  margin: 0 auto;
+  line-height: 0;
+  background-color: #faf8f3;
+}
+
+.collections-empty__art {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: clamp(22rem, 48vw, 38rem);
+  margin: 0 auto;
+  object-fit: contain;
+  object-position: center center;
+  mix-blend-mode: multiply;
+}
+
 /* Pagination — matches Customer Reviews modal (.crm-pagination) */
 .collections-pagination {
   display: flex;
@@ -699,8 +747,7 @@
   user-select: none;
 }
 
-.collections-loading,
-.collections-empty {
+.collections-loading {
   display: flex;
   align-items: center;
   justify-content: center;

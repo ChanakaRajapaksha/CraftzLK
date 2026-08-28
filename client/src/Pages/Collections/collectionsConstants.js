@@ -43,7 +43,7 @@ export function findCategoryBySlug(slug, categoryList) {
   if (!slug || slug === COLLECTIONS_ALL_SLUG) return null;
   return (
     (categoryList || []).find(
-      (cat) => categoryTitleToSlug(cat?.name) === slug || cat?.slug === slug
+      (cat) => cat?.slug === slug || categoryTitleToSlug(cat?.name) === slug
     ) ?? null
   );
 }
@@ -109,22 +109,24 @@ export function getCategoryIcon(category) {
   );
 }
 
-/** Build browse pills from admin/API category tree (active categories from context). */
+function getCategorySlug(cat) {
+  return cat?.slug || categoryTitleToSlug(cat?.name);
+}
+
+function getCategoryPath(cat) {
+  const slug = getCategorySlug(cat);
+  return slug ? `/collections/${slug}` : COLLECTIONS_ALL_PATH;
+}
+
+/** Build browse pills from admin/API category tree (active top-level categories only). */
 export function buildCollectionsCategories(categoryList = []) {
-  if (!categoryList.length) {
-    return MEGA_MENU_COLUMNS.map((col) => ({
-      title: col.title,
-      icon: col.icon,
-      slug: categoryTitleToSlug(col.title),
-      path: getCategoryCollectionsPath(col.title),
-    }));
-  }
+  if (!categoryList.length) return [];
 
   return categoryList.map((cat) => ({
     title: cat.name,
     icon: getCategoryIcon(cat),
-    slug: categoryTitleToSlug(cat.name),
-    path: getCategoryCollectionsPath(cat.name),
+    slug: getCategorySlug(cat),
+    path: getCategoryPath(cat),
     id: cat._id,
     color: cat.color,
     description: cat.description,
