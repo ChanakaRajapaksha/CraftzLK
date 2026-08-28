@@ -15,6 +15,7 @@ const notificationSettingsSchema = mongoose.Schema(
       senderId: { type: String, default: "CraftzLK" },
       provider: { type: String, default: "" },
     },
+    templateMigrationVersion: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

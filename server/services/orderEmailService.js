@@ -1,18 +1,47 @@
-const emailService = require("./emailService");
+const emailTemplateService = require("./emailTemplateService");
 const storeSettingsService = require("./storeSettingsService");
+const emailService = require("./emailService");
 const {
   formatMoney,
   formatDate,
   formatPaymentMethod,
   formatPaymentStatus,
-  getPasswordResetLogoAttachment,
+  buildItemsText,
 } = require("../templates/orderEmailLayout");
+const { getPasswordResetLogoAttachment } = require("../templates/passwordResetEmail");
 const {
   buildOrderPlacedEmail,
   buildOrderConfirmedEmail,
   buildOrderShippedEmail,
   buildOrderDeliveredEmail,
 } = require("../templates/orderStatusEmails");
+
+const STATUS_META = {
+  placed: {
+    code: "order_placed",
+    eyebrow: "Order Placed",
+    heading: "Thank you for your order!",
+    builder: buildOrderPlacedEmail,
+  },
+  confirmed: {
+    code: "order_confirmed",
+    eyebrow: "Order Confirmed",
+    heading: "Your order is confirmed!",
+    builder: buildOrderConfirmedEmail,
+  },
+  shipped: {
+    code: "order_shipped",
+    eyebrow: "Order Shipped",
+    heading: "Your order is on the way!",
+    builder: buildOrderShippedEmail,
+  },
+  delivered: {
+    code: "order_delivered",
+    eyebrow: "Order Delivered",
+    heading: "Your order has arrived!",
+    builder: buildOrderDeliveredEmail,
+  },
+};
 
 function getStatusHistoryDate(order, status) {
   const history = Array.isArray(order.statusHistory) ? order.statusHistory : [];
@@ -44,6 +73,12 @@ function estimateDeliveryDate(order) {
   return formatDate(future);
 }
 
+function buildItemsListShort(products = []) {
+  return (products || [])
+    .map((item) => `${item.productTitle || "Product"} × ${Number(item.quantity) || 1}`)
+    .join("\n");
+}
+
 async function buildOrderEmailContext(order) {
   const settings = await storeSettingsService.get();
   const storeName = settings.general?.storeName || "CraftzLK";
@@ -51,21 +86,25 @@ async function buildOrderEmailContext(order) {
   const currencySymbol = settings.currency?.symbol || "Rs";
   const frontendUrl = (process.env.FRONTEND_URL || "http://localhost:3006").replace(/\/$/, "");
   const orderViewUrl = `${frontendUrl}/orders`;
+  const orderId = order._id?.toString?.() || order.id || "";
+  const products = order.products || [];
 
   const deliveryAddress = String(order.shippingAddress || order.address || "").trim() || "—";
   const discountFormatted = formatMoney(order.discount, currencySymbol);
 
   return {
     customerName: order.name || "Customer",
-    orderNumber: order.orderNumber || orderId.slice(-8).toUpperCase() || "—",
+    orderNumber: order.orderNumber || (orderId ? orderId.slice(-8).toUpperCase() : "—"),
     orderDate: formatDate(order.date),
     paymentMethod: formatPaymentMethod(order.paymentMethod),
     paymentStatus: formatPaymentStatus(order.paymentStatus),
-    products: order.products || [],
+    products,
     currencySymbol,
+    itemsList: buildItemsText(products, currencySymbol),
+    itemsListShort: buildItemsListShort(products),
     subtotal: formatMoney(order.subtotal, currencySymbol),
     deliveryCharge: formatMoney(order.shipping, currencySymbol),
-    discount: discountFormatted,
+    discount: discountFormatted.replace(/^Rs\.?\s?/, ""),
     tax: formatMoney(order.tax, currencySymbol),
     total: formatMoney(order.amount, currencySymbol),
     deliveryAddress,
@@ -89,32 +128,39 @@ async function buildOrderEmailContext(order) {
 async function sendOrderStatusEmail(order, statusKey) {
   if (!order?.email) return null;
 
-  const builders = {
-    placed: buildOrderPlacedEmail,
-    confirmed: buildOrderConfirmedEmail,
-    shipped: buildOrderShippedEmail,
-    delivered: buildOrderDeliveredEmail,
-  };
-
-  const builder = builders[statusKey];
-  if (!builder) return null;
+  const meta = STATUS_META[statusKey];
+  if (!meta) return null;
 
   const ctx = await buildOrderEmailContext(order);
-  const { subject, text, html } = builder(ctx);
-  const logoAttachment = getPasswordResetLogoAttachment();
+  if (statusKey === "shipped" || statusKey === "delivered") {
+    ctx.itemsList = ctx.itemsListShort;
+  }
 
-  return emailService.sendEmail({
+  return emailTemplateService.sendTemplatedEmail({
+    code: meta.code,
     to: order.email,
-    subject,
-    text,
-    html,
-    attachments: logoAttachment ? [logoAttachment] : [],
+    variables: ctx,
+    eyebrow: meta.eyebrow,
+    heading: meta.heading,
+    fallback: async () => {
+      const built = meta.builder(ctx);
+      const logoAttachment = getPasswordResetLogoAttachment();
+      return {
+        subject: built.subject,
+        text: built.text,
+        html: built.html,
+        attachments: logoAttachment ? [logoAttachment] : [],
+      };
+    },
   });
 }
 
 function queueOrderStatusEmail(order, statusKey) {
   sendOrderStatusEmail(order, statusKey).catch((error) => {
-    console.error(`[orderEmailService] Failed to send ${statusKey} email for order ${order?.orderNumber || order?._id}:`, error);
+    console.error(
+      `[orderEmailService] Failed to send ${statusKey} email for order ${order?.orderNumber || order?._id}:`,
+      error.message
+    );
   });
 }
 

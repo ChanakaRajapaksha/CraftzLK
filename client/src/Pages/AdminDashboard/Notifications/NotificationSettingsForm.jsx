@@ -1,5 +1,5 @@
 import { MdEmail, MdSms } from "react-icons/md";
-import { TEMPLATE_PLACEHOLDERS } from "./notificationFormDefaults";
+import { getPlaceholdersForTemplate } from "./notificationFormDefaults";
 
 function Field({ label, htmlFor, children, full = false, hint }) {
   return (
@@ -198,7 +198,7 @@ export function NotificationTemplateForm({
   submitLabel = "Save template",
   onSubmit,
 }) {
-  const isEmail = templateMeta?.channel === "email";
+  const placeholders = getPlaceholdersForTemplate(templateMeta);
 
   const changeInput = (e) => {
     const { name, value } = e.target;
@@ -215,7 +215,7 @@ export function NotificationTemplateForm({
       setAlertBox?.({ open: true, error: true, msg: "Message body is required." });
       return;
     }
-    if (isEmail && !formFields.subject?.trim()) {
+    if (!formFields.subject?.trim()) {
       setAlertBox?.({ open: true, error: true, msg: "Email subject is required." });
       return;
     }
@@ -236,10 +236,10 @@ export function NotificationTemplateForm({
               placeholder="Order Confirmation"
             />
           </Field>
-          <Field label="Channel">
+          <Field label="Template code">
             <input
               className="admin-dash__input"
-              value={isEmail ? "Email" : "SMS"}
+              value={templateMeta?.code || ""}
               readOnly
               disabled
             />
@@ -256,24 +256,22 @@ export function NotificationTemplateForm({
               <option value="inactive">Inactive</option>
             </select>
           </Field>
-          {isEmail && (
-            <Field label="Subject" htmlFor="subject" full>
-              <input
-                className="admin-dash__input"
-                id="subject"
-                name="subject"
-                value={formFields.subject}
-                onChange={changeInput}
-                placeholder="Order Confirmation — CraftzLK"
-              />
-            </Field>
-          )}
+          <Field label="Subject" htmlFor="subject" full>
+            <input
+              className="admin-dash__input"
+              id="subject"
+              name="subject"
+              value={formFields.subject}
+              onChange={changeInput}
+              placeholder="Order Confirmation — CraftzLK"
+            />
+          </Field>
           <Field label="Message body" htmlFor="body" full>
             <textarea
               className="admin-dash__textarea admin-dash__textarea--notification"
               id="body"
               name="body"
-              rows={isEmail ? 10 : 4}
+              rows={10}
               value={formFields.body}
               onChange={changeInput}
               placeholder="Your order #{{orderNumber}} has been received"
@@ -282,7 +280,7 @@ export function NotificationTemplateForm({
           <div className="admin-dash__field admin-dash__field--full">
             <p className="admin-dash__label">Available placeholders</p>
             <div className="admin-dash__notification-placeholders">
-              {TEMPLATE_PLACEHOLDERS.map((token) => (
+              {placeholders.map((token) => (
                 <code key={token} className="admin-dash__slug-code">{token}</code>
               ))}
             </div>

@@ -2,7 +2,10 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const User = require('../models/user');
 const { generateAccessToken, generateRefreshToken } = require('../config/jwt');
-const emailService = require('./emailService');
+const emailTemplateService = require('./emailTemplateService');
+const storeSettingsService = require('./storeSettingsService');
+const { buildTemporaryPasswordEmail } = require('../templates/temporaryPasswordEmail');
+const { buildPasswordResetEmail, getPasswordResetLogoAttachment } = require('../templates/passwordResetEmail');
 
 class AuthService {
   // Register a new user
@@ -64,14 +67,36 @@ class AuthService {
       // Send email with temporary password
       try {
         const baseUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
-        await emailService.sendEmail({
+        const settings = await storeSettingsService.get();
+        const storeName = settings.general?.storeName || 'CraftzLK';
+        const signInUrl = `${baseUrl}/signIn`;
+        await emailTemplateService.sendTemplatedEmail({
+          code: 'temporary_password',
           to: user.email,
-          template: 'temporary-password',
-          data: {
-            name: `${user.firstName} ${user.lastName}`,
-            temporaryPassword: temporaryPassword,
+          variables: {
+            customerName: `${user.firstName} ${user.lastName}`.trim(),
+            temporaryPassword,
+            signInUrl,
+            storeName,
             frontendUrl: baseUrl,
-          }
+            supportEmail: settings.general?.contactEmail || 'hello@craftzlk.com',
+          },
+          eyebrow: 'Welcome',
+          heading: 'Your temporary password',
+          fallback: async () => {
+            const content = buildTemporaryPasswordEmail({
+              name: `${user.firstName} ${user.lastName}`,
+              temporaryPassword,
+              frontendUrl: baseUrl,
+            });
+            const logoAttachment = getPasswordResetLogoAttachment();
+            return {
+              subject: content.subject,
+              text: content.text,
+              html: content.html,
+              attachments: logoAttachment ? [logoAttachment] : [],
+            };
+          },
         });
       } catch (emailError) {
         console.error('[authService.register email error]', emailError);
@@ -325,14 +350,34 @@ class AuthService {
       // Send reset email (fallback to localhost if FRONTEND_URL not set in .env)
       const baseUrl = (process.env.FRONTEND_URL).replace(/\/$/, '');
       const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
-      await emailService.sendEmail({
+      const settings = await storeSettingsService.get();
+      const storeName = settings.general?.storeName || 'CraftzLK';
+      await emailTemplateService.sendTemplatedEmail({
+        code: 'password_reset',
         to: user.email,
-        template: 'password-reset',
-        data: {
-          name: user.firstName,
+        variables: {
+          customerName: user.firstName || 'there',
           resetUrl,
+          storeName,
           frontendUrl: baseUrl,
-        }
+          supportEmail: settings.general?.contactEmail || 'hello@craftzlk.com',
+        },
+        eyebrow: 'Password Reset',
+        heading: 'Reset your password',
+        fallback: async () => {
+          const content = buildPasswordResetEmail({
+            name: user.firstName,
+            resetUrl,
+            frontendUrl: baseUrl,
+          });
+          const logoAttachment = getPasswordResetLogoAttachment();
+          return {
+            subject: content.subject,
+            text: content.text,
+            html: content.html,
+            attachments: logoAttachment ? [logoAttachment] : [],
+          };
+        },
       });
 
       return {

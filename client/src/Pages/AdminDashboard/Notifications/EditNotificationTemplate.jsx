@@ -6,15 +6,11 @@ import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import { NotificationTemplateForm } from "./NotificationSettingsForm";
 import {
   defaultTemplateFields,
-  getChannelLabel,
+  getCategoryLabel,
   previewTemplateBody,
   templateFromRecord,
   templateToPayload,
 } from "./notificationFormDefaults";
-import {
-  getNotificationTemplateSampleData,
-  isSampleNotificationTemplateId,
-} from "./notificationListUtils";
 
 export default function EditNotificationTemplate() {
   const { id } = useParams();
@@ -22,18 +18,11 @@ export default function EditNotificationTemplate() {
   const [templateMeta, setTemplateMeta] = useState(null);
   const [formFields, setFormFields] = useState({ ...defaultTemplateFields });
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingTemplate, setLoadingTemplate] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isSampleNotificationTemplateId(id)) {
-      const sample = getNotificationTemplateSampleData().find((item) => (item._id || item.id) === id);
-      if (sample) {
-        setTemplateMeta(sample);
-        setFormFields(templateFromRecord(sample));
-      }
-      return;
-    }
-
+    setLoadingTemplate(true);
     NotificationController.getTemplateById(id)
       .then((res) => {
         if (res) {
@@ -43,17 +32,12 @@ export default function EditNotificationTemplate() {
       })
       .catch(() => {
         setAlertBox?.({ open: true, error: true, msg: "Failed to load template." });
-      });
+      })
+      .finally(() => setLoadingTemplate(false));
   }, [id, setAlertBox]);
 
   const submit = (e) => {
     e.preventDefault();
-
-    if (isSampleNotificationTemplateId(id)) {
-      setAlertBox?.({ open: true, error: false, msg: "Sample template updated locally." });
-      navigate(`${ADMIN_BASE}/notifications/templates`);
-      return;
-    }
 
     setIsLoading(true);
     NotificationController.updateTemplate(id, templateToPayload(formFields))
@@ -67,13 +51,35 @@ export default function EditNotificationTemplate() {
       .finally(() => setIsLoading(false));
   };
 
-  const preview = previewTemplateBody(formFields.body, templateMeta?.channel);
+  const preview = previewTemplateBody(
+    formFields.body,
+    "email",
+    formFields.subject
+  );
+
+  if (loadingTemplate) {
+    return (
+      <AdminPageHeader
+        title="Edit Template"
+        subtitle="Loading template details…"
+        breadcrumbs={[
+          { label: "Notification Management", to: `${ADMIN_BASE}/notifications` },
+          { label: "Templates", to: `${ADMIN_BASE}/notifications/templates` },
+          { label: "Edit" },
+        ]}
+      />
+    );
+  }
 
   return (
     <>
       <AdminPageHeader
         title={`Edit ${templateMeta?.name || "Template"}`}
-        subtitle={`${getChannelLabel(templateMeta?.channel)} notification template`}
+        subtitle={
+          templateMeta
+            ? `${getCategoryLabel(templateMeta.category)} · ${templateMeta.code}`
+            : "Email notification template"
+        }
         breadcrumbs={[
           { label: "Notification Management", to: `${ADMIN_BASE}/notifications` },
           { label: "Templates", to: `${ADMIN_BASE}/notifications/templates` },
@@ -81,12 +87,18 @@ export default function EditNotificationTemplate() {
         ]}
       />
 
+      {templateMeta?.description && (
+        <section className="admin-dash__panel admin-dash__notification-template-meta">
+          <p className="admin-dash__panel-desc">{templateMeta.description}</p>
+        </section>
+      )}
+
       {preview && (
         <section className="admin-dash__panel admin-dash__notification-preview">
           <div className="admin-dash__panel-head">
             <div>
               <h2 className="admin-dash__panel-title">Preview</h2>
-              <p className="admin-dash__panel-desc">Sample output with placeholder values</p>
+              <p className="admin-dash__panel-desc">Rendered with sample placeholder values</p>
             </div>
           </div>
           <pre className="admin-dash__notification-preview-body">{preview}</pre>

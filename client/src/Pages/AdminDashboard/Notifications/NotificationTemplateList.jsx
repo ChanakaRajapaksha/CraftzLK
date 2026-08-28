@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaPencilAlt } from "react-icons/fa";
-import { MdEmail, MdNotifications, MdSms } from "react-icons/md";
+import { MdEmail, MdNotifications } from "react-icons/md";
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
 import AdminPageHeader from "../../../Components/AdminDashboard/AdminPageHeader";
 import AdminPagination from "../../../Components/AdminDashboard/AdminPagination";
@@ -10,38 +10,34 @@ import NotificationController from "../../../controllers/notification.controller
 import { ADMIN_BASE } from "../../../Components/AdminDashboard/adminNav";
 import { getPromoStatusBadge, formatListDate } from "../Promotions/promoListHelpers";
 import {
-  getChannelLabel,
+  getCategoryLabel,
   previewTemplateBody,
   truncatePreview,
+  TEMPLATE_CATEGORIES,
 } from "./notificationFormDefaults";
-import { getNotificationTemplateSampleData } from "./notificationListUtils";
 
 export default function NotificationTemplateList() {
   const [templates, setTemplates] = useState([]);
-  const [usingSampleData, setUsingSampleData] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [channelFilter, setChannelFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const applySample = () => {
-    setTemplates(getNotificationTemplateSampleData());
-    setUsingSampleData(true);
-  };
-
   const loadTemplates = () => {
+    setLoading(true);
+    setLoadError("");
     NotificationController.getTemplates()
       .then((res) => {
-        const list = res?.templateList || [];
-        if (list.length) {
-          setTemplates(list);
-          setUsingSampleData(false);
-        } else {
-          applySample();
-        }
+        setTemplates(res?.templateList || []);
       })
-      .catch(() => applySample());
+      .catch(() => {
+        setTemplates([]);
+        setLoadError("Failed to load notification templates.");
+      })
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -50,10 +46,8 @@ export default function NotificationTemplateList() {
   }, []);
 
   const stats = useMemo(() => {
-    const emailCount = templates.filter((item) => item.channel === "email").length;
-    const smsCount = templates.filter((item) => item.channel === "sms").length;
     const activeCount = templates.filter((item) => item.status === "active").length;
-    return { total: templates.length, emailCount, smsCount, activeCount };
+    return { total: templates.length, activeCount };
   }, [templates]);
 
   const filtered = useMemo(() => {
@@ -61,19 +55,23 @@ export default function NotificationTemplateList() {
     if (searchKeyword.trim()) {
       const q = searchKeyword.toLowerCase();
       list = list.filter((item) =>
-        [item.name, item.code, item.subject, item.body].some((v) =>
+        [item.name, item.code, item.subject, item.body, item.description, item.category].some((v) =>
           String(v || "").toLowerCase().includes(q)
         )
       );
     }
-    if (channelFilter !== "all") {
-      list = list.filter((item) => item.channel === channelFilter);
+    if (categoryFilter !== "all") {
+      list = list.filter((item) => (item.category || "general") === categoryFilter);
     }
     if (statusFilter !== "all") {
       list = list.filter((item) => item.status === statusFilter);
     }
-    return list;
-  }, [templates, searchKeyword, channelFilter, statusFilter]);
+    return list.sort((a, b) => {
+      const categoryCompare = String(a.category || "").localeCompare(String(b.category || ""));
+      if (categoryCompare !== 0) return categoryCompare;
+      return String(a.name || "").localeCompare(String(b.name || ""));
+    });
+  }, [templates, searchKeyword, categoryFilter, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
   const slice = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
@@ -88,7 +86,7 @@ export default function NotificationTemplateList() {
     <>
       <AdminPageHeader
         title="Notification Templates"
-        subtitle="Manage email and SMS message templates for order updates."
+        subtitle="View and edit email templates used across the store."
         breadcrumbs={[
           { label: "Notification Management", to: `${ADMIN_BASE}/notifications` },
           { label: "Templates" },
@@ -102,8 +100,7 @@ export default function NotificationTemplateList() {
 
       <div className="admin-dash__stats">
         <StatCard icon={<MdNotifications />} label="Total templates" value={stats.total} />
-        <StatCard icon={<MdEmail />} label="Email" value={stats.emailCount} gradient={["#8b6f47", "#b8860b"]} />
-        <StatCard icon={<MdSms />} label="SMS" value={stats.smsCount} gradient={["#6b5344", "#d4a574"]} />
+        <StatCard icon={<MdEmail />} label="Email templates" value={stats.total} gradient={["#8b6f47", "#b8860b"]} />
         <StatCard
           icon={<IoShieldCheckmarkSharp />}
           label="Active"
@@ -113,9 +110,9 @@ export default function NotificationTemplateList() {
       </div>
 
       <section className="admin-dash__panel">
-        {usingSampleData && (
-          <p className="admin-dash__sample-banner">
-            Showing sample templates — connect the API to load live templates.
+        {loadError && (
+          <p className="admin-dash__sample-banner admin-dash__sample-banner--error">
+            {loadError}
           </p>
         )}
 
@@ -133,17 +130,19 @@ export default function NotificationTemplateList() {
           />
           <select
             className="admin-dash__select"
-            style={{ maxWidth: "10rem" }}
-            value={channelFilter}
+            style={{ maxWidth: "11rem" }}
+            value={categoryFilter}
             onChange={(e) => {
-              setChannelFilter(e.target.value);
+              setCategoryFilter(e.target.value);
               setPage(0);
             }}
-            aria-label="Filter by channel"
+            aria-label="Filter by category"
           >
-            <option value="all">All channels</option>
-            <option value="email">Email</option>
-            <option value="sms">SMS</option>
+            {TEMPLATE_CATEGORIES.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.label}
+              </option>
+            ))}
           </select>
           <select
             className="admin-dash__select"
@@ -167,7 +166,7 @@ export default function NotificationTemplateList() {
               <thead>
                 <tr>
                   <th>Template</th>
-                  <th>Channel</th>
+                  <th>Category</th>
                   <th>Preview</th>
                   <th>Status</th>
                   <th>Updated</th>
@@ -175,7 +174,13 @@ export default function NotificationTemplateList() {
                 </tr>
               </thead>
               <tbody>
-                {slice.length === 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} className="admin-dash__table-empty">
+                      Loading templates…
+                    </td>
+                  </tr>
+                ) : slice.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="admin-dash__table-empty">
                       No templates match your filters.
@@ -186,16 +191,14 @@ export default function NotificationTemplateList() {
                     const id = item._id || item.id;
                     const statusBadge = getPromoStatusBadge(item.status === "active" ? "active" : "inactive");
                     const preview = truncatePreview(
-                      previewTemplateBody(item.body, item.channel)
+                      previewTemplateBody(item.body, "email", item.subject)
                     );
                     return (
                       <tr key={id}>
-                        <td><strong>{item.name}</strong></td>
                         <td>
-                          <span className={`admin-dash__channel-badge admin-dash__channel-badge--${item.channel}`}>
-                            {getChannelLabel(item.channel)}
-                          </span>
+                          <strong>{item.name}</strong>
                         </td>
+                        <td>{getCategoryLabel(item.category)}</td>
                         <td className="admin-dash__notification-preview-cell" title={preview}>
                           {preview}
                         </td>

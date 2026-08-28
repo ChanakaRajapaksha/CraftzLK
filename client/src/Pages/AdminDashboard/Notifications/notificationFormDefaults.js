@@ -3,12 +3,130 @@ export const NOTIFICATION_CHANNELS = [
   { id: "sms", label: "SMS notifications" },
 ];
 
+export const TEMPLATE_CATEGORIES = [
+  { id: "all", label: "All categories" },
+  { id: "account", label: "Account" },
+  { id: "newsletter", label: "Newsletter" },
+  { id: "order", label: "Orders" },
+  { id: "general", label: "General" },
+];
+
+export const TEMPLATE_PLACEHOLDERS_BY_CODE = {
+  welcome: ["{{customerName}}", "{{storeName}}", "{{supportEmail}}"],
+  password_reset: ["{{customerName}}", "{{resetUrl}}", "{{storeName}}"],
+  password_changed: ["{{customerName}}", "{{storeName}}", "{{supportEmail}}"],
+  temporary_password: ["{{customerName}}", "{{temporaryPassword}}", "{{signInUrl}}", "{{storeName}}"],
+  newsletter_confirm: ["{{confirmUrl}}", "{{storeName}}", "{{unsubscribeUrl}}"],
+  newsletter_welcome: ["{{storeName}}", "{{shopUrl}}", "{{unsubscribeUrl}}"],
+  order_placed: [
+    "{{customerName}}",
+    "{{storeName}}",
+    "{{orderNumber}}",
+    "{{orderDate}}",
+    "{{paymentMethod}}",
+    "{{paymentStatus}}",
+    "{{itemsList}}",
+    "{{subtotal}}",
+    "{{deliveryCharge}}",
+    "{{discount}}",
+    "{{tax}}",
+    "{{total}}",
+    "{{deliveryAddress}}",
+    "{{city}}",
+    "{{postalCode}}",
+    "{{phoneNumber}}",
+    "{{orderViewUrl}}",
+    "{{supportEmail}}",
+  ],
+  order_confirmed: [
+    "{{customerName}}",
+    "{{storeName}}",
+    "{{orderNumber}}",
+    "{{orderDate}}",
+    "{{paymentStatus}}",
+    "{{itemsList}}",
+    "{{subtotal}}",
+    "{{deliveryCharge}}",
+    "{{discount}}",
+    "{{tax}}",
+    "{{total}}",
+    "{{deliveryAddress}}",
+    "{{city}}",
+    "{{postalCode}}",
+    "{{orderViewUrl}}",
+    "{{supportEmail}}",
+  ],
+  order_shipped: [
+    "{{customerName}}",
+    "{{storeName}}",
+    "{{orderNumber}}",
+    "{{shippedDate}}",
+    "{{courierName}}",
+    "{{trackingNumber}}",
+    "{{itemsList}}",
+    "{{deliveryAddress}}",
+    "{{city}}",
+    "{{postalCode}}",
+    "{{estimatedDeliveryDate}}",
+    "{{trackingUrl}}",
+    "{{supportEmail}}",
+  ],
+  order_delivered: [
+    "{{customerName}}",
+    "{{storeName}}",
+    "{{orderNumber}}",
+    "{{deliveredDate}}",
+    "{{deliveryAddress}}",
+    "{{itemsList}}",
+    "{{total}}",
+    "{{orderViewUrl}}",
+    "{{reviewUrl}}",
+    "{{supportEmail}}",
+  ],
+};
+
 export const TEMPLATE_PLACEHOLDERS = [
   "{{customerName}}",
+  "{{storeName}}",
   "{{orderNumber}}",
   "{{orderTotal}}",
   "{{trackingUrl}}",
 ];
+
+const PREVIEW_SAMPLE_VALUES = {
+  customerName: "Amaya Perera",
+  storeName: "CraftzLK",
+  orderNumber: "1001",
+  orderDate: "August 28, 2026",
+  paymentMethod: "Cash on Delivery",
+  paymentStatus: "Pending",
+  itemsList: "Handwoven Basket × 2\nRs 5,000.00",
+  subtotal: "Rs 5,000.00",
+  deliveryCharge: "Rs 350.00",
+  discount: "500.00",
+  tax: "Rs 0.00",
+  total: "Rs 4,850.00",
+  orderTotal: "Rs 4,850.00",
+  deliveryAddress: "12 Temple Road, Colombo",
+  city: "Colombo",
+  postalCode: "00500",
+  phoneNumber: "+94 77 123 4567",
+  orderViewUrl: "https://craftzlk.com/orders",
+  reviewUrl: "https://craftzlk.com/products",
+  trackingUrl: "https://craftzlk.com/orders",
+  trackingNumber: "TRK123456789",
+  courierName: "Domex",
+  shippedDate: "August 28, 2026",
+  deliveredDate: "August 30, 2026",
+  estimatedDeliveryDate: "August 31, 2026",
+  supportEmail: "hello@craftzlk.com",
+  resetUrl: "https://craftzlk.com/reset-password?token=sample",
+  temporaryPassword: "TempPass123!",
+  signInUrl: "https://craftzlk.com/signIn",
+  confirmUrl: "https://craftzlk.com/newsletter/confirm?token=sample",
+  unsubscribeUrl: "https://craftzlk.com/newsletter/unsubscribe?token=sample",
+  shopUrl: "https://craftzlk.com/products",
+};
 
 export const defaultNotificationSettings = {
   email: {
@@ -112,13 +230,38 @@ export function getChannelLabel(channel) {
   return channel === "sms" ? "SMS" : "Email";
 }
 
-export function previewTemplateBody(body, channel) {
-  const sample = body || "";
-  return sample
-    .replace(/\{\{customerName\}\}/g, "Amaya")
-    .replace(/\{\{orderNumber\}\}/g, "1001")
-    .replace(/\{\{orderTotal\}\}/g, "Rs 12,450")
-    .replace(/\{\{trackingUrl\}\}/g, "https://craftzlk.com/orders");
+export function getCategoryLabel(category) {
+  const map = {
+    account: "Account",
+    newsletter: "Newsletter",
+    order: "Orders",
+    general: "General",
+  };
+  return map[category] || "General";
+}
+
+export function getPlaceholdersForTemplate(templateMeta) {
+  if (Array.isArray(templateMeta?.placeholders) && templateMeta.placeholders.length) {
+    return templateMeta.placeholders;
+  }
+  if (templateMeta?.code && TEMPLATE_PLACEHOLDERS_BY_CODE[templateMeta.code]) {
+    return TEMPLATE_PLACEHOLDERS_BY_CODE[templateMeta.code];
+  }
+  return TEMPLATE_PLACEHOLDERS;
+}
+
+export function previewTemplateBody(body, channel, subject = "") {
+  let sample = body || "";
+  if (channel === "email" && subject) {
+    sample = `Subject: ${subject}\n\n${sample}`;
+  }
+
+  return sample.replace(/\{\{(\w+)\}\}/g, (match, key) => {
+    if (Object.prototype.hasOwnProperty.call(PREVIEW_SAMPLE_VALUES, key)) {
+      return PREVIEW_SAMPLE_VALUES[key];
+    }
+    return match;
+  });
 }
 
 export function truncatePreview(text, limit = 72) {

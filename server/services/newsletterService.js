@@ -3,7 +3,11 @@ const {
   NewsletterSubscriber,
   EMAIL_REGEX,
 } = require("../models/newsletterSubscriber");
-const emailService = require("./emailService");
+const emailTemplateService = require("./emailTemplateService");
+const storeSettingsService = require("./storeSettingsService");
+const { buildNewsletterConfirmEmail } = require("../templates/newsletterConfirmEmail");
+const { buildNewsletterWelcomeEmail } = require("../templates/newsletterWelcomeEmail");
+const { getPasswordResetLogoAttachment } = require("../templates/passwordResetEmail");
 
 const CONFIRMATION_TTL_MS = 48 * 60 * 60 * 1000;
 const RESEND_COOLDOWN_MS = 60 * 1000;
@@ -90,26 +94,68 @@ function createValidationError(message, statusCode = 400) {
 
 async function sendConfirmationEmail(subscriber) {
   const confirmUrl = buildConfirmUrl(subscriber.confirmationToken);
+  const frontendUrl = getFrontendBaseUrl();
+  const settings = await storeSettingsService.get();
+  const storeName = settings.general?.storeName || "CraftzLK";
 
-  return emailService.sendEmail({
+  return emailTemplateService.sendTemplatedEmail({
+    code: "newsletter_confirm",
     to: subscriber.email,
-    template: "newsletter-confirm",
-    data: {
+    variables: {
       confirmUrl,
-      frontendUrl: getFrontendBaseUrl(),
+      storeName,
+      frontendUrl,
+      unsubscribeUrl: buildUnsubscribeUrl(subscriber.unsubscribeToken || ""),
+      supportEmail: settings.general?.contactEmail || "hello@craftzlk.com",
+    },
+    eyebrow: "Newsletter",
+    heading: "Confirm your subscription",
+    fallback: async () => {
+      const content = buildNewsletterConfirmEmail({
+        confirmUrl,
+        frontendUrl,
+      });
+      const logoAttachment = getPasswordResetLogoAttachment();
+      return {
+        subject: content.subject,
+        text: content.text,
+        html: content.html,
+        attachments: logoAttachment ? [logoAttachment] : [],
+      };
     },
   });
 }
 
 async function sendWelcomeEmail(subscriber) {
+  const frontendUrl = getFrontendBaseUrl();
   const unsubscribeUrl = buildUnsubscribeUrl(subscriber.unsubscribeToken);
+  const settings = await storeSettingsService.get();
+  const storeName = settings.general?.storeName || "CraftzLK";
 
-  return emailService.sendEmail({
+  return emailTemplateService.sendTemplatedEmail({
+    code: "newsletter_welcome",
     to: subscriber.email,
-    template: "newsletter-welcome",
-    data: {
-      frontendUrl: getFrontendBaseUrl(),
+    variables: {
+      storeName,
+      shopUrl: `${frontendUrl}/products`,
       unsubscribeUrl,
+      frontendUrl,
+      supportEmail: settings.general?.contactEmail || "hello@craftzlk.com",
+    },
+    eyebrow: "Newsletter",
+    heading: "Welcome to our community",
+    fallback: async () => {
+      const content = buildNewsletterWelcomeEmail({
+        frontendUrl,
+        unsubscribeUrl,
+      });
+      const logoAttachment = getPasswordResetLogoAttachment();
+      return {
+        subject: content.subject,
+        text: content.text,
+        html: content.html,
+        attachments: logoAttachment ? [logoAttachment] : [],
+      };
     },
   });
 }

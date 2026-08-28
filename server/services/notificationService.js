@@ -40,23 +40,64 @@ const mapTemplate = (doc) => ({
   code: doc.code,
   name: doc.name,
   channel: doc.channel,
+  category: doc.category || 'general',
+  description: doc.description || '',
+  placeholders: Array.isArray(doc.placeholders) ? doc.placeholders : [],
   subject: doc.subject || '',
   body: doc.body || '',
   status: doc.status || 'active',
   dateUpdated: doc.updatedAt,
 });
 
+const LEGACY_TEMPLATE_CODES = ["order_confirmation"];
+const ORDER_TEMPLATE_RESET_CODES = ["order_shipped", "order_delivered"];
+const TEMPLATE_MIGRATION_VERSION = 1;
+
 class NotificationService {
+  async syncTemplateDefaults() {
+    await NotificationTemplate.deleteMany({ channel: "sms" });
+    await NotificationTemplate.deleteMany({ code: { $in: LEGACY_TEMPLATE_CODES } });
+
+    let settings = await NotificationSettings.findOne({ key: "default" });
+    if (!settings) {
+      settings = await NotificationSettings.create(DEFAULT_NOTIFICATION_SETTINGS);
+    }
+
+    if ((settings.templateMigrationVersion || 0) < TEMPLATE_MIGRATION_VERSION) {
+      await NotificationTemplate.deleteMany({
+        code: { $in: ORDER_TEMPLATE_RESET_CODES },
+        channel: "email",
+      });
+
+      for (const code of ORDER_TEMPLATE_RESET_CODES) {
+        const def = DEFAULT_NOTIFICATION_TEMPLATES.find(
+          (item) => item.code === code && item.channel === "email"
+        );
+        if (def) {
+          await NotificationTemplate.create(def);
+        }
+      }
+
+      settings.templateMigrationVersion = TEMPLATE_MIGRATION_VERSION;
+      await settings.save();
+    }
+
+    for (const def of DEFAULT_NOTIFICATION_TEMPLATES) {
+      await NotificationTemplate.updateOne(
+        { code: def.code, channel: def.channel },
+        { $setOnInsert: def },
+        { upsert: true }
+      );
+    }
+  }
+
   async ensureDefaults() {
     const settingsCount = await NotificationSettings.countDocuments();
     if (settingsCount === 0) {
       await NotificationSettings.create(DEFAULT_NOTIFICATION_SETTINGS);
     }
 
-    const templateCount = await NotificationTemplate.countDocuments();
-    if (templateCount === 0) {
-      await NotificationTemplate.insertMany(DEFAULT_NOTIFICATION_TEMPLATES);
-    }
+    await this.syncTemplateDefaults();
   }
 
   async getSettings() {
@@ -114,11 +155,12 @@ class NotificationService {
 
   async getTemplates() {
     await this.ensureDefaults();
-    const list = await NotificationTemplate.find().sort({ name: 1, channel: 1 });
+    const list = await NotificationTemplate.find({ channel: 'email' }).sort({ category: 1, name: 1 });
     return list.map(mapTemplate);
   }
 
   async getTemplateById(id) {
+    await this.ensureDefaults();
     const item = await NotificationTemplate.findById(id);
     if (!item) {
       const error = new Error('Template not found.');
@@ -127,6 +169,12 @@ class NotificationService {
       throw error;
     }
     return mapTemplate(item);
+  }
+
+  async getTemplateByCode(code, channel = 'email') {
+    await this.ensureDefaults();
+    const item = await NotificationTemplate.findOne({ code, channel });
+    return item ? mapTemplate(item) : null;
   }
 
   async updateTemplate(id, body) {
