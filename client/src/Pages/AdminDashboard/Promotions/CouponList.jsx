@@ -265,7 +265,7 @@ export default function CouponList() {
                           <td>
                             {item.minOrderValue
                               ? `Rs ${Number(item.minOrderValue).toLocaleString()}`
-                              : "—"}
+                              : "-"}
                           </td>
                           <td>{formatListDate(item.expiryDate)}</td>
                           <td>

@@ -320,10 +320,10 @@ export default function ProductDetails() {
                       <tbody>
                         {(group.options || []).map((option, optionIndex) => (
                           <tr key={`${option.label}-${optionIndex}`}>
-                            <td>{option.label || "—"}</td>
-                            <td>{option.sku || "—"}</td>
+                            <td>{option.label || "-"}</td>
+                            <td>{option.sku || "-"}</td>
                             <td>{formatCurrency(option.price)}</td>
-                            <td>{option.stock ?? "—"}</td>
+                            <td>{option.stock ?? "-"}</td>
                           </tr>
                         ))}
                       </tbody>

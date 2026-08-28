@@ -5,7 +5,7 @@ import VariantImageUploadField from "../../../Components/AdminDashboard/VariantI
 import { productEndpoints } from "../../../api/endpoint.js";
 import ImageUploadController from "../../../controllers/imageUpload.controller.js";
 import ProductController from "../../../controllers/product.controller.js";
-import { defaultProductFields, PRODUCT_FORM_TABS, slugify, validateProductForm } from "./productFormDefaults";
+import { defaultProductFields, PRODUCT_FORM_ERROR_TAB_MAP, PRODUCT_FORM_TABS, slugify, validateProductForm } from "./productFormDefaults";
 
 function Field({ label, htmlFor, children, full = false, size = "default", required = false, error = "" }) {
   const sizeClass = size === "full" || full
@@ -49,16 +49,6 @@ export default function ProductForm({
   variant = "page",
   onSubmit,
 }) {
-  const ERROR_TAB_MAP = {
-    name: "basic",
-    shortDescription: "basic",
-    description: "basic",
-    images: "images",
-    catId: "category",
-    price: "pricing",
-    countInStock: "inventory",
-  };
-
   const [tab, setTab] = useState("basic");
   const [fieldErrors, setFieldErrors] = useState({});
   const [subCategories, setSubCategories] = useState([]);
@@ -104,7 +94,7 @@ export default function ProductForm({
   const tabsWithErrors = useMemo(() => {
     const tabs = new Set();
     Object.keys(fieldErrors).forEach((key) => {
-      if (ERROR_TAB_MAP[key]) tabs.add(ERROR_TAB_MAP[key]);
+      if (PRODUCT_FORM_ERROR_TAB_MAP[key]) tabs.add(PRODUCT_FORM_ERROR_TAB_MAP[key]);
     });
     return tabs;
   }, [fieldErrors]);

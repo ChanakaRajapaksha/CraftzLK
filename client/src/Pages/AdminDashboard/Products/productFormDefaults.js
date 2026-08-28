@@ -10,6 +10,16 @@ export const PRODUCT_FORM_TABS = [
   { id: "seo", label: "SEO" },
 ];
 
+export const PRODUCT_FORM_ERROR_TAB_MAP = {
+  name: "basic",
+  shortDescription: "basic",
+  description: "basic",
+  images: "images",
+  catId: "category",
+  price: "pricing",
+  countInStock: "inventory",
+};
+
 export const defaultProductFields = {
   name: "",
   sku: "",

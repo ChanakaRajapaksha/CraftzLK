@@ -6,6 +6,7 @@ const couponsService = require('./couponsService');
 const paymentService = require('./paymentService');
 const stockService = require('./stockService');
 const adminNotificationsService = require('./adminNotificationsService');
+const orderEmailService = require('./orderEmailService');
 const { isCostAvailable } = require('../utils/reportProfit');
 
 const ORDER_TO_PAYMENT_STATUS = {
@@ -250,6 +251,8 @@ class OrderService {
       console.error('[orderService.create] Failed to notify admin of new order:', error.message);
     }
 
+    orderEmailService.queueOrderStatusEmail(savedOrder.toObject?.() || savedOrder, 'placed');
+
     return savedOrder;
   }
 
@@ -300,8 +303,29 @@ class OrderService {
     if (body.discount !== undefined) order.discount = Number(body.discount) || 0;
     if (body.tax !== undefined) order.tax = Number(body.tax) || 0;
     if (body.shipping !== undefined) order.shipping = Number(body.shipping) || 0;
+    if (body.trackingNumber !== undefined) order.trackingNumber = String(body.trackingNumber || '');
+    if (body.courierName !== undefined) order.courierName = String(body.courierName || '');
+    if (body.trackingUrl !== undefined) order.trackingUrl = String(body.trackingUrl || '');
+    if (body.estimatedDeliveryDate !== undefined) {
+      order.estimatedDeliveryDate = body.estimatedDeliveryDate
+        ? new Date(body.estimatedDeliveryDate)
+        : null;
+    }
 
     await order.save();
+
+    if (nextStatus !== previousStatus) {
+      const statusEmailMap = {
+        confirmed: 'confirmed',
+        shipped: 'shipped',
+        delivered: 'delivered',
+      };
+      const emailKey = statusEmailMap[nextStatus];
+      if (emailKey) {
+        orderEmailService.queueOrderStatusEmail(order.toObject?.() || order, emailKey);
+      }
+    }
+
     return order;
   }
 }

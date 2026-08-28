@@ -27,7 +27,7 @@ class EmailService {
     };
   }
 
-  async sendEmail({ to, subject, text, html, template, data }) {
+  async sendEmail({ to, subject, text, html, template, data, attachments }) {
     try {
       const { transporter, config } = await this.createTransporter();
 
@@ -50,6 +50,13 @@ class EmailService {
         subject: subject || emailContent.subject,
         ...emailContent,
       };
+
+      const resolvedAttachments = attachments?.length
+        ? attachments
+        : emailContent.attachments;
+      if (resolvedAttachments?.length) {
+        mailOptions.attachments = resolvedAttachments;
+      }
 
       if (config.replyTo) {
         mailOptions.replyTo = config.replyTo;

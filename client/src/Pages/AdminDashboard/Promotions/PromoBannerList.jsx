@@ -239,7 +239,7 @@ export default function PromoBannerList() {
                     slice.map((item) => {
                       const id = item._id || item.id;
                       const img = item.desktopImage || item.mobileImage;
-                      const link = item.buttonUrl || item.link || "—";
+                      const link = item.buttonUrl || item.link || "-";
                       const statusBadge = getPromoStatusBadge(item.status);
 
                       return (
