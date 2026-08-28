@@ -25,3 +25,4 @@ export { default as ReportController } from "./report.controller.js";
 export { default as NotificationController } from "./notification.controller.js";
 export { default as AdminNotificationController } from "./adminNotification.controller.js";
 export { default as ImageUploadController } from "./imageUpload.controller.js";
+export { default as NewsletterController } from "./newsletter.controller.js";

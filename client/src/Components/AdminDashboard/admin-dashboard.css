@@ -1605,6 +1605,10 @@
   border-left: 4px solid #d4a574;
 }
 
+.admin-dash__kpi-card--newsletter {
+  border-left: 4px solid #c9a961;
+}
+
 .admin-dash__kpi-low-stock-list {
   list-style: none;
   margin: 0.45rem 0 0;

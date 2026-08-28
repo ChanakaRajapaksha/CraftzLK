@@ -11,6 +11,7 @@ const {
   parseAmount,
 } = require('../utils/reportDateRange');
 const { aggregateOrdersProfit } = require('../utils/reportProfit');
+const newsletterService = require('./newsletterService');
 const {
   filterRevenueEligibleOrders,
   sumOrderRevenue,
@@ -414,6 +415,7 @@ class DashboardService {
       context
     );
     const orderSummary = computeOrderSummary(context.orders, range.start, range.end);
+    const newsletterSummary = await newsletterService.getSubscriberStats();
 
     return {
       success: true,
@@ -445,6 +447,7 @@ class DashboardService {
         range.start,
         range.end
       ),
+      newsletterSummary,
       lowStockProducts: getLowStockProducts(context.products, 5),
     };
   }

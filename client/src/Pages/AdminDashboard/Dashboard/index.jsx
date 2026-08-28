@@ -75,6 +75,12 @@ export default function AdminDashboardHome() {
     returningRate: 0,
     periodCustomers: 0,
   };
+  const newsletterSummary = data?.newsletterSummary || {
+    total: 0,
+    subscribed: 0,
+    pending: 0,
+    unsubscribed: 0,
+  };
 
   const handleCustomDateChange = ({ start, end }) => {
     if (start !== undefined) setCustomStart(start);
@@ -123,6 +129,7 @@ export default function AdminDashboardHome() {
           kpis={kpis}
           productSummary={productSummary}
           customerSummary={customerSummary}
+          newsletterSummary={newsletterSummary}
           comparisonLabel={comparisonLabel}
           lowStockProducts={data?.lowStockProducts || []}
         />

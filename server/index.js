@@ -117,6 +117,7 @@ const cmsPageRoutes = require('./routes/cmsPages');
 const notificationRoutes = require('./routes/notifications');
 const adminNotificationRoutes = require('./routes/adminNotifications');
 const storeSettingsRoutes = require('./routes/storeSettings');
+const newsletterRoutes = require('./routes/newsletter');
 const { apiAuthGuard } = require('./middleware/auth');
 
 // Require login for every API route except public auth entry points.
@@ -152,6 +153,7 @@ app.use("/api/cms-pages", cmsPageRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/admin-notifications", adminNotificationRoutes);
 app.use("/api/settings", storeSettingsRoutes);
+app.use("/api/newsletter", newsletterRoutes);
 app.use("/api/homeBanner", homeBannerSchema);
 app.use("/api/search", searchRoutes);
 app.use("/api/banners", bannersSchema);

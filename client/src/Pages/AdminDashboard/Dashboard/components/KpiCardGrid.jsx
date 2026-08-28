@@ -41,7 +41,14 @@ function KpiCard({
   );
 }
 
-export default function KpiCardGrid({ kpis, productSummary, customerSummary, comparisonLabel, lowStockProducts }) {
+export default function KpiCardGrid({
+  kpis,
+  productSummary,
+  customerSummary,
+  newsletterSummary,
+  comparisonLabel,
+  lowStockProducts,
+}) {
   const profitDisplay = kpis.profitAvailable ? kpis.profit.value : null;
 
   return (
@@ -90,6 +97,13 @@ export default function KpiCardGrid({ kpis, productSummary, customerSummary, com
           value={customerSummary.totalCustomers}
           comparisonLabel={`${customerSummary.periodCustomers} active in period`}
           accent="customers"
+          format="number"
+        />
+        <KpiCard
+          label="Newsletter subscribed"
+          value={newsletterSummary?.subscribed ?? 0}
+          comparisonLabel={`${newsletterSummary?.pending ?? 0} pending · ${newsletterSummary?.unsubscribed ?? 0} unsubscribed`}
+          accent="newsletter"
           format="number"
         />
         <LowStockAlertWidget products={lowStockProducts} variant="kpi" />

@@ -12,11 +12,30 @@ const PUBLIC_API_ROUTES = new Set([
   'POST /api/auth/reset-password',
   'POST /api/coupons/validate',
   'POST /api/payment/notify',
+  'POST /api/newsletter/subscribe',
+  'POST /api/newsletter/status',
+  'POST /api/newsletter/resend-confirmation',
+  'GET /api/newsletter/confirm',
+  'POST /api/newsletter/unsubscribe',
+  'GET /api/newsletter/unsubscribe',
 ]);
 
 function isPublicApiRoute(req) {
   const path = req.originalUrl.split('?')[0];
-  return PUBLIC_API_ROUTES.has(`${req.method.toUpperCase()} ${path}`);
+  const method = req.method.toUpperCase();
+  const key = `${method} ${path}`;
+
+  if (PUBLIC_API_ROUTES.has(key)) return true;
+
+  if (method === 'GET' && /^\/api\/newsletter\/confirm\/[^/]+$/.test(path)) {
+    return true;
+  }
+
+  if (method === 'GET' && /^\/api\/newsletter\/unsubscribe\/[^/]+$/.test(path)) {
+    return true;
+  }
+
+  return false;
 }
 
 function isStorefrontBrowseRoute(req) {

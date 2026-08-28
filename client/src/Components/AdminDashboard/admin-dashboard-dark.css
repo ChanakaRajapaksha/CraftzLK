@@ -306,6 +306,10 @@ html.admin-dash-theme-dark {
   border-left-color: #e8b878;
 }
 
+.admin-dash--dark .admin-dash__kpi-card--newsletter {
+  border-left-color: #e8c878;
+}
+
 .admin-dash--dark .admin-dash__kpi-low-stock-item {
   color: var(--adm-text-secondary) !important;
 }

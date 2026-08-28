@@ -14,6 +14,7 @@ import {
   searchEndpoints,
   settingsEndpoints,
   shippingEndpoints,
+  newsletterEndpoints,
 } from "../api/endpoint.js";
 
 const apiBaseUrl = import.meta.env.VITE_API_URL || "";
@@ -48,6 +49,11 @@ const publicEndpoints = [
     authEndpoints.google,
     authEndpoints.refreshToken,
     couponEndpoints.validate,
+    newsletterEndpoints.subscribe,
+    newsletterEndpoints.status,
+    newsletterEndpoints.resendConfirmation,
+    newsletterEndpoints.confirm,
+    newsletterEndpoints.unsubscribe,
 ];
 
 const AUTH_PAGES = ['/signIn', '/signUp', '/forgot-password', '/reset-password', '/verifyOTP'];
@@ -115,6 +121,8 @@ function isGuestBrowsableBankTransfer(url = '') {
 }
 
 function isGuestBrowsableEndpoint(url = '') {
+  if (isNewsletterPublicEndpoint(url)) return true;
+
   const path = normalizeRequestPath(url);
   if (reqMethodIsGet(path, url) === false) return false;
 
@@ -160,8 +168,17 @@ function reqMethodIsGet(path, url) {
   return true;
 }
 
+function isNewsletterPublicEndpoint(url = '') {
+  const path = normalizeRequestPath(url);
+  return path.startsWith('/api/newsletter/');
+}
+
 function shouldAttachAuth(url = '') {
-  return !isPublicEndpoint(url) && !isGuestBrowsableEndpoint(url);
+  return (
+    !isPublicEndpoint(url) &&
+    !isGuestBrowsableEndpoint(url) &&
+    !isNewsletterPublicEndpoint(url)
+  );
 }
 
 function shouldRedirectOnAuthFailure() {
@@ -324,6 +341,24 @@ export const fetchDataFromApi = async (url) => {
     } catch (error) {
         console.log(error);
         return error;
+    }
+}
+
+/** GET helper that always returns JSON payload (never raw axios errors). */
+export const getDataFromApi = async (url) => {
+    try {
+        const { data } = await apiClient.get(url, {
+            validateStatus: (status) => status >= 200 && status < 300,
+        });
+        return data;
+    } catch (error) {
+        return {
+            success: false,
+            message:
+                error.response?.data?.message ||
+                error.message ||
+                "Request failed. Please try again.",
+        };
     }
 }
 

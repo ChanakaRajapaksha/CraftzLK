@@ -243,6 +243,15 @@ export const notificationEndpoints = {
   templateById: (id) => `${API}/notifications/templates/${id}`,
 };
 
+export const newsletterEndpoints = {
+  base: `${API}/newsletter`,
+  subscribe: `${API}/newsletter/subscribe`,
+  status: `${API}/newsletter/status`,
+  resendConfirmation: `${API}/newsletter/resend-confirmation`,
+  confirm: `${API}/newsletter/confirm`,
+  unsubscribe: `${API}/newsletter/unsubscribe`,
+};
+
 export const adminNotificationEndpoints = {
   base: `${API}/admin-notifications`,
   list: `${API}/admin-notifications`,
@@ -283,6 +292,7 @@ export default {
   dashboardEndpoints,
   reportEndpoints,
   notificationEndpoints,
+  newsletterEndpoints,
   adminNotificationEndpoints,
   imageUploadEndpoints,
 };

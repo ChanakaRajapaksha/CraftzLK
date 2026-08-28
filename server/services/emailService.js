@@ -1,6 +1,8 @@
 const nodemailer = require("nodemailer");
 const { buildPasswordResetEmail, getPasswordResetLogoAttachment } = require("../templates/passwordResetEmail");
 const { buildTemporaryPasswordEmail } = require("../templates/temporaryPasswordEmail");
+const { buildNewsletterConfirmEmail } = require("../templates/newsletterConfirmEmail");
+const { buildNewsletterWelcomeEmail } = require("../templates/newsletterWelcomeEmail");
 const { getNotificationEmailConfig } = require("./notificationEmailConfig");
 
 class EmailService {
@@ -100,6 +102,26 @@ class EmailService {
       },
       "temporary-password": (() => {
         const content = buildTemporaryPasswordEmail(data);
+        const logoAttachment = getPasswordResetLogoAttachment();
+        return {
+          subject: content.subject,
+          html: content.html,
+          text: content.text,
+          attachments: logoAttachment ? [logoAttachment] : [],
+        };
+      })(),
+      "newsletter-confirm": (() => {
+        const content = buildNewsletterConfirmEmail(data);
+        const logoAttachment = getPasswordResetLogoAttachment();
+        return {
+          subject: content.subject,
+          html: content.html,
+          text: content.text,
+          attachments: logoAttachment ? [logoAttachment] : [],
+        };
+      })(),
+      "newsletter-welcome": (() => {
+        const content = buildNewsletterWelcomeEmail(data);
         const logoAttachment = getPasswordResetLogoAttachment();
         return {
           subject: content.subject,

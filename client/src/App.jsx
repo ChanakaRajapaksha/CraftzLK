@@ -37,6 +37,8 @@ import VerifyOTP from "./Pages/VerifyOTP/index.jsx";
 import ChangePassword from "./Pages/ChangePassword/index.jsx";
 import ForgotPassword from "./Pages/ForgotPassword/index.jsx";
 import ResetPassword from "./Pages/ResetPassword/index.jsx";
+import NewsletterConfirm from "./Pages/Newsletter/Confirm.jsx";
+import NewsletterUnsubscribe from "./Pages/Newsletter/Unsubscribe.jsx";
 import { setSessionExpiredHandler } from "./utils/sessionEvents";
 import HandcraftAlert from "./Components/HandcraftAlert";
 import CartDrawer from "./Components/CartDrawer";
@@ -588,6 +590,8 @@ function AppContent() {
         <Route exact={true} path="/signUp" element={<SignUp />} />
         <Route exact={true} path="/forgot-password" element={<ForgotPassword />} />
         <Route exact={true} path="/reset-password" element={<ResetPassword />} />
+        <Route exact={true} path="/newsletter/confirm" element={<NewsletterConfirm />} />
+        <Route exact={true} path="/newsletter/unsubscribe" element={<NewsletterUnsubscribe />} />
         <Route
           exact={true}
           path="/my-list"

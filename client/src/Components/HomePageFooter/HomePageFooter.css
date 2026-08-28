@@ -205,6 +205,105 @@ footer.home-page-footer {
   background: var(--accent-blue-hover, #9a7209);
 }
 
+.home-page-footer__form button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.home-page-footer__newsletter-state {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.home-page-footer__newsletter-state-title {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #fff7e8;
+}
+
+.home-page-footer__newsletter-state-text {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: rgba(250, 248, 243, 0.78);
+}
+
+.home-page-footer__newsletter-state-text strong {
+  color: #f3e4c6;
+  font-weight: 600;
+}
+
+.home-page-footer__newsletter-secondary-btn {
+  align-self: flex-start;
+  margin-top: 0.25rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(201, 169, 97, 0.45);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.18);
+  color: #faf8f3;
+  font-family: var(--font-body, "Bricolage Grotesque", sans-serif);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.home-page-footer__newsletter-secondary-btn:hover:not(:disabled) {
+  background: rgba(184, 134, 11, 0.22);
+  border-color: rgba(218, 165, 32, 0.55);
+}
+
+.home-page-footer__newsletter-secondary-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.home-page-footer__newsletter-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: rgba(250, 248, 243, 0.62);
+}
+
+.home-page-footer__newsletter-feedback {
+  margin-top: 0.85rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(201, 169, 97, 0.28);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.home-page-footer__newsletter-feedback-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #fff7e8;
+}
+
+.home-page-footer__newsletter-feedback-text {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: rgba(250, 248, 243, 0.78);
+}
+
+.home-page-footer__newsletter-feedback--success {
+  border-color: rgba(144, 238, 144, 0.35);
+  background: rgba(45, 60, 35, 0.28);
+}
+
+.home-page-footer__newsletter-feedback--pending {
+  border-color: rgba(218, 165, 32, 0.4);
+  background: rgba(80, 55, 20, 0.32);
+}
+
+.home-page-footer__newsletter-feedback--error {
+  border-color: rgba(255, 138, 128, 0.35);
+  background: rgba(80, 30, 30, 0.28);
+}
+
 .home-page-footer__bottom {
   display: flex;
   flex-wrap: wrap;
