@@ -1373,21 +1373,27 @@ nav .navPart2 ul li:hover .submenu {
 }
 
 .secondary-category-nav__mega-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 1.25rem 1.75rem;
+  width: 100%;
 }
 
-@media (min-width: 992px) {
-  .secondary-category-nav__mega-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+.secondary-category-nav__mega-col {
+  flex: 1 1 0;
+  min-width: min(100%, 9rem);
+  display: flex;
+  justify-content: center;
 }
 
-@media (min-width: 1200px) {
-  .secondary-category-nav__mega-grid {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
+.secondary-category-nav__mega-col-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  max-width: 100%;
 }
 
 .secondary-category-nav__mega-heading {

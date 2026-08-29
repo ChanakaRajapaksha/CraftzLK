@@ -284,16 +284,19 @@ const Collections = () => {
             {collectionsCategories.map((collection) => {
               const isActive =
                 categorySlug === collection.slug && !activeSubcategoryTitle;
+              const hasImage = Boolean(collection.image);
               return (
                 <li key={collection.id || collection.slug || collection.title}>
                   <Link
                     to={collection.path}
-                    className={`collections-pill${isActive ? " collections-pill--active" : ""}`}
+                    className={`collections-pill${isActive ? " collections-pill--active" : ""}${hasImage ? " collections-pill--has-image" : ""}`}
+                    style={
+                      hasImage
+                        ? { "--pill-bg-image": `url("${collection.image}")` }
+                        : undefined
+                    }
                     aria-current={isActive ? "page" : undefined}
                   >
-                    <span className="collections-pill__icon">
-                      <img src={collection.icon} alt="" loading="eager" decoding="async" />
-                    </span>
                     <span className="collections-pill__label">{collection.title}</span>
                   </Link>
                 </li>

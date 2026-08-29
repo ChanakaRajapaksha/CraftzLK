@@ -35,10 +35,6 @@ export function categoryTitleToSlug(title) {
     .replace(/^-+|-+$/g, "");
 }
 
-const LEGACY_ICON_BY_SLUG = Object.fromEntries(
-  MEGA_MENU_COLUMNS.map((col) => [categoryTitleToSlug(col.title), col.icon])
-);
-
 export function findCategoryBySlug(slug, categoryList) {
   if (!slug || slug === COLLECTIONS_ALL_SLUG) return null;
   return (
@@ -99,16 +95,6 @@ export function resolveSubcategoryTitleFromSlug(categoryTitle, subSlug, category
   );
 }
 
-export function getCategoryIcon(category) {
-  const slug = categoryTitleToSlug(category?.name);
-  return (
-    category?.images?.[0] ||
-    LEGACY_ICON_BY_SLUG[slug] ||
-    MEGA_MENU_COLUMNS[0]?.icon ||
-    "/icons/handmade_crafts.png"
-  );
-}
-
 function getCategorySlug(cat) {
   return cat?.slug || categoryTitleToSlug(cat?.name);
 }
@@ -118,16 +104,21 @@ function getCategoryPath(cat) {
   return slug ? `/collections/${slug}` : COLLECTIONS_ALL_PATH;
 }
 
+function getCategoryImage(cat) {
+  const images = Array.isArray(cat?.images) ? cat.images : [];
+  return images.find(Boolean) || null;
+}
+
 /** Build browse pills from admin/API category tree (active top-level categories only). */
 export function buildCollectionsCategories(categoryList = []) {
   if (!categoryList.length) return [];
 
   return categoryList.map((cat) => ({
     title: cat.name,
-    icon: getCategoryIcon(cat),
     slug: getCategorySlug(cat),
     path: getCategoryPath(cat),
     id: cat._id,
+    image: getCategoryImage(cat),
     color: cat.color,
     description: cat.description,
     children: cat.children || [],

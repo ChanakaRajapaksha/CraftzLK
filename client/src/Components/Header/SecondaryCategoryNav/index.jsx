@@ -454,26 +454,28 @@ const SecondaryCategoryNav = ({ isOpenNav, closeNav, navData }) => {
             <div className="secondary-category-nav__mega-grid">
               {menuCategories.map((cat) => (
                 <div key={cat._id} className="secondary-category-nav__mega-col">
-                  <Link
-                    to={mainCategoryLink(cat)}
-                    onClick={() => setMegaOpen(false)}
-                    className="secondary-category-nav__mega-heading secondary-category-nav__mega-heading-link"
-                  >
-                    {cat.name}
-                  </Link>
-                  <ul className="secondary-category-nav__mega-list">
-                    {(cat.children || []).map((item) => (
-                      <li key={item._id}>
-                        <Link
-                          to={subCategoryLink(cat, item)}
-                          onClick={() => setMegaOpen(false)}
-                          className="secondary-category-nav__mega-sublink"
-                        >
-                          {item.name}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="secondary-category-nav__mega-col-body">
+                    <Link
+                      to={mainCategoryLink(cat)}
+                      onClick={() => setMegaOpen(false)}
+                      className="secondary-category-nav__mega-heading secondary-category-nav__mega-heading-link"
+                    >
+                      {cat.name}
+                    </Link>
+                    <ul className="secondary-category-nav__mega-list">
+                      {(cat.children || []).map((item) => (
+                        <li key={item._id}>
+                          <Link
+                            to={subCategoryLink(cat, item)}
+                            onClick={() => setMegaOpen(false)}
+                            className="secondary-category-nav__mega-sublink"
+                          >
+                            {item.name}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               ))}
             </div>
