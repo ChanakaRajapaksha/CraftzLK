@@ -146,6 +146,21 @@ function validateProductPayload(body, images = []) {
   }
 }
 
+function normalizeTrustBadges(value) {
+  const defaults = {
+    authentic: '100% Authentic',
+    delivery: 'Island wide Delivery',
+    express: 'Express Delivery: Colombo 1-12',
+  };
+  const source = value && typeof value === 'object' ? value : {};
+
+  return {
+    authentic: String(source.authentic ?? defaults.authentic).trim(),
+    delivery: String(source.delivery ?? defaults.delivery).trim(),
+    express: String(source.express ?? defaults.express).trim(),
+  };
+}
+
 function mapProductBody(body, images = []) {
   return {
     name: body.name,
@@ -180,6 +195,7 @@ function mapProductBody(body, images = []) {
     variants: Array.isArray(body.variants) ? body.variants : [],
     customizationOptions: Array.isArray(body.customizationOptions) ? body.customizationOptions : [],
     shipping: body.shipping || {},
+    trustBadges: normalizeTrustBadges(body.trustBadges),
     seo: body.seo || {},
   };
 }

@@ -5,7 +5,7 @@ import VariantImageUploadField from "../../../Components/AdminDashboard/VariantI
 import { productEndpoints } from "../../../api/endpoint.js";
 import ImageUploadController from "../../../controllers/imageUpload.controller.js";
 import ProductController from "../../../controllers/product.controller.js";
-import { defaultProductFields, PRODUCT_FORM_ERROR_TAB_MAP, PRODUCT_FORM_TABS, slugify, validateProductForm } from "./productFormDefaults";
+import { defaultProductFields, PRODUCT_FORM_ERROR_TAB_MAP, PRODUCT_FORM_TABS, slugify, TRUST_BADGE_FORM_FIELDS, validateProductForm } from "./productFormDefaults";
 
 function Field({ label, htmlFor, children, full = false, size = "default", required = false, error = "" }) {
   const sizeClass = size === "full" || full
@@ -466,6 +466,27 @@ export default function ProductForm({
                 Featured product
               </label>
             </div>
+            <div className="admin-dash__field admin-dash__field--full">
+              <p className="admin-dash__category-tree-hint">
+                Product detail highlights — these three points appear below the product image on the storefront product details page.
+              </p>
+            </div>
+            {TRUST_BADGE_FORM_FIELDS.map((badgeField) => (
+              <Field
+                key={badgeField.id}
+                label={badgeField.label}
+                htmlFor={`trust-badge-${badgeField.id}`}
+                full
+              >
+                <input
+                  className="admin-dash__input"
+                  id={`trust-badge-${badgeField.id}`}
+                  value={formFields.trustBadges?.[badgeField.id] ?? ""}
+                  onChange={(e) => changeNested("trustBadges", badgeField.id, e.target.value)}
+                  placeholder={badgeField.placeholder}
+                />
+              </Field>
+            ))}
           </div>
         )}
 
@@ -707,32 +728,6 @@ export default function ProductForm({
             <button type="button" className="admin-dash__btn admin-dash__btn--ghost" onClick={addCustomization}>
               <FaPlus /> Add customization option
             </button>
-          </div>
-        )}
-
-        {tab === "shipping" && (
-          <div className="admin-dash__form-grid admin-dash__form-grid--2">
-            <Field label="Weight (kg)" htmlFor="shipping-weight" size="short">
-              <input className="admin-dash__input" id="shipping-weight" type="number" value={formFields.shipping?.weight} onChange={(e) => changeNested("shipping", "weight", e.target.value)} />
-            </Field>
-            <Field label="Length (cm)" htmlFor="shipping-length" size="short">
-              <input className="admin-dash__input" id="shipping-length" type="number" value={formFields.shipping?.length} onChange={(e) => changeNested("shipping", "length", e.target.value)} />
-            </Field>
-            <Field label="Width (cm)" htmlFor="shipping-width" size="short">
-              <input className="admin-dash__input" id="shipping-width" type="number" value={formFields.shipping?.width} onChange={(e) => changeNested("shipping", "width", e.target.value)} />
-            </Field>
-            <Field label="Height (cm)" htmlFor="shipping-height" size="short">
-              <input className="admin-dash__input" id="shipping-height" type="number" value={formFields.shipping?.height} onChange={(e) => changeNested("shipping", "height", e.target.value)} />
-            </Field>
-            <Field label="Shipping Charge (Rs)" htmlFor="shipping-charge" size="short">
-              <input className="admin-dash__input" id="shipping-charge" type="number" value={formFields.shipping?.shippingCharge} onChange={(e) => changeNested("shipping", "shippingCharge", e.target.value)} disabled={formFields.shipping?.freeShipping} />
-            </Field>
-            <div className="admin-dash__field admin-dash__field--checkbox">
-              <label className="admin-dash__label admin-dash__label--inline">
-                <input type="checkbox" checked={formFields.shipping?.freeShipping} onChange={(e) => changeNested("shipping", "freeShipping", e.target.checked)} />
-                Free shipping
-              </label>
-            </div>
           </div>
         )}
 

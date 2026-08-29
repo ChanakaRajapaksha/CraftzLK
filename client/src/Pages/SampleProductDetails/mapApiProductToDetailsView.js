@@ -3,11 +3,7 @@
  * without changing the existing storefront product details design.
  */
 
-const DEFAULT_TRUST_BADGES = [
-  { id: "authentic", label: "100% Authentic" },
-  { id: "delivery", label: "Island wide Delivery" },
-  { id: "express", label: "Express Delivery: Colombo 1-12" },
-];
+import { trustBadgesToDisplayList } from "../../constants/productTrustBadges.js";
 
 const DEFAULT_DISCLAIMER =
   "Actual product colors may vary slightly from the images shown on our website/app.";
@@ -147,7 +143,7 @@ export function mapApiProductToDetailsView(apiProduct) {
     colors: variantGroup.options,
     variantGroupName: variantGroup.name,
     hasVariants: variantsExist,
-    trustBadges: DEFAULT_TRUST_BADGES,
+    trustBadges: trustBadgesToDisplayList(apiProduct.trustBadges),
     variants: apiProduct.variants || [],
     brand: apiProduct.brand || "",
     status: apiProduct.status || "active",

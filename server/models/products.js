@@ -74,6 +74,11 @@ const productSchema = mongoose.Schema({
     freeShipping: { type: Boolean, default: false },
     shippingCharge: { type: Number, default: 0 },
   },
+  trustBadges: {
+    authentic: { type: String, default: "100% Authentic" },
+    delivery: { type: String, default: "Island wide Delivery" },
+    express: { type: String, default: "Express Delivery: Colombo 1-12" },
+  },
   seo: {
     metaTitle: { type: String, default: "" },
     metaDescription: { type: String, default: "" },

@@ -1,3 +1,11 @@
+import {
+  DEFAULT_TRUST_BADGES,
+  normalizeTrustBadges,
+  TRUST_BADGE_FORM_FIELDS,
+} from "../../../constants/productTrustBadges.js";
+
+export { DEFAULT_TRUST_BADGES, normalizeTrustBadges, TRUST_BADGE_FORM_FIELDS, trustBadgesToDisplayList } from "../../../constants/productTrustBadges.js";
+
 export const PRODUCT_FORM_TABS = [
   { id: "basic", label: "Basic Info" },
   { id: "images", label: "Images" },
@@ -6,7 +14,6 @@ export const PRODUCT_FORM_TABS = [
   { id: "inventory", label: "Inventory" },
   { id: "variants", label: "Variants" },
   { id: "customization", label: "Customization" },
-  { id: "shipping", label: "Shipping" },
   { id: "seo", label: "SEO" },
 ];
 
@@ -64,6 +71,7 @@ export const defaultProductFields = {
     freeShipping: false,
     shippingCharge: "",
   },
+  trustBadges: { ...DEFAULT_TRUST_BADGES },
   seo: {
     metaTitle: "",
     metaDescription: "",
@@ -203,6 +211,7 @@ export function productToForm(product) {
       freeShipping: Boolean(product.shipping?.freeShipping),
       shippingCharge: product.shipping?.shippingCharge ?? "",
     },
+    trustBadges: normalizeTrustBadges(product.trustBadges),
     seo: {
       metaTitle: product.seo?.metaTitle || "",
       metaDescription: product.seo?.metaDescription || "",
@@ -248,6 +257,7 @@ export function formToPayload(formFields) {
       freeShipping: Boolean(formFields.shipping?.freeShipping),
       shippingCharge: Number(formFields.shipping?.shippingCharge) || 0,
     },
+    trustBadges: normalizeTrustBadges(formFields.trustBadges),
     seo: formFields.seo || {},
     variants: (formFields.variants || []).map((group) => ({
       ...group,
