@@ -35,6 +35,10 @@ router.post('/recentlyViewd', asyncHandler(productController.addRecentlyViewed.b
 router.post('/create', asyncHandler(productController.create.bind(productController)));
 router.post('/bulk/delete', asyncHandler(productController.bulkDelete.bind(productController)));
 router.post('/bulk/status', asyncHandler(productController.bulkStatus.bind(productController)));
+router.delete(
+  '/:id/variant-options/:optionId',
+  asyncHandler(productController.removeVariantOption.bind(productController))
+);
 router.get('/:id', asyncHandler(productController.getById.bind(productController)));
 router.delete('/deleteImage', asyncHandler(productController.deleteImage.bind(productController)));
 router.delete('/:id', asyncHandler(productController.remove.bind(productController)));

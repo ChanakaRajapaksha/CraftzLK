@@ -7,6 +7,7 @@ const variantOptionSchema = mongoose.Schema({
   stock: { type: Number, default: 0 },
   stockStatus: { type: String, enum: ["in_stock", "out_of_stock", "pre_order"], default: "in_stock" },
   image: { type: String, default: "" },
+  isDefault: { type: Boolean, default: false },
 });
 
 const variantGroupSchema = mongoose.Schema({

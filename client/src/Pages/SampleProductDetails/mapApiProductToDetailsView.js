@@ -66,9 +66,14 @@ function buildVariantGroupFromVariants(product) {
         price: Number(opt?.price) || 0,
         stock: Number(opt?.stock) || 0,
         stockStatus: opt?.stockStatus || "in_stock",
+        isDefault: Boolean(opt?.isDefault),
       };
     })
     .filter(Boolean);
+
+  if (options.length && !options.some((opt) => opt.isDefault)) {
+    options[0] = { ...options[0], isDefault: true };
+  }
 
   return {
     name: String(group?.variantName || "").trim(),
@@ -126,6 +131,7 @@ export function mapApiProductToDetailsView(apiProduct) {
   return {
     id,
     name: apiProduct.name || "",
+    parentName: apiProduct.name || "",
     images: Array.isArray(apiProduct.images) ? apiProduct.images.filter(Boolean) : [],
     rating: DEFAULT_PRODUCT_RATING,
     reviewCount: DEFAULT_REVIEW_COUNT,

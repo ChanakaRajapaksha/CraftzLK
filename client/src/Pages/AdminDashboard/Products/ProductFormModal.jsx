@@ -163,6 +163,7 @@ export default function ProductFormModal({
               catData={catData}
               setAlertBox={setAlertBox}
               isEdit={isEdit}
+              productId={productId}
               isLoading={saving}
               variant="modal"
               onSubmit={handleSubmit}

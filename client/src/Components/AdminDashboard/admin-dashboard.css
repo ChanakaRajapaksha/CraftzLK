@@ -2730,7 +2730,7 @@
 .admin-dash__variant-option-head,
 .admin-dash__variant-option-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr) minmax(0, 0.7fr) minmax(0, 0.65fr) minmax(0, 1.05fr) minmax(0, 1.25fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr) minmax(0, 0.7fr) minmax(0, 0.65fr) minmax(0, 1.05fr) minmax(0, 0.8fr) minmax(0, 1.25fr) auto;
   gap: 0.5rem;
   align-items: center;
 }
@@ -2746,6 +2746,33 @@
 
 .admin-dash__variant-option-row {
   margin-bottom: 0;
+}
+
+.admin-dash__variant-option-delete {
+  flex-shrink: 0;
+}
+
+.admin-dash__variant-default {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #6b5c4a;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.admin-dash__variant-default input {
+  margin: 0;
+}
+
+.admin-dash__field-hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: #9a8b78;
 }
 
 .admin-dash__variant-image {

@@ -19,6 +19,7 @@ import {
   ProductReviewController,
 } from "../../controllers/index.js";
 import { parseProductQuestionsResponse, parseProductReviewsResponse } from "../../utils/productReviewUtils";
+import { formatVariantProductName } from "../../utils/productPricing";
 import { useAppSelector } from "../../store/hooks";
 import ProductReviewsFeed from "./ProductReviewsFeed";
 import {
@@ -215,12 +216,21 @@ export default function SampleProductDetails() {
   }, [product?.id, loadProductReviews, loadProductQuestions]);
 
   useEffect(() => {
-    if (product?.colors?.length) {
-      setActiveColor(product.colors[0].id);
-      setActiveImage(0);
-      setQuantity(1);
-    }
-  }, [product]);
+    if (!product?.id) return;
+
+    const colors = product.colors || [];
+    const hasVariants = Boolean(product.hasVariants) && colors.length > 0;
+    if (!hasVariants) return;
+
+    const defaultOption = colors.find((color) => color.isDefault) || colors[0];
+    if (!defaultOption) return;
+
+    setActiveColor(defaultOption.id);
+    const productImages = product.images ?? [];
+    const matchIndex = productImages.findIndex((img) => img === defaultOption.image);
+    setActiveImage(matchIndex >= 0 ? matchIndex : 0);
+    setQuantity(1);
+  }, [product?.id]);
 
   useEffect(() => {
     if (!lightboxOpen) return undefined;
@@ -285,6 +295,9 @@ export default function SampleProductDetails() {
 
   const handleThumbnailSelect = (index) => {
     setActiveImage(index);
+    if (showVariants) {
+      setActiveColor(null);
+    }
   };
 
   const handleColorSelect = (color) => {
@@ -298,11 +311,18 @@ export default function SampleProductDetails() {
     setQuantity((q) => (nextStock > 0 ? Math.min(q, nextStock) : 1));
   };
 
-  const mainImage = images[activeImage] || images[0];
-
   const selectedVariant = showVariants
     ? product.colors.find((c) => c.id === activeColor) || null
     : null;
+  const mainImage = selectedVariant?.image || images[activeImage] || images[0];
+  const variantSelectionLabel =
+    selectedVariant?.label ??
+    (product.variantGroupName
+      ? `Select ${product.variantGroupName.toLowerCase()}`
+      : "Select option");
+  const displayProductName = showVariants && selectedVariant
+    ? formatVariantProductName(product.parentName || product.name, selectedVariant.label)
+    : product.name;
   const hasVariantPrice = Number(selectedVariant?.price) > 0;
   const activePrice = hasVariantPrice ? Number(selectedVariant.price) : product.price;
   const activePriceDisplay = hasVariantPrice
@@ -369,7 +389,7 @@ export default function SampleProductDetails() {
     context.addToCart(
       {
         productTitle: selectedVariant?.label
-          ? `${product.name} — ${selectedVariant.label}`
+          ? formatVariantProductName(product.parentName || product.name, selectedVariant.label)
           : product.name,
         image: selectedVariant?.image || mainImage,
         rating: reviewAverage,
@@ -392,7 +412,7 @@ export default function SampleProductDetails() {
         <nav className="spd-breadcrumb" aria-label="Breadcrumb">
           <Link to="/">Home</Link>
           <span aria-hidden="true">/</span>
-          <span>{product.name}</span>
+          <span>{product.parentName || product.name}</span>
         </nav>
 
         <div className="spd-grid">
@@ -403,7 +423,7 @@ export default function SampleProductDetails() {
                   <li key={index}>
                     <button
                       type="button"
-                      className={`spd-thumbs__btn${activeImage === index ? " spd-thumbs__btn--active" : ""}`}
+                      className={`spd-thumbs__btn${mainImage === img ? " spd-thumbs__btn--active" : ""}`}
                       onClick={() => handleThumbnailSelect(index)}
                     >
                       <img src={img} alt="" />
@@ -443,7 +463,7 @@ export default function SampleProductDetails() {
           </div>
 
           <div className="spd-info">
-            <h1 className="spd-info__title">{product.name}</h1>
+            <h1 className="spd-info__title">{displayProductName}</h1>
 
             <p className="spd-info__price">{activePriceDisplay}</p>
 
@@ -491,7 +511,7 @@ export default function SampleProductDetails() {
               <div className="spd-colors">
                 <p className="spd-colors__label">
                   {product.variantGroupName || "Color"}:{" "}
-                  <strong>{selectedVariant?.label ?? "Default"}</strong>
+                  <strong>{variantSelectionLabel}</strong>
                 </p>
                 <ul className="spd-colors__list">
                   {product.colors.map((color) => {
@@ -670,7 +690,7 @@ export default function SampleProductDetails() {
                 className="spd-review-sticky__img"
               />
               <div className="spd-review-sticky__meta">
-                <p className="spd-review-sticky__name">{product.name}</p>
+                <p className="spd-review-sticky__name">{displayProductName}</p>
                 <p className="spd-review-sticky__price">{activePriceDisplay}</p>
               </div>
               <button
@@ -692,7 +712,7 @@ export default function SampleProductDetails() {
                 <div className="spd-review-sticky__variants">
                   <p className="spd-review-sticky__variants-label">
                     {product.variantGroupName || "Color"}:{" "}
-                    <strong>{selectedVariant?.label ?? "Default"}</strong>
+                    <strong>{variantSelectionLabel}</strong>
                   </p>
                   <ul className="spd-review-sticky__variants-list" aria-label="Product variants">
                     {product.colors.map((color) => {

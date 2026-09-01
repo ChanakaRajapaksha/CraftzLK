@@ -161,6 +161,41 @@ function normalizeTrustBadges(value) {
   };
 }
 
+function normalizeVariantGroups(variants) {
+  if (!Array.isArray(variants)) return [];
+
+  return variants.map((group) => {
+    const options = (Array.isArray(group?.options) ? group.options : []).map((opt) => ({
+      label: String(opt?.label || '').trim(),
+      sku: String(opt?.sku || '').trim(),
+      price: Number(opt?.price) || 0,
+      stock: Number(opt?.stock) || 0,
+      stockStatus: opt?.stockStatus || 'in_stock',
+      image: String(opt?.image || '').trim(),
+      isDefault: Boolean(opt?.isDefault),
+    }));
+
+    if (!options.length) {
+      return {
+        variantName: String(group?.variantName || '').trim(),
+        options: [],
+      };
+    }
+
+    const defaultIndex = options.findIndex((opt) => opt.isDefault);
+    const resolvedIndex = defaultIndex >= 0 ? defaultIndex : 0;
+    const normalizedOptions = options.map((opt, index) => ({
+      ...opt,
+      isDefault: index === resolvedIndex,
+    }));
+
+    return {
+      variantName: String(group?.variantName || '').trim(),
+      options: normalizedOptions,
+    };
+  });
+}
+
 function mapProductBody(body, images = []) {
   return {
     name: body.name,
@@ -192,7 +227,7 @@ function mapProductBody(body, images = []) {
     size: toStringArray(body.size),
     productWeight: toStringArray(body.productWeight),
     location: normalizeProductLocation(body.location),
-    variants: Array.isArray(body.variants) ? body.variants : [],
+    variants: normalizeVariantGroups(body.variants),
     customizationOptions: Array.isArray(body.customizationOptions) ? body.customizationOptions : [],
     shipping: body.shipping || {},
     trustBadges: normalizeTrustBadges(body.trustBadges),
@@ -799,6 +834,75 @@ class ProductService {
     const refreshed = product ? await Product.findById(product._id) : null;
 
     return { product: refreshed, isFalsy: !refreshed };
+  }
+
+  async removeVariantOption(productId, optionId) {
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      const error = new Error('Product not found.');
+      error.statusCode = 404;
+      error.payload = { success: false, message: error.message };
+      throw error;
+    }
+
+    let groupIndex = -1;
+    let optionIndex = -1;
+    let removedOption = null;
+
+    for (let gi = 0; gi < (product.variants || []).length; gi += 1) {
+      const options = product.variants[gi]?.options || [];
+      const oi = options.findIndex((opt) => String(opt._id) === String(optionId));
+      if (oi >= 0) {
+        groupIndex = gi;
+        optionIndex = oi;
+        removedOption = options[oi];
+        break;
+      }
+    }
+
+    if (!removedOption) {
+      const error = new Error('Variant option not found.');
+      error.statusCode = 404;
+      error.payload = { success: false, message: error.message };
+      throw error;
+    }
+
+    const variantSku = String(removedOption.sku || '').trim();
+    if (variantSku) {
+      const cartCount = await Cart.countDocuments({
+        productId: String(productId),
+        variantSku,
+      });
+      if (cartCount > 0) {
+        const error = new Error('Cannot remove a variant that exists in customer carts.');
+        error.statusCode = 400;
+        error.payload = { success: false, message: error.message };
+        throw error;
+      }
+    }
+
+    if (removedOption.image) {
+      await this.deleteImage(removedOption.image);
+    }
+
+    product.variants[groupIndex].options.splice(optionIndex, 1);
+
+    if (!(product.variants[groupIndex].options || []).length) {
+      product.variants.splice(groupIndex, 1);
+    }
+
+    product.markModified('variants');
+    await product.save();
+    await promoDiscountsService.syncFromProduct(product);
+
+    const refreshed = await Product.findById(productId);
+
+    return {
+      success: true,
+      message: 'Variant option removed.',
+      product: refreshed,
+    };
   }
 }
 

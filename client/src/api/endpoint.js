@@ -61,6 +61,7 @@ export const productEndpoints = {
   filterByPrice: `${API}/products/fiterByPrice`,
   byRating: `${API}/products/rating`,
   byId: (id) => `${API}/products/${id}`,
+  variantOption: (productId, optionId) => `${API}/products/${productId}/variant-options/${optionId}`,
   create: `${API}/products/create`,
   bulkDelete: `${API}/products/bulk/delete`,
   bulkStatus: `${API}/products/bulk/status`,

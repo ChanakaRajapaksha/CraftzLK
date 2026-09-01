@@ -9,6 +9,7 @@ import CollectionsFilters from "./CollectionsFilters";
 import CollectionsFilterSortDrawer from "./CollectionsFilterSortDrawer";
 import CollectionsSortDropdown from "./CollectionsSortDropdown";
 import CollectionsProductCard from "./CollectionsProductCard";
+import CollectionsCatalogLoading from "./CollectionsCatalogLoading.jsx";
 import CollectionsPagination from "./CollectionsPagination.jsx";
 import {
   COLLECTIONS_ALL_PATH,
@@ -309,8 +310,7 @@ const Collections = () => {
         {isMobileCatalog && (
           <div className="collections-mobile-actions">
             <p className="collections-mobile-actions__count">
-              {loading && <span className="collections-toolbar__loading">Updating… </span>}
-              {totalCount.toLocaleString()} product{totalCount === 1 ? "" : "s"}
+              {loading ? "Loading products…" : `${totalCount.toLocaleString()} product${totalCount === 1 ? "" : "s"}`}
             </p>
             <button
               type="button"
@@ -340,8 +340,9 @@ const Collections = () => {
         <div ref={catalogViewRef} className="collections-view-anchor" aria-hidden="true" />
 
         <section
-          className={`collections-catalog${showEmptyCatalog ? " collections-catalog--empty" : ""}`}
+          className={`collections-catalog${showEmptyCatalog ? " collections-catalog--empty" : ""}${loading ? " collections-catalog--loading" : ""}`}
           aria-label="Product catalog"
+          aria-busy={loading}
         >
           {!isMobileCatalog && (
             <CollectionsFilters
@@ -358,9 +359,10 @@ const Collections = () => {
               <div className="collections-toolbar">
                 <CollectionsSortDropdown value={sortBy} onChange={setSortBy} />
                 <p className="collections-toolbar__count">
-                {loading && <span className="collections-toolbar__loading">Updating… </span>}
-                {totalCount.toLocaleString()} product{totalCount === 1 ? "" : "s"}
-                {totalPages > 1 && (
+                {loading
+                  ? "Loading products…"
+                  : `${totalCount.toLocaleString()} product${totalCount === 1 ? "" : "s"}`}
+                {!loading && totalPages > 1 && (
                   <span className="collections-toolbar__page-hint">
                     {" "}
                     · Page {safePage} of {totalPages}
@@ -371,7 +373,17 @@ const Collections = () => {
             )}
 
             <AnimatePresence mode="wait">
-              {showEmptyCatalog ? (
+              {loading ? (
+                <motion.div
+                  key="collections-loading"
+                  variants={gridTransition}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                >
+                  <CollectionsCatalogLoading />
+                </motion.div>
+              ) : showEmptyCatalog ? (
                 <motion.div
                   key="collections-empty"
                   className="collections-empty"
@@ -411,7 +423,7 @@ const Collections = () => {
               )}
             </AnimatePresence>
 
-            {!showEmptyCatalog && (
+            {!loading && !showEmptyCatalog && (
               <CollectionsPagination
                 page={safePage}
                 totalPages={totalPages}

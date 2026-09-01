@@ -3,6 +3,7 @@ import {
   normalizeTrustBadges,
   TRUST_BADGE_FORM_FIELDS,
 } from "../../../constants/productTrustBadges.js";
+import { normalizeVariantGroupDefaults } from "../../../utils/productVariants.js";
 
 export { DEFAULT_TRUST_BADGES, normalizeTrustBadges, TRUST_BADGE_FORM_FIELDS, trustBadgesToDisplayList } from "../../../constants/productTrustBadges.js";
 
@@ -197,10 +198,13 @@ export function productToForm(product) {
     location: parseProductLocation(product.location),
     variants: (product.variants || []).map((group) => ({
       ...group,
-      options: (group.options || []).map((opt) => ({
-        ...opt,
-        stockStatus: opt.stockStatus || "in_stock",
-      })),
+      options: normalizeVariantGroupDefaults(
+        (group.options || []).map((opt) => ({
+          ...opt,
+          stockStatus: opt.stockStatus || "in_stock",
+          isDefault: Boolean(opt.isDefault),
+        }))
+      ),
     })),
     customizationOptions: product.customizationOptions || [],
     shipping: {
@@ -261,12 +265,15 @@ export function formToPayload(formFields) {
     seo: formFields.seo || {},
     variants: (formFields.variants || []).map((group) => ({
       ...group,
-      options: (group.options || []).map((opt) => ({
-        ...opt,
-        price: Number(opt.price) || 0,
-        stock: Number(opt.stock) || 0,
-        stockStatus: opt.stockStatus || "in_stock",
-      })),
+      options: normalizeVariantGroupDefaults(
+        (group.options || []).map((opt) => ({
+          ...opt,
+          price: Number(opt.price) || 0,
+          stock: Number(opt.stock) || 0,
+          stockStatus: opt.stockStatus || "in_stock",
+          isDefault: Boolean(opt.isDefault),
+        }))
+      ),
     })),
     customizationOptions: formFields.customizationOptions || [],
     location: formFields.location && formFields.location !== "All"

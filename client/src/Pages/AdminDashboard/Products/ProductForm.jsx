@@ -44,6 +44,7 @@ export default function ProductForm({
   catData,
   setAlertBox,
   isEdit = false,
+  productId = null,
   submitLabel = "Save product",
   isLoading = false,
   variant = "page",
@@ -52,6 +53,7 @@ export default function ProductForm({
   const [tab, setTab] = useState("basic");
   const [fieldErrors, setFieldErrors] = useState({});
   const [subCategories, setSubCategories] = useState([]);
+  const [removingVariantOptionId, setRemovingVariantOptionId] = useState(null);
 
   // Clear leftover staged uploads once per form session (not on every Images
   // tab visit) so images uploaded in this session — including variant images,
@@ -169,7 +171,17 @@ export default function ProductForm({
         ...(prev.variants || []),
         {
           variantName: "",
-          options: [{ label: "", sku: "", price: "", stock: "", stockStatus: "in_stock", image: "" }],
+          options: [
+            {
+              label: "",
+              sku: "",
+              price: "",
+              stock: "",
+              stockStatus: "in_stock",
+              image: "",
+              isDefault: true,
+            },
+          ],
         },
       ],
     }));
@@ -186,13 +198,34 @@ export default function ProductForm({
   const addVariantOption = (gi) => {
     setFormFields((prev) => {
       const variants = [...(prev.variants || [])];
+      const existingOptions = variants[gi].options || [];
       variants[gi] = {
         ...variants[gi],
         options: [
-          ...(variants[gi].options || []),
-          { label: "", sku: "", price: "", stock: "", stockStatus: "in_stock", image: "" },
+          ...existingOptions,
+          {
+            label: "",
+            sku: "",
+            price: "",
+            stock: "",
+            stockStatus: "in_stock",
+            image: "",
+            isDefault: existingOptions.length === 0,
+          },
         ],
       };
+      return { ...prev, variants };
+    });
+  };
+
+  const setDefaultVariantOption = (gi, oi) => {
+    setFormFields((prev) => {
+      const variants = [...(prev.variants || [])];
+      const options = (variants[gi].options || []).map((opt, index) => ({
+        ...opt,
+        isDefault: index === oi,
+      }));
+      variants[gi] = { ...variants[gi], options };
       return { ...prev, variants };
     });
   };
@@ -212,6 +245,69 @@ export default function ProductForm({
       ...prev,
       variants: (prev.variants || []).filter((_, i) => i !== gi),
     }));
+  };
+
+  const removeVariantOptionLocal = (gi, oi) => {
+    setFormFields((prev) => {
+      const variants = [...(prev.variants || [])];
+      const options = [...(variants[gi]?.options || [])].filter((_, index) => index !== oi);
+
+      if (!options.length) {
+        return {
+          ...prev,
+          variants: variants.filter((_, index) => index !== gi),
+        };
+      }
+
+      if (!options.some((opt) => opt.isDefault)) {
+        options[0] = { ...options[0], isDefault: true };
+      }
+
+      variants[gi] = { ...variants[gi], options };
+      return { ...prev, variants };
+    });
+  };
+
+  const removeVariantOption = async (gi, oi) => {
+    const option = formFields.variants?.[gi]?.options?.[oi];
+    const optionId = option?._id;
+    const isPersisted = Boolean(isEdit && productId && optionId);
+
+    if (!isPersisted) {
+      if (option?.image) {
+        ProductController.deleteImage(option.image).catch(() => {});
+      }
+      removeVariantOptionLocal(gi, oi);
+      return;
+    }
+
+    setRemovingVariantOptionId(String(optionId));
+    try {
+      const res = await ProductController.removeVariantOption(productId, optionId);
+      if (res?.success === false) {
+        setAlertBox?.({
+          open: true,
+          error: true,
+          msg: res?.message || "Failed to remove variant option.",
+        });
+        return;
+      }
+
+      removeVariantOptionLocal(gi, oi);
+      setAlertBox?.({
+        open: true,
+        error: false,
+        msg: res?.message || "Variant option removed.",
+      });
+    } catch (error) {
+      setAlertBox?.({
+        open: true,
+        error: true,
+        msg: error?.response?.data?.message || "Failed to remove variant option.",
+      });
+    } finally {
+      setRemovingVariantOptionId(null);
+    }
   };
 
   const addCustomization = () => {
@@ -356,12 +452,26 @@ export default function ProductForm({
                 name="name"
                 value={formFields.name}
                 onChange={onNameChange}
+                placeholder="e.g. R&R Pure Ceylon Black Tea"
                 required
                 aria-required="true"
               />
+              <p className="admin-dash__field-hint">
+                Use the parent product name only — do not include variant details such as weight or size.
+              </p>
             </Field>
-            <Field label="Product Code / SKU" htmlFor="sku" size="short">
-              <input className="admin-dash__input" id="sku" name="sku" value={formFields.sku} onChange={changeInput} />
+            <Field label="Parent Product Code" htmlFor="sku" size="short">
+              <input
+                className="admin-dash__input"
+                id="sku"
+                name="sku"
+                value={formFields.sku}
+                onChange={changeInput}
+                placeholder="e.g. RR-CBT"
+              />
+              <p className="admin-dash__field-hint">
+                Identifies the product family. Each variant option needs its own SKU below.
+              </p>
             </Field>
             <Field label="Product Slug" htmlFor="slug" size="wide">
               <input className="admin-dash__input" id="slug" name="slug" value={formFields.slug} onChange={changeInput} />
@@ -612,7 +722,10 @@ export default function ProductForm({
 
         {tab === "variants" && (
           <div className="admin-dash__variant-editor">
-            <p className="admin-dash__panel-desc">Add variant groups such as Size or Color with individual SKU, price, and stock.</p>
+            <p className="admin-dash__panel-desc">
+              Add variant groups such as Weight or Color. Keep the parent product name and code in Basic Info;
+              each purchasable option gets its own SKU, price, stock, and image.
+            </p>
             {(formFields.variants || []).map((group, gi) => (
               <div key={gi} className="admin-dash__variant-group">
                 <div className="admin-dash__variant-group-head">
@@ -641,10 +754,16 @@ export default function ProductForm({
                     <span>Price</span>
                     <span>Stock</span>
                     <span>Stock Status</span>
+                    <span>Default variant</span>
                     <span>Image</span>
+                    <span>Remove</span>
                   </div>
-                  {(group.options || []).map((opt, oi) => (
-                    <div key={oi} className="admin-dash__variant-option-row">
+                  {(group.options || []).map((opt, oi) => {
+                    const optionKey = opt._id || `new-${gi}-${oi}`;
+                    const isRemoving = removingVariantOptionId === String(opt._id);
+
+                    return (
+                    <div key={optionKey} className="admin-dash__variant-option-row">
                       <input className="admin-dash__input" placeholder="Label" value={opt.label} onChange={(e) => updateVariantOption(gi, oi, "label", e.target.value)} />
                       <input className="admin-dash__input" placeholder="SKU" value={opt.sku} onChange={(e) => updateVariantOption(gi, oi, "sku", e.target.value)} />
                       <input className="admin-dash__input" type="number" placeholder="Price" value={opt.price} onChange={(e) => updateVariantOption(gi, oi, "price", e.target.value)} />
@@ -659,14 +778,34 @@ export default function ProductForm({
                         <option value="out_of_stock">Out of Stock</option>
                         <option value="pre_order">Pre Order</option>
                       </select>
+                      <label className="admin-dash__variant-default">
+                        <input
+                          type="radio"
+                          name={`default-variant-${gi}`}
+                          checked={Boolean(opt.isDefault)}
+                          onChange={() => setDefaultVariantOption(gi, oi)}
+                          aria-label={`Set ${opt.label || `option ${oi + 1}`} as default variant`}
+                        />
+                        <span>Default</span>
+                      </label>
                       <VariantImageUploadField
                         value={opt.image}
                         onChange={(url) => updateVariantOption(gi, oi, "image", url)}
                         setAlertBox={setAlertBox}
                         label={`image for ${group.variantName || "variant"} option ${oi + 1}`}
                       />
+                      <button
+                        type="button"
+                        className="admin-dash__btn admin-dash__btn--danger admin-dash__btn--sm admin-dash__btn--icon admin-dash__variant-option-delete"
+                        onClick={() => removeVariantOption(gi, oi)}
+                        aria-label={`Remove ${group.variantName || "variant"} option ${oi + 1}`}
+                        disabled={isRemoving || isLoading}
+                      >
+                        <FaTrash />
+                      </button>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 <button type="button" className="admin-dash__btn admin-dash__btn--ghost admin-dash__btn--sm" onClick={() => addVariantOption(gi)}>
                   <FaPlus /> Add option

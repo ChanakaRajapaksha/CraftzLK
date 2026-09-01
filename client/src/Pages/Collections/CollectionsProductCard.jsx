@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import Rating from "@mui/material/Rating";
-import { getDisplayPricing } from "../../utils/productPricing";
+import { getDisplayPricing, getDisplayPrimaryImage, getDisplayStock } from "../../utils/productPricing";
 import { formatRsLabel, getProductDetailPath } from "./collectionsUtils";
 
 const IMG_FALLBACK = "/images/product_images/wooden_wine_glass.png";
@@ -10,10 +10,15 @@ const DUMMY_RATING = 4;
 export default function CollectionsProductCard({ product }) {
   const detailPath = getProductDetailPath(product);
   const images = product?.images?.length ? product.images : [IMG_FALLBACK];
-  const primaryImage = images[0];
+  const primaryImage = getDisplayPrimaryImage(product, images[0]) || IMG_FALLBACK;
   const hoverImage = images[1] || primaryImage;
-  const inStock = Number(product?.countInStock) > 0;
-  const availableCount = Math.max(0, Number(product?.countInStock) || 0);
+  const { count: availableCount, status: stockStatus } = getDisplayStock(product);
+  const inStock =
+    stockStatus === "pre_order"
+      ? true
+      : stockStatus === "out_of_stock"
+        ? false
+        : availableCount > 0;
   const { price, oldPrice, discount, hasDiscount, onSale } = getDisplayPricing(product);
   const rating = DUMMY_RATING;
 

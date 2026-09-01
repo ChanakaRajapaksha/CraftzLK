@@ -57,6 +57,10 @@ class ProductController {
     return deleteData(productEndpoints.byId(id));
   }
 
+  static removeVariantOption(productId, optionId) {
+    return deleteData(productEndpoints.variantOption(productId, optionId));
+  }
+
   static bulkDelete(ids) {
     return postData(productEndpoints.bulkDelete, { ids });
   }

@@ -270,6 +270,24 @@ class ProductController {
       throw error;
     }
   }
+
+  async removeVariantOption(req, res) {
+    try {
+      const result = await productService.removeVariantOption(
+        req.params.id,
+        req.params.optionId
+      );
+      return res.status(200).json(result);
+    } catch (error) {
+      if (error.statusCode === 400) {
+        return res.status(400).json(error.payload);
+      }
+      if (error.statusCode === 404) {
+        return res.status(404).json(error.payload);
+      }
+      throw error;
+    }
+  }
 }
 
 module.exports = new ProductController();
